@@ -42,6 +42,7 @@ import ch.qos.logback.core.joran.action.ActionConst;
 import ch.qos.logback.core.util.ContextUtil;
 import org.apache.sling.commons.log.logback.internal.config.ConfigAdminSupport;
 import org.apache.sling.commons.log.logback.internal.config.ConfigurationException;
+import org.apache.sling.commons.log.logback.internal.stacktrace.OSGiAwareExceptionHandling;
 import org.apache.sling.commons.log.logback.internal.util.LoggerSpecificEncoder;
 import org.apache.sling.commons.log.logback.internal.util.Util;
 import org.osgi.framework.BundleContext;
@@ -564,6 +565,9 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
             // create or modify existing configuration object
             final LogConfig newConfig = new LogConfig(this, pattern, categories, logLevel, fileName, additiv,
                     pid, loggerContext, resetToDefault);
+            if (isPackagingDataEnabled()) {
+                newConfig.setPostProcessor(new OSGiAwareExceptionHandling(logbackManager.getPackageInfoCollector()));
+            }
             LogConfig oldConfig = configByPid.get(pid);
             if (oldConfig != null) {
                 configByCategory.keySet().removeAll(oldConfig.getCategories());

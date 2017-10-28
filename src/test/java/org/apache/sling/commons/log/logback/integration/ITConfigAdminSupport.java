@@ -172,7 +172,7 @@ public class ITConfigAdminSupport extends LogTestBase {
         // Set log level to debug for Root logger
         Configuration config = ca.getConfiguration(PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_PACKAGING_DATA, Boolean.FALSE);
+        p.put(LOG_PACKAGING_DATA, Boolean.TRUE);
         p.put(LOG_LEVEL, "INFO");
         config.update(p);
 

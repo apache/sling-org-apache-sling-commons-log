@@ -33,6 +33,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.sling.commons.log.logback.internal.AppenderTracker.AppenderInfo;
+import org.apache.sling.commons.log.logback.internal.stacktrace.PackageInfoCollector;
 import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
 import org.apache.sling.commons.log.logback.internal.util.SlingStatusPrinter;
 import org.apache.sling.commons.log.logback.webconsole.LogPanel;
@@ -43,6 +44,7 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
@@ -84,6 +86,8 @@ public class LogbackManager extends LoggerContextAwareBase {
      */
     private static final String SLING_LOG_ROOT = "sling.log.root";
 
+    public static final String PACKAGE_INFO_COLLECTOR_DESC = "Sling Log Package Info Collector";
+
     private final BundleContext bundleContext;
 
     private final String rootDir;
@@ -124,6 +128,8 @@ public class LogbackManager extends LoggerContextAwareBase {
     private final List<ServiceTracker> serviceTrackers = new ArrayList<ServiceTracker>();
 
     private final boolean bridgeHandlerInstalled;
+
+    private final PackageInfoCollector packageInfoCollector = new PackageInfoCollector();
 
     /**
      * Time at which reset started. Used as the threshold for logging error
@@ -304,6 +310,10 @@ public class LogbackManager extends LoggerContextAwareBase {
 
     public void addSubsitutionProperties(InterpretationContext ic) {
         ic.addSubstitutionProperty("sling.home", rootDir);
+    }
+
+    public PackageInfoCollector getPackageInfoCollector() {
+        return packageInfoCollector;
     }
 
     public URL getDefaultConfig() {
@@ -488,8 +498,9 @@ public class LogbackManager extends LoggerContextAwareBase {
             addInfo("OsgiIntegrationListener : context reset detected. Adding LogManager to context map and firing"
                 + " listeners");
 
-            context.setPackagingDataEnabled(logConfigManager.isPackagingDataEnabled());
+            context.setPackagingDataEnabled(false);
             context.setMaxCallerDataDepth(logConfigManager.getMaxCallerDataDepth());
+            registerPackageInfoCollector();
 
             // Attach a console appender to handle logging untill we configure
             // one. This would be removed in RootLoggerListener.reset
@@ -645,7 +656,7 @@ public class LogbackManager extends LoggerContextAwareBase {
 
     public LoggerStateContext determineLoggerState() {
         final List<Logger> loggers = getLoggerContext().getLoggerList();
-        final LoggerStateContext ctx = new LoggerStateContext(loggers);
+        final LoggerStateContext ctx = new LoggerStateContext(loggers, packageInfoCollector);
 
         //Distinguish between Logger configured via
         //1. OSGi Config - The ones configured via ConfigAdmin
@@ -707,8 +718,11 @@ public class LogbackManager extends LoggerContextAwareBase {
 
         final Map<ServiceReference,TurboFilter> turboFilters;
 
-        LoggerStateContext(List<Logger> allLoggers) {
+        final PackageInfoCollector packageInfoCollector;
+
+        LoggerStateContext(List<Logger> allLoggers, PackageInfoCollector packageInfoCollector) {
             this.allLoggers = allLoggers;
+            this.packageInfoCollector = packageInfoCollector;
             for (AppenderTracker.AppenderInfo ai : getAppenderTracker().getAppenderInfos()) {
                 dynamicAppenders.put(ai.appender, ai);
             }
@@ -794,5 +808,18 @@ public class LogbackManager extends LoggerContextAwareBase {
             }
         }, props));
     }
+
+    private void registerPackageInfoCollector() {
+        //Weaving hook once registered would not be removed upon config changed
+        if (logConfigManager.isPackagingDataEnabled()) {
+            Properties props = new Properties();
+            props.put(Constants.SERVICE_VENDOR, "Apache Software Foundation");
+            props.put(Constants.SERVICE_DESCRIPTION, PACKAGE_INFO_COLLECTOR_DESC);
+
+            registrations.add(bundleContext.registerService(WeavingHook.class.getName(),
+                    packageInfoCollector, props));
+        }
+    }
+
 
 }

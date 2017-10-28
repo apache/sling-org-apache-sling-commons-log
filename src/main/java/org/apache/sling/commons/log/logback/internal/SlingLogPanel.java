@@ -176,8 +176,8 @@ public class SlingLogPanel implements LogPanel {
 
     private void appendLoggerStatus(PrintWriter pw, LoggerStateContext ctx) {
         pw.printf(
-                "<p class='statline'>Log Service Stats: %d categories, %d appender, %d Dynamic appenders</p>%n",
-                ctx.getNumberOfLoggers(), ctx.getNumOfAppenders(), ctx.getNumOfDynamicAppenders());
+                "<p class='statline'>Log Service Stats: %d categories, %d appender, %d Dynamic appenders, %d Packages</p>%n",
+                ctx.getNumberOfLoggers(), ctx.getNumOfAppenders(), ctx.getNumOfDynamicAppenders(), ctx.packageInfoCollector.size());
     }
 
     private void appendOsgiConfiguredLoggerData(final PrintWriter pw, final String consoleAppRoot) {

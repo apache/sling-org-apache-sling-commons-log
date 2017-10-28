@@ -27,6 +27,8 @@ import java.util.regex.Pattern;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.pattern.PostCompileProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,6 +56,8 @@ public class LogConfig {
     private final boolean isAdditiv;
 
     private final boolean resetToDefault;
+
+    private PostCompileProcessor<ILoggingEvent> postProcessor;
 
     LogConfig(LogWriterProvider logWriterProvider, final String pattern, Set<String> categories, Level logLevel,
               String logWriterName, final boolean isAdditiv, String configPid, LoggerContext loggerContext, boolean resetToDefault) {
@@ -145,6 +149,11 @@ public class LogConfig {
         pl.setPattern(logBackPattern);
         pl.setOutputPatternAsHeader(false);
         pl.setContext(loggerContext);
+
+        if (postProcessor != null) {
+            pl.setPostCompileProcessor(postProcessor);
+        }
+
         pl.start();
         return pl;
     }
@@ -153,6 +162,10 @@ public class LogConfig {
     public String toString() {
         return "LogConfig{" + "configPid='" + configPid + '\'' + ", categories=" + categories + ", logLevel="
             + logLevel + ", logWriterName='" + logWriterName + '\'' + '}';
+    }
+
+    public void setPostProcessor(PostCompileProcessor<ILoggingEvent> postProcessor) {
+        this.postProcessor = postProcessor;
     }
 
     public interface LogWriterProvider {

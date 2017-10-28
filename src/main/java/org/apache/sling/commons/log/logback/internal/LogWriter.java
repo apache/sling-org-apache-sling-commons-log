@@ -31,6 +31,7 @@ import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import ch.qos.logback.core.util.FileSize;
 import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
 import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
 
@@ -178,7 +179,7 @@ public class LogWriter {
                 }
 
                 SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<ILoggingEvent>();
-                triggeringPolicy.setMaxFileSize(String.valueOf(maxSize));
+                triggeringPolicy.setMaxFileSize(FileSize.valueOf(String.valueOf(maxSize)));
                 triggeringPolicy.setContext(context);
                 triggeringPolicy.start();
                 rollingAppender.setTriggeringPolicy(triggeringPolicy);

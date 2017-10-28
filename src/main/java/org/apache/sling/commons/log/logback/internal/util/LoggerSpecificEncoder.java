@@ -19,7 +19,6 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -40,10 +39,9 @@ public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEven
         this.defaultLayout = defaultLayout;
     }
 
-    public void doEncode(ILoggingEvent event) throws IOException {
+    public byte[] encode(ILoggingEvent event) {
         String txt = getLayout(event.getLoggerName()).doLayout(event);
-        outputStream.write(convertToBytes(txt));
-        if (isImmediateFlush()) outputStream.flush();
+        return convertToBytes(txt);
     }
 
     private Layout<ILoggingEvent> getLayout(String loggerName) {

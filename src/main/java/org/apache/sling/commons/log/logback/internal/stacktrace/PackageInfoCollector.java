@@ -26,7 +26,7 @@ import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.framework.hooks.weaving.WovenClass;
 
 public class PackageInfoCollector implements WeavingHook{
-    private final Map<String, String> pkgVersionMapping = new ConcurrentHashMap<>();
+    private final Map<String, String> pkgInfoMapping = new ConcurrentHashMap<>();
 
     @Override
     public void weave(WovenClass wovenClass) {
@@ -34,19 +34,23 @@ public class PackageInfoCollector implements WeavingHook{
     }
 
     public int size() {
-        return pkgVersionMapping.size();
+        return pkgInfoMapping.size();
     }
 
     void add(Bundle bundle, String className) {
-        pkgVersionMapping.put(getPackageName(className), bundle.getVersion().toString());
+        pkgInfoMapping.put(getPackageName(className), getInfo(bundle));
     }
 
-    String getVersion(String className) {
+    String getBundleInfo(String className) {
         if (className == null) {
             return null;
         }
         String packageName = getPackageName(className);
-        return pkgVersionMapping.get(packageName);
+        return pkgInfoMapping.get(packageName);
+    }
+
+    static String getInfo(Bundle bundle) {
+        return bundle.getSymbolicName() + ":" + bundle.getVersion();
     }
 
     static String getPackageName(String className) {

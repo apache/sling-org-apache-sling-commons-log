@@ -51,8 +51,9 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.LoggerFactory;
 
 import static org.apache.sling.commons.log.logback.integration.ITConfigAdminSupport.PID;
+import static org.apache.sling.commons.log.logback.integration.PackagingDataTestUtil.TEST_BUNDLE_NAME;
+import static org.apache.sling.commons.log.logback.integration.PackagingDataTestUtil.TEST_BUNDLE_VERSION;
 import static org.apache.sling.commons.log.logback.internal.LogConfigManager.FACTORY_PID_CONFIGS;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOGBACK_FILE;
 import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_FILE;
 import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_LEVEL;
 import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_LOGGERS;
@@ -171,7 +172,7 @@ public class ITPackagingData extends LogTestBase {
             }
         }
         assertNotNull(testLine);
-        assertThat(testLine, containsString("["+PackagingDataTestUtil.TEST_BUNDLE_VERSION+"]"));
+        assertThat(testLine, containsString("["+ TEST_BUNDLE_NAME+":"+TEST_BUNDLE_VERSION+"]"));
 
         //Check that default logback support is still disabled
         assertFalse(((LoggerContext) LoggerFactory.getILoggerFactory()).isPackagingDataEnabled());

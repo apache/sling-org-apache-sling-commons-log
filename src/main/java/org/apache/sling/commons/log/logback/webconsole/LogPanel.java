@@ -22,7 +22,8 @@ package org.apache.sling.commons.log.logback.webconsole;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import aQute.bnd.annotation.ProviderType;
+import org.osgi.annotation.versioning.ProviderType;
+
 
 @ProviderType
 public interface LogPanel {

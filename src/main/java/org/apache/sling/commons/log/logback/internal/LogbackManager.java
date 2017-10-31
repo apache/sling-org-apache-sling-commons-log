@@ -24,11 +24,12 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
@@ -750,13 +751,13 @@ public class LogbackManager extends LoggerContextAwareBase {
     }
 
     private void registerWebConsoleSupport() {
-        Properties panelProps = new Properties();
+        Dictionary<String,Object> panelProps = new Hashtable<>();
         panelProps.put(Constants.SERVICE_VENDOR, "Apache Software Foundation");
         panelProps.put(Constants.SERVICE_DESCRIPTION, "Sling Log Panel Support");
         registrations.add(bundleContext.registerService(LogPanel.class.getName(),
                 new SlingLogPanel(this, bundleContext), panelProps));
 
-        Properties printerProps = new Properties();
+        Dictionary<String,Object> printerProps = new Hashtable<>();
         printerProps.put(Constants.SERVICE_VENDOR, "Apache Software Foundation");
         printerProps.put(Constants.SERVICE_DESCRIPTION, "Sling Log Configuration Printer");
         printerProps.put("felix.webconsole.label", PRINTER_URL);
@@ -769,7 +770,7 @@ public class LogbackManager extends LoggerContextAwareBase {
     }
 
     private void registerEventHandler() {
-        Properties props = new Properties();
+        Dictionary<String,Object> props = new Hashtable<>();
         props.put(Constants.SERVICE_VENDOR, "Apache Software Foundation");
         props.put(Constants.SERVICE_DESCRIPTION, "Sling Log Reset Event Handler");
         props.put("event.topics", new String[] {

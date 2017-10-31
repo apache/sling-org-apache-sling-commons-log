@@ -19,8 +19,8 @@
 
 package org.apache.sling.commons.log.logback;
 
-import aQute.bnd.annotation.ProviderType;
 import org.apache.sling.commons.log.logback.internal.OsgiAppenderRefInternalAction;
+import org.osgi.annotation.versioning.ProviderType;
 
 /**
  * The action class needs to be referred in external files hence adding a marker

@@ -19,9 +19,9 @@
 
 package org.apache.sling.commons.log.logback;
 
+import org.osgi.annotation.versioning.ConsumerType;
 import org.xml.sax.InputSource;
 
-import aQute.bnd.annotation.ConsumerType;
 
 /**
  * Provides source for Logback configuration fragment.

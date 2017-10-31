@@ -20,7 +20,7 @@
 package org.apache.sling.commons.log.logback.integration;
 
 import java.util.Dictionary;
-import java.util.Properties;
+import java.util.Hashtable;
 
 import javax.inject.Inject;
 
@@ -66,8 +66,8 @@ public class ITConfigFragments extends LogTestBase {
 
     @Test
     public void testConfigFragment() throws Exception {
-        Properties props = new Properties();
-        props.setProperty("logbackConfig", "true");
+        Dictionary<String,Object> props = new Hashtable<>();
+        props.put("logbackConfig", "true");
 
         String config = "<included>\n" + "  <appender name=\"FOOFILE\" class=\"ch.qos.logback.core.FileAppender\">\n"
             + "    <file>${sling.home}/logs/foo.log</file>\n" + "    <encoder>\n"

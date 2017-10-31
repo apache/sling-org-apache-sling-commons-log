@@ -20,10 +20,9 @@
 package org.apache.sling.commons.log.logback.integration;
 
 import java.io.InputStream;
+import java.net.URL;
 
-import org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator;
-import org.apache.sling.commons.log.logback.integration.bundle.TestRunnable;
-import org.ops4j.pax.tinybundles.core.InnerClassStrategy;
+import org.ops4j.pax.tinybundles.core.TinyBundle;
 import org.osgi.framework.Constants;
 
 import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
@@ -39,12 +38,32 @@ public class PackagingDataTestUtil {
     public static final String TEST_BUNDLE_NAME = "packagedatatest";
 
     public static InputStream createTestBundle() {
-        return bundle()
-                .set(Constants.BUNDLE_ACTIVATOR, PackageDataActivator.class.getName())
+        //Avoid referring to test bundle classes otherwise they get loaded in 2 bundles i.e.
+        //pax exam probe bundle and our packagedatatest. So we refer only by class name strings
+        String activatorClassName = "org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator";
+        TinyBundle tb = bundle()
+                .set(Constants.BUNDLE_ACTIVATOR, activatorClassName)
                 .set(Constants.BUNDLE_SYMBOLICNAME, TEST_BUNDLE_NAME)
-                .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION)
-                .add(PackageDataActivator.class, InnerClassStrategy.NONE)
-                .add(TestRunnable.class, InnerClassStrategy.NONE)
-                .build(withBnd());
+                .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION);
+        add(tb, "org.apache.sling.commons.log.logback.integration.bundle.TestRunnable");
+        add(tb, activatorClassName);
+        return tb.build(withBnd());
+    }
+
+    private static void add(TinyBundle tb, String className) {
+        String name = asResource(className);
+        tb.add(name, asResourceURL(name));
+    }
+
+    private static String asResource( String klass ) {
+        return klass.replace( '.', '/' ) + ".class";
+    }
+
+    private static URL asResourceURL(String klass ) {
+        URL u = PackagingDataTestUtil.class.getResource("/" + klass);
+        if (u == null) {
+            throw new RuntimeException("No resource found for "+klass);
+        }
+        return u;
     }
 }

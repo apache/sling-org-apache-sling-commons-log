@@ -813,7 +813,7 @@ public class LogbackManager extends LoggerContextAwareBase {
     private void registerPackageInfoCollector() {
         //Weaving hook once registered would not be removed upon config changed
         if (logConfigManager.isPackagingDataEnabled()) {
-            Properties props = new Properties();
+            Dictionary<String,Object> props = new Hashtable<>();
             props.put(Constants.SERVICE_VENDOR, "Apache Software Foundation");
             props.put(Constants.SERVICE_DESCRIPTION, PACKAGE_INFO_COLLECTOR_DESC);
 

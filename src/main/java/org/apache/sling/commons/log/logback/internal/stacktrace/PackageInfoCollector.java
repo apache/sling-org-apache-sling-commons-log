@@ -18,15 +18,18 @@
  */
 package org.apache.sling.commons.log.logback.internal.stacktrace;
 
-import java.util.Map;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.framework.hooks.weaving.WovenClass;
 
 public class PackageInfoCollector implements WeavingHook{
-    private final Map<String, String> pkgInfoMapping = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String, Set<String>> pkgInfoMapping = new ConcurrentHashMap<>();
 
     @Override
     public void weave(WovenClass wovenClass) {
@@ -38,7 +41,10 @@ public class PackageInfoCollector implements WeavingHook{
     }
 
     void add(Bundle bundle, String className) {
-        pkgInfoMapping.put(getPackageName(className), getInfo(bundle));
+        String packageName = getPackageName(className);
+
+        Set<String> infos = pkgInfoMapping.computeIfAbsent(packageName, k -> Collections.synchronizedSet(new HashSet<>()));
+        infos.add(getInfo(bundle));
     }
 
     String getBundleInfo(String className) {
@@ -46,10 +52,17 @@ public class PackageInfoCollector implements WeavingHook{
             return null;
         }
         String packageName = getPackageName(className);
-        return pkgInfoMapping.get(packageName);
+        Set<String> infos = pkgInfoMapping.get(packageName);
+
+        //If multiple infos are found then we cannot determine the exact version
+        //so better not to provide any info
+        if (infos == null || infos.size() > 1 || infos.size() == 0) {
+            return null;
+        }
+        return infos.iterator().next();
     }
 
-    static String getInfo(Bundle bundle) {
+    private static String getInfo(Bundle bundle) {
         return bundle.getSymbolicName() + ":" + bundle.getVersion();
     }
 

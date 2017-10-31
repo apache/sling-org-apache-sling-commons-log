@@ -51,9 +51,9 @@ public class OSGiAwareExceptionHandling extends EnsureExceptionHandling {
         @Override
         protected void extraData(StringBuilder builder, StackTraceElementProxy step) {
             if (step != null) {
-                String version = collector.getVersion(step.getStackTraceElement().getClassName());
-                if (version != null) {
-                    builder.append(" [").append(version).append(']');
+                String bundleInfo = collector.getBundleInfo(step.getStackTraceElement().getClassName());
+                if (bundleInfo != null) {
+                    builder.append(" [").append(bundleInfo).append(']');
                 }
             }
         }

@@ -36,11 +36,12 @@ import static org.ops4j.pax.tinybundles.core.TinyBundles.withBnd;
 public class PackagingDataTestUtil {
 
     public static final String TEST_BUNDLE_VERSION = "0.0.7";
+    public static final String TEST_BUNDLE_NAME = "packagedatatest";
 
     public static InputStream createTestBundle() {
         return bundle()
                 .set(Constants.BUNDLE_ACTIVATOR, PackageDataActivator.class.getName())
-                .set(Constants.BUNDLE_SYMBOLICNAME, "packagedatatest")
+                .set(Constants.BUNDLE_SYMBOLICNAME, TEST_BUNDLE_NAME)
                 .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION)
                 .add(PackageDataActivator.class, InnerClassStrategy.NONE)
                 .add(TestRunnable.class, InnerClassStrategy.NONE)

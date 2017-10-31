@@ -232,10 +232,6 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
         return configByPid.values();
     }
 
-    public Iterable<LogWriter> getLogWriters(){
-        return writerByFileName.values();
-    }
-
     public Appender<ILoggingEvent> getDefaultAppender() {
         OutputStreamAppender<ILoggingEvent> appender = new ConsoleAppender<ILoggingEvent>();
         appender.setName(DEFAULT_CONSOLE_APPENDER_NAME);
@@ -553,6 +549,12 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
             // verify pattern
             if (pattern == null || pattern.length() == 0) {
                 pattern = LogConfigManager.LOG_PATTERN_DEFAULT;
+            }
+
+            //Map empty fileName to console logger
+            //null fileName is for scenario where intention is just to change the log level
+            if (fileName != null && fileName.trim().length() == 0) {
+                fileName = LogWriter.FILE_NAME_CONSOLE;
             }
 
             // FileName being just null means that we want to change the

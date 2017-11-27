@@ -55,7 +55,7 @@ public class SlingConfigurationPrinter {
     }
 
     /**
-     * @see org.apache.felix.webconsole.ConfigurationPrinter#printConfiguration(java.io.PrintWriter)
+     * org.apache.felix.webconsole.ConfigurationPrinter#printConfiguration(java.io.PrintWriter)
      */
     @SuppressWarnings("UnusedDeclaration")
     public void printConfiguration(PrintWriter printWriter, String mode) {
@@ -146,7 +146,7 @@ public class SlingConfigurationPrinter {
      * or get created in different directory then those files would not be
      * included
      *
-     * @see org.apache.felix.webconsole.AttachmentProvider#getAttachments(String)
+     * org.apache.felix.webconsole.AttachmentProvider#getAttachments(String)
      */
     @SuppressWarnings("UnusedDeclaration")
     public URL[] getAttachments(String mode) {

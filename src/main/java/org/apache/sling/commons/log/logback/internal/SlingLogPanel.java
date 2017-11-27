@@ -67,8 +67,8 @@ import ch.qos.logback.core.util.CachingDateFormatter;
 /**
  * The <code>SlingLogPanel</code> is a Felix Web Console plugin to display the
  * current active log bundle configuration.
- * <p/>
- * In future revisions of this plugin, the configuration may probably even be
+ *
+ * <p>In future revisions of this plugin, the configuration may probably even be
  * modified through this panel.
  */
 public class SlingLogPanel implements LogPanel {

@@ -500,7 +500,7 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
      * configured for any log writer or it may be the configuration PID of such
      * a writer. If this property is missing or empty or does not refer to an
      * existing log writer configuration, the default log writer is used.</dd>
-     *
+     *</dl>
      * @param pid The name of the configuration to update or remove.
      * @param configuration The configuration object.
      * @throws ConfigurationException If the log level and logger names

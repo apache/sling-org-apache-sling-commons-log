@@ -84,7 +84,7 @@ public abstract class LogTestBase {
         }
         return options(
             // the current project (the bundle under test)
-            CoreOptions.bundle(bundleFile.toURI().toString()),
+            CoreOptions.bundle(bundleFile.toURI().toString()).start(shouldStartLogBundle()),
             mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(), addPaxExamSpecificOptions(),
             addCodeCoverageOption(), addDebugOptions(), addExtraOptions(), addDefaultOptions());
     }
@@ -108,6 +108,10 @@ public abstract class LogTestBase {
                 systemTimeout(TimeUnit.MINUTES.toMillis(10)), workingDirectory(workDir));
         }
         return null;
+    }
+
+    protected boolean shouldStartLogBundle(){
+        return true;
     }
 
     private static Option addCodeCoverageOption() {

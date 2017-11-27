@@ -99,6 +99,8 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
 
     public static final String DEFAULT_CONSOLE_APPENDER_NAME = "org.apache.sling.commons.log.CONSOLE";
 
+    private static final String CONFIG_PID_SET = "org.apache.sling.commons.log.ConfigPids";
+
     private final LoggerContext loggerContext;
 
     private final ContextUtil contextUtil;
@@ -274,7 +276,9 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
 
         Map<Appender, LoggerSpecificEncoder> encoders = new HashMap<Appender, LoggerSpecificEncoder>();
 
+        Set<String> configPids = new HashSet<>();
         for (LogConfig config : getLogConfigs()) {
+            configPids.add(config.getConfigPid());
             Appender<ILoggingEvent> appender = null;
             if (config.isAppenderDefined()) {
                 LogWriter lw = config.getLogWriter();
@@ -318,6 +322,9 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
                 }
             }
         }
+
+        //Record the config pids which have been picked up in this reset cycle
+        context.putObject(CONFIG_PID_SET, configPids);
     }
 
 
@@ -598,6 +605,20 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
 
         if (performRefresh) {
             logbackManager.configChanged();
+        }
+    }
+
+    public void checkForNewConfigsWhileStarting(LoggerContext context){
+        Set<String> configPids = (Set<String>) context.getObject(CONFIG_PID_SET);
+        if (configPids == null) {
+            contextUtil.addWarn("Did not find any configPid set");
+            return;
+        }
+        if (!configPids.equals(configByPid.keySet())) {
+            contextUtil.addInfo("Config change detected post start. Scheduling config reload");
+            logbackManager.configChanged();
+        } else {
+            contextUtil.addInfo("Configured the Logback with " + configPids.size() + " configs");
         }
     }
 

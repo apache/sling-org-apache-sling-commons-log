@@ -181,6 +181,9 @@ public class LogbackManager extends LoggerContextAwareBase {
 
         // now open the gate for regular configuration
         started = true;
+
+        //Now check once if any other config was added while we were starting
+        logConfigManager.checkForNewConfigsWhileStarting(getLoggerContext());
     }
 
     public void shutdown() {

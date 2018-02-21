@@ -35,7 +35,6 @@ public class TurboFilterTracker extends ServiceTracker implements LogbackResetLi
     public TurboFilterTracker(BundleContext context, LoggerContext loggerContext) {
         super(context, TurboFilter.class.getName(), null);
         this.loggerContext = loggerContext;
-        super.open();
     }
 
     @Override

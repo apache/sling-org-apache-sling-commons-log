@@ -170,6 +170,8 @@ public class LogbackManager extends LoggerContextAwareBase {
         serviceTrackers.add(filterTracker);
         serviceTrackers.add(turboFilterTracker);
 
+        this.filterTracker.open();
+        this.turboFilterTracker.open();
         getLoggerContext().addListener(osgiIntegrationListener);
         registerWebConsoleSupport();
         registerEventHandler();

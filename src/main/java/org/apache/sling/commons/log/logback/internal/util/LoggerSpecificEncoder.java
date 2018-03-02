@@ -45,12 +45,24 @@ public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEven
     }
 
     private Layout<ILoggingEvent> getLayout(String loggerName) {
-        // TODO Handle layout inheritance wrt logger names
-        Layout<ILoggingEvent> layout = layoutByCategory.get(loggerName);
-        if (layout == null) {
-            layout = defaultLayout;
+        String bestMatchLayoutKey = getBestMatchLayoutKey(loggerName);
+        return layoutByCategory.getOrDefault(bestMatchLayoutKey, defaultLayout);
+    }
+
+    private String getBestMatchLayoutKey(String loggerName) {
+        if (layoutByCategory.containsKey(loggerName)) {
+            // fastpath for exact name match
+            return loggerName;
         }
-        return layout;
+        String bestMatch = loggerName;
+        int bestMatchLength = 0;
+        for (String layoutKey : layoutByCategory.keySet()) {
+            if (loggerName.startsWith(layoutKey) && layoutKey.length() > bestMatchLength) {
+                bestMatch = layoutKey;
+                bestMatchLength = layoutKey.length();
+            }
+        }
+        return bestMatch;
     }
 
     private byte[] convertToBytes(String s) {

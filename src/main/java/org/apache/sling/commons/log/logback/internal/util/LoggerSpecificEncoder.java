@@ -57,7 +57,7 @@ public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEven
         String bestMatch = loggerName;
         int bestMatchLength = 0;
         for (String layoutKey : layoutByCategory.keySet()) {
-            if (loggerName.startsWith(layoutKey) && layoutKey.length() > bestMatchLength) {
+            if (loggerName.startsWith(layoutKey) && loggerName.charAt(layoutKey.length()) == '.' && layoutKey.length() > bestMatchLength) {
                 bestMatch = layoutKey;
                 bestMatchLength = layoutKey.length();
             }

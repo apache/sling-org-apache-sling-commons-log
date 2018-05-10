@@ -80,6 +80,20 @@ public class TestLogWriter {
         assertEquals("target/foo.%d{yyyy-MM}", tbrp.getFileNamePattern());
     }
 
+    @Test
+    public void allowMoreThanTwentyOneLogFiles() {
+        LogWriter lw = new LogWriter("moreThanTwenty", "target/moreThanTwenty", 300, "4k");
+
+        Appender<ILoggingEvent> a = createappender(lw);
+        assertInstanceOf(a, SlingRollingFileAppender.class);
+        SlingRollingFileAppender sr = (SlingRollingFileAppender) a;
+
+        assertInstanceOf(sr.getRollingPolicy(), FixedWindowRollingPolicy.class);
+        FixedWindowRollingPolicy rollingPolicy = (FixedWindowRollingPolicy) sr.getRollingPolicy();
+
+        assertEquals(300, rollingPolicy.getMaxIndex());
+    }
+
     private static Appender<ILoggingEvent> createappender(LogWriter lw) {
         Encoder<ILoggingEvent> encoder = new PatternLayoutEncoder();
         return lw.createAppender((Context) LoggerFactory.getILoggerFactory(), encoder);

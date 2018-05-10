@@ -184,7 +184,12 @@ public class LogWriter {
                 triggeringPolicy.start();
                 rollingAppender.setTriggeringPolicy(triggeringPolicy);
 
-                FixedWindowRollingPolicy pol = new FixedWindowRollingPolicy();
+                FixedWindowRollingPolicy pol = new FixedWindowRollingPolicy() {
+                    @Override
+                    protected int getMaxWindowSize() {
+                        return Integer.MAX_VALUE;
+                    }
+                };
                 pol.setMinIndex(1);
                 pol.setMaxIndex(getLogNumber());
                 pol.setFileNamePattern(getFileName() + "%i");

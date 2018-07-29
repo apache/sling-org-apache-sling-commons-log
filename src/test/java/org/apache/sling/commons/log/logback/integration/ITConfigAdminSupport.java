@@ -51,7 +51,7 @@ import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
 public class ITConfigAdminSupport extends LogTestBase {
-    // Constants taken from LogbackManager as they are not publically accessible
+    // Constants taken from LogbackManager as they are not publicly accessible
     public static final String LOG_LEVEL = "org.apache.sling.commons.log.level";
 
     public static final String LOG_FILE = "org.apache.sling.commons.log.file";

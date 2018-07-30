@@ -508,7 +508,7 @@ public class LogbackManager extends LoggerContextAwareBase {
             context.setMaxCallerDataDepth(logConfigManager.getMaxCallerDataDepth());
             registerPackageInfoCollector();
 
-            // Attach a console appender to handle logging untill we configure
+            // Attach a console appender to handle logging until we configure
             // one. This would be removed in RootLoggerListener.reset
             final Logger rootLogger = getLoggerContext().getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
             rootLogger.setLevel(Level.INFO);

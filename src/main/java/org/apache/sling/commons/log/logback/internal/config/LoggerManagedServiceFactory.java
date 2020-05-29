@@ -20,9 +20,12 @@ package org.apache.sling.commons.log.logback.internal.config;
 
 import java.util.Dictionary;
 
+import org.apache.sling.commons.log.logback.internal.LogConfigManager;
 import org.osgi.service.cm.ManagedServiceFactory;
 
 class LoggerManagedServiceFactory extends LogConfigurator implements ManagedServiceFactory {
+
+    public static final String LOG_FILE_DEFAULT = "logs/error.log";
 
     public String getName() {
         return "Logger configurator";
@@ -31,6 +34,9 @@ class LoggerManagedServiceFactory extends LogConfigurator implements ManagedServ
     public void updated(String pid, @SuppressWarnings("rawtypes") Dictionary configuration)
             throws org.osgi.service.cm.ConfigurationException {
         try {
+            if (configuration.get(LogConfigManager.LOG_FILE) == null) {
+                configuration.put(LogConfigManager.LOG_FILE, LOG_FILE_DEFAULT);
+            }
             getLogConfigManager().updateLoggerConfiguration(pid, configuration, true);
         } catch (ConfigurationException ce) {
             throw new org.osgi.service.cm.ConfigurationException(ce.getProperty(), ce.getReason(), ce);

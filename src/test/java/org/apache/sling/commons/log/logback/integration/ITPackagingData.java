@@ -65,6 +65,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerMethod.class)
@@ -79,9 +80,11 @@ public class ITPackagingData extends LogTestBase {
     @Override
     protected Option addExtraOptions() {
         return composite(
+                systemProperty("pax.exam.osgi.unresolved.fail").value("true"),
                 configAdmin(),
+                mavenBundle("org.osgi", "org.osgi.service.log").versionAsInProject(),
+                mavenBundle("biz.aQute.bnd", "biz.aQute.bndlib").versionAsInProject(),
                 mavenBundle("org.ops4j.pax.tinybundles", "tinybundles").versionAsInProject(),
-                mavenBundle("biz.aQute.bnd", "bndlib").versionAsInProject(),
                 mavenBundle("commons-io", "commons-io").versionAsInProject()
         );
     }

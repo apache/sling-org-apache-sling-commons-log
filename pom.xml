@@ -48,7 +48,7 @@
   <properties>
     <slf4j.version>1.7.21</slf4j.version>
     <logback.version>1.2.3</logback.version>
-    <pax-exam.version>3.5.0</pax-exam.version>
+    <pax-exam.version>4.13.2</pax-exam.version>
     <sling.java.version>8</sling.java.version>
 
     <bundle.build.dir>
@@ -324,13 +324,13 @@
     <dependency>
       <groupId>org.ops4j.pax.tinybundles</groupId>
       <artifactId>tinybundles</artifactId>
-      <version>2.0.0</version>
+      <version>3.0.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>biz.aQute.bnd</groupId>
-      <artifactId>bndlib</artifactId>
-      <version>2.4.0</version>
+      <artifactId>biz.aQute.bndlib</artifactId>
+      <version>3.5.0</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -338,6 +338,12 @@
           <artifactId>org.osgi.core</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.log</artifactId>
+        <version>1.3.0</version>
+        <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>

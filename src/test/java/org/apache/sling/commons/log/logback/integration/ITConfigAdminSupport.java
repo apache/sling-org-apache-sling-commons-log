@@ -112,10 +112,6 @@ public class ITConfigAdminSupport extends LogTestBase {
         assertTrue(slf4jLogger.isDebugEnabled());
         assertTrue(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).isInfoEnabled());
         assertFalse(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).isDebugEnabled());
-
-        // foo1.bar should not have explicit appender attached with it
-        Iterator<Appender<ILoggingEvent>> itr = ((ch.qos.logback.classic.Logger) slf4jLogger).iteratorForAppenders();
-        assertFalse(itr.hasNext());
     }
 
     @Test

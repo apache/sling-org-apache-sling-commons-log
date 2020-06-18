@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>org.apache.sling.commons.log</artifactId>
-  <version>5.1.11-SNAPSHOT</version>
+  <version>5.1.13-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
     <name>Apache Sling Commons Log</name>

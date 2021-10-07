@@ -26,12 +26,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.status.ErrorStatus;
 import ch.qos.logback.core.util.StatusPrinter;
+
+import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
 import org.osgi.framework.InvalidSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 public class Activator implements BundleActivator {
 
     private LogbackManager logManager;

@@ -27,12 +27,11 @@ DynamicImport-Package: org.osgi.service.cm;version=1.2, \
               javax.xml.transform, \
               javax.xml.transform.sax, \
               javax.xml.transform.stream
-Embed-Dependency: jul-to-slf4j;inline="org/slf4j/bridge/SLF4JBridgeHandler.class", \
-              logback-core, \
-              logback-classic
-
 Export-Package: ch.qos.logback.classic*, \
               ch.qos.logback.core*, \
               org.slf4j.impl;version=${slf4j.version}, \
               org.apache.sling.commons.log.logback, \
               org.apache.sling.commons.log.logback.webconsole
+Conditional-Package: org.slf4j.bridge
+-fixupmessages: 
+

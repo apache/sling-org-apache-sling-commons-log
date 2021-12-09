@@ -25,14 +25,14 @@
     <metatype:OCD id="org.apache.sling.commons.log.LogManager"
         name="%log.name" description="%log.description">
         <metatype:AD id="org.apache.sling.commons.log.level"
-            type="String" default="info" name="%log.level.name"
+            type="String" default="INFO" name="%log.level.name"
             description="%log.level.description">
             <metatype:Option value="off" label="Off" />
-            <metatype:Option value="trace" label="Trace" />
-            <metatype:Option value="debug" label="Debug" />
-            <metatype:Option value="info" label="Information" />
-            <metatype:Option value="warn" label="Warnings" />
-            <metatype:Option value="error" label="Error" />
+            <metatype:Option value="TRACE" label="Trace" />
+            <metatype:Option value="DEBUG" label="Debug" />
+            <metatype:Option value="INFO" label="Information" />
+            <metatype:Option value="WARN" label="Warnings" />
+            <metatype:Option value="ERROR" label="Error" />
         </metatype:AD>
         <metatype:AD id="org.apache.sling.commons.log.file"
             type="String" default="logs/error.log" name="%log.file.name"
@@ -111,13 +111,13 @@
         name="%log.factory.config.name"
         description="%log.factory.config.description">
         <metatype:AD id="org.apache.sling.commons.log.level"
-            type="String" default="info" name="%log.level.name"
+            type="String" default="INFO" name="%log.level.name"
             description="%log.level.description">
-            <metatype:Option value="trace" label="Trace" />
-            <metatype:Option value="debug" label="Debug" />
-            <metatype:Option value="info" label="Information" />
-            <metatype:Option value="warn" label="Warnings" />
-            <metatype:Option value="error" label="Error" />
+            <metatype:Option value="TRACE" label="Trace" />
+            <metatype:Option value="DEBUG" label="Debug" />
+            <metatype:Option value="INFO" label="Information" />
+            <metatype:Option value="WARN" label="Warnings" />
+            <metatype:Option value="ERROR" label="Error" />
         </metatype:AD>
         <metatype:AD id="org.apache.sling.commons.log.file"
             type="String" default="logs/error.log" name="%log.file.name"

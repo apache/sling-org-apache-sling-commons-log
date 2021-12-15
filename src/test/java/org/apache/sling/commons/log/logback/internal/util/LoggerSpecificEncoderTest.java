@@ -19,9 +19,15 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
-import ch.qos.logback.classic.PatternLayout;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import org.apache.felix.framework.util.ImmutableList;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
 import org.apache.sling.commons.log.logback.internal.LogConfig;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,13 +35,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.util.HashSet;
-
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LoggerSpecificEncoderTest {
@@ -60,7 +61,7 @@ public class LoggerSpecificEncoderTest {
     @Test
     public void testShouldIgnoreNonmatchingLayoutCategories() {
         LogConfig logConfigMock = mock(LogConfig.class);
-        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(ImmutableList.newInstance("org.apache.commons", "com.initech.sling")));
+        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(Arrays.asList("org.apache.commons", "com.initech.sling")));
         when(logConfigMock.createLayout()).thenReturn(new PrefixTestLayout("INITECH:"));
         tested.addLogConfig(logConfigMock);
 
@@ -70,7 +71,7 @@ public class LoggerSpecificEncoderTest {
     @Test
     public void testShouldIgnorePartialMatchingPackageName() {
         LogConfig logConfigMock = mock(LogConfig.class);
-        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(ImmutableList.newInstance("org.apache.sling.test")));
+        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(Arrays.asList("org.apache.sling.test")));
         when(logConfigMock.createLayout()).thenReturn(new PrefixTestLayout("INITECH:"));
         tested.addLogConfig(logConfigMock);
 
@@ -80,7 +81,7 @@ public class LoggerSpecificEncoderTest {
     @Test
     public void testShouldUseExactMatchingCategoryLayout() {
         LogConfig logConfigMock = mock(LogConfig.class);
-        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(ImmutableList.newInstance("org.apache.sling.testing.FooBar")));
+        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(Arrays.asList("org.apache.sling.testing.FooBar")));
         when(logConfigMock.createLayout()).thenReturn(new PrefixTestLayout("INITECH:"));
         tested.addLogConfig(logConfigMock);
 
@@ -90,7 +91,7 @@ public class LoggerSpecificEncoderTest {
     @Test
     public void testShouldUseInheritedCategoryLayout() {
         LogConfig logConfigMock = mock(LogConfig.class);
-        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(ImmutableList.newInstance("org.apache")));
+        when(logConfigMock.getCategories()).thenReturn(new HashSet<>(Arrays.asList("org.apache")));
         when(logConfigMock.createLayout()).thenReturn(new PrefixTestLayout("INITECH:"));
         tested.addLogConfig(logConfigMock);
 

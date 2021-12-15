@@ -19,6 +19,13 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
+import static org.apache.sling.commons.log.logback.integration.ITConfigFragments.RESET_EVENT_TOPIC;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -26,11 +33,6 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.AppenderBase;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -46,12 +48,11 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.sling.commons.log.logback.integration.ITConfigFragments.RESET_EVENT_TOPIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AppenderBase;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)

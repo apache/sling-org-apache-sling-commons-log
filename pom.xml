@@ -47,7 +47,8 @@
   <properties>
     <slf4j.version>1.7.32</slf4j.version>
     <logback.version>1.2.8</logback.version>
-    <pax-exam.version>4.13.5</pax-exam.version>
+    <!-- Higher versions of pax exam cause class loading errors -->
+    <pax-exam.version>4.13.2</pax-exam.version>
     <sling.java.version>8</sling.java.version>
     <project.build.outputTimestamp>1</project.build.outputTimestamp>
     <bundle.build.dir>
@@ -63,12 +64,8 @@
       <plugins>
         <!--
         Unfortunately the <ignores> sections do not seem to
-        properly work, so the sniffer is disabled by default.
-
-        Note: 1.9 contains a call to a Java 7 specific method
-        (java.nio.CharBuffer.subSequence(II)Ljava/nio/CharBuffer;)
-        that is triggered when an undefined reference is found. This breaks error
-        reporting on Java 5/6.
+        properly work, so the sniffer is disabled by default
+        if the project is built with Java 8.
       -->
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
@@ -76,14 +73,6 @@
           <version>1.8</version>
           <configuration>
             <skip>true</skip>
-            <ignores>
-              <ignore>ch.qos.logback.classic.spi*</ignore>
-            </ignores>
-            <signature>
-              <groupId>org.codehaus.mojo.signature</groupId>
-              <artifactId>java1${sling.java.version}</artifactId>
-              <version>1.0</version>
-            </signature>
           </configuration>
         </plugin>
       </plugins>

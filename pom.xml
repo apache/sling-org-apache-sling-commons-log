@@ -30,7 +30,7 @@
   <artifactId>org.apache.sling.commons.log</artifactId>
   <version>5.2.1-SNAPSHOT</version>
 
-    <name>Apache Sling Commons Log</name>
+  <name>Apache Sling Commons Log</name>
   <description>
     This bundle embeds Logback which provides the SLF4J logging API.
     The embedding supports dynamic OSGi-configuration without

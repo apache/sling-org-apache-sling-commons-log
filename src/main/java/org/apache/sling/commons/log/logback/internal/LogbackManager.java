@@ -53,14 +53,12 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.gaffer.GafferUtil;
 import ch.qos.logback.classic.joran.JoranConfigurator;
 import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggerContextAwareBase;
 import ch.qos.logback.classic.spi.LoggerContextListener;
 import ch.qos.logback.classic.turbo.TurboFilter;
-import ch.qos.logback.classic.util.EnvUtil;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.joran.GenericConfigurator;
 import ch.qos.logback.core.joran.event.SaxEvent;
@@ -623,15 +621,7 @@ public class LogbackManager extends LoggerContextAwareBase {
             if (configFile.getName().endsWith("xml")) {
                 configurator.doConfigure(configFile);
             } else if (configFile.getName().endsWith("groovy")) {
-                if (EnvUtil.isGroovyAvailable()) {
-                    // avoid directly referring to GafferConfigurator so as to
-                    // avoid
-                    // loading groovy.lang.GroovyObject . See also
-                    // http://jira.qos.ch/browse/LBCLASSIC-214
-                    GafferUtil.runGafferConfiguratorOn(getLoggerContext(), this, configFile);
-                } else {
-                    addError("Groovy classes are not available on the class path. ABORTING INITIALIZATION.");
-                }
+                addError("Configuration with groogy files is not supported in logback anymore. ABORTING INITIALIZATION.");
             }
         }
 

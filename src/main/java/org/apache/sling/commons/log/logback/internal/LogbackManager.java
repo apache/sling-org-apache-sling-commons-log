@@ -621,7 +621,7 @@ public class LogbackManager extends LoggerContextAwareBase {
             if (configFile.getName().endsWith("xml")) {
                 configurator.doConfigure(configFile);
             } else if (configFile.getName().endsWith("groovy")) {
-                addError("Configuration with groogy files is not supported in logback anymore. ABORTING INITIALIZATION.");
+                addError("Configuration with groovy files is not supported in logback anymore. ABORTING INITIALIZATION.");
             }
         }
 

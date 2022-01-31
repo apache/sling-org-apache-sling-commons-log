@@ -19,15 +19,16 @@
 -->
 <configuration>
 
-  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-    <!-- encoders are assigned the type
-         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
-    <encoder>
-      <pattern>%d{dd.MM.yyyy HH:mm:ss.SSS} *%level* [%thread] %logger %message%n</pattern>
-    </encoder>
-  </appender>
+    <appender name="json" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.contrib.json.classic.JsonLayout">
+            <jsonFormatter class="ch.qos.logback.contrib.jackson.JacksonJsonFormatter">
+                <prettyPrint>true</prettyPrint>
+            </jsonFormatter>
+            <timestampFormat>yyyy-MM-dd' 'HH:mm:ss.SSS</timestampFormat>
+        </layout>
+    </appender>
 
-  <root level="info">
-    <appender-ref ref="CONSOLE" />
-  </root>
+    <logger name="jsonLogger" level="INFO">
+        <appender-ref ref="json" />
+    </logger>
 </configuration>

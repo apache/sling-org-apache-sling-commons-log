@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
 
 public class TestLogConfig {
 
@@ -36,7 +37,7 @@ public class TestLogConfig {
         String pattern = "{0,date,dd.MM.yyyy HH:mm:ss.SSS} *{4}* [{2}] {3} {5}";
         String convertedPattern = "%d{dd.MM.yyyy HH:mm:ss.SSS} *%level* [%thread] %logger %message%n";
         LogConfig logConfig = createConfig(pattern);
-        assertEquals(convertedPattern, logConfig.createLayout().getPattern());
+        assertEquals(convertedPattern, ((PatternLayout)logConfig.createLayout()).getPattern());
     }
 
     @Test
@@ -44,7 +45,7 @@ public class TestLogConfig {
         String convertedPattern = "%d{dd.MM.yyyy HH:mm:ss.SSS} *%level* [%thread] %logger %message%n";
         LogConfig logConfig = createConfig(convertedPattern);
         // Test that valid LogBack pattern are not tampered
-        assertEquals(convertedPattern, logConfig.createLayout().getPattern());
+        assertEquals(convertedPattern, ((PatternLayout)logConfig.createLayout()).getPattern());
     }
 
     private LogConfig createConfig(String pattern) {

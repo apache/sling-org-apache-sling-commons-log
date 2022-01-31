@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -511,8 +512,11 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
 
         if (configuration != null) {
 
+            contextUtil.addInfo("updating: "+pid+" to: "+configuration);
+
             String pattern = (String) configuration.get(LogConfigManager.LOG_PATTERN);
-            final String level = (String) configuration.get(LogConfigManager.LOG_LEVEL);
+            final String level = Optional.ofNullable(configuration.get(LogConfigManager.LOG_LEVEL))
+                    .map(String.class::cast).orElse(Level.INFO.toString());
             String fileName = (String) configuration.get(LogConfigManager.LOG_FILE);
             final Set<String> categories = toCategoryList(configuration.get(LogConfigManager.LOG_LOGGERS));
             final boolean additiv;
@@ -571,9 +575,16 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
                 fileName = getAbsoluteFilePath(fileName);
             }
 
+            contextUtil.addInfo(String.format(
+                    "Loaded settings: additiv=%s, categories=%s, logLevel=%s, pattern=%s, fileName=%s", additiv,
+                    categories, logLevel, pattern, fileName));
+
             // create or modify existing configuration object
             final LogConfig newConfig = new LogConfig(this, pattern, categories, logLevel, fileName, additiv,
                     pid, loggerContext, resetToDefault);
+            contextUtil.addInfo("Created configuration: " + newConfig);
+            contextUtil.addInfo("Using layout: " + newConfig.createLayout());
+
             if (isPackagingDataEnabled()) {
                 newConfig.setPostProcessor(new OSGiAwareExceptionHandling(logbackManager.getPackageInfoCollector()));
             }

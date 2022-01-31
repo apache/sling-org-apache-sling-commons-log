@@ -25,6 +25,8 @@ DynamicImport-Package: org.osgi.service.cm;version=1.2, \
               javax.xml.transform.sax, \
               javax.xml.transform.stream
 Export-Package: ch.qos.logback.classic*, \
+              ch.qos.logback.contrib.json*, \
+              ch.qos.logback.contrib.jackson*, \
               ch.qos.logback.core*, \
               org.slf4j.impl;version=${slf4j.version}, \
               org.apache.sling.commons.log.logback, \

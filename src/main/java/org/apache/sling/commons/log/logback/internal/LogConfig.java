@@ -20,17 +20,23 @@ package org.apache.sling.commons.log.logback.internal;
 
 import java.text.MessageFormat;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.contrib.jackson.JacksonJsonFormatter;
+import ch.qos.logback.contrib.json.JsonFormatter;
+import ch.qos.logback.contrib.json.classic.JsonLayout;
+import ch.qos.logback.core.LayoutBase;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LogConfig {
     private static final String[] LEGACY_MARKERS = {
@@ -104,7 +110,8 @@ public class LogConfig {
         return resetToDefault;
     }
 
-    public PatternLayout createLayout() {
+    private PatternLayout getPatternLayout(){
+
         // The java.util.MessageFormat pattern to use for formatting log
         // messages with the root logger.
         // This is a java.util.MessageFormat pattern supporting up to six
@@ -156,6 +163,29 @@ public class LogConfig {
 
         pl.start();
         return pl;
+    }
+
+    private JsonLayout getJsonLayout(){
+        JsonLayout jl = new JsonLayout();
+        JsonFormatter newlineFormatter = new JsonFormatter() {
+            private final JacksonJsonFormatter jacksonFormatter = new JacksonJsonFormatter();
+            @Override
+            public String toJsonString(Map m) throws Exception {
+                return jacksonFormatter.toJsonString(m) + System.lineSeparator();
+            }
+        };
+        jl.setJsonFormatter(newlineFormatter);
+        jl.setContext(loggerContext);
+        jl.start();
+        return jl;
+    }
+
+    public LayoutBase<ILoggingEvent> createLayout() {
+        if("json".equalsIgnoreCase(pattern)){
+            return getJsonLayout();
+        } else {
+            return getPatternLayout();
+        }
     }
 
     @Override

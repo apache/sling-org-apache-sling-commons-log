@@ -32,7 +32,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import ch.qos.logback.classic.ClassicConstants;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
@@ -240,12 +239,7 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
         appender.setName(DEFAULT_CONSOLE_APPENDER_NAME);
         appender.setContext(loggerContext);
 
-        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
-        encoder.setPattern(LOG_PATTERN_DEFAULT);
-        encoder.setContext(loggerContext);
-        encoder.start();
-
-        appender.setEncoder(encoder);
+        appender.setEncoder(MaskingMessageUtil.getDefaultEncoder(loggerContext));
 
         appender.start();
         return appender;
@@ -274,7 +268,7 @@ public class LogConfigManager implements LogbackResetListener, LogConfig.LogWrit
             configuredAppenders = Collections.emptyMap();
         }
 
-        Map<Appender, LoggerSpecificEncoder> encoders = new HashMap<Appender, LoggerSpecificEncoder>();
+        final Map<Appender<ILoggingEvent>, LoggerSpecificEncoder> encoders = new HashMap<>();
 
         Set<String> configPids = new HashSet<>();
         for (LogConfig config : getLogConfigs()) {

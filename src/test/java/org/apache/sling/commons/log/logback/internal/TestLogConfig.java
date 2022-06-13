@@ -20,14 +20,20 @@
 package org.apache.sling.commons.log.logback.internal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.Collections;
 
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.spi.ThrowableProxy;
 
 public class TestLogConfig {
 
@@ -45,6 +51,38 @@ public class TestLogConfig {
         LogConfig logConfig = createConfig(convertedPattern);
         // Test that valid LogBack pattern are not tampered
         assertEquals(convertedPattern, logConfig.createLayout().getPattern());
+    }
+
+    @Test
+    public void testMessageEscaping() {
+        final LogConfig logConfig = createConfig("%message %m %msg");
+        final ILoggingEvent event = Mockito.mock(ILoggingEvent.class);
+        Mockito.when(event.getFormattedMessage()).thenReturn("foo\r\nbar");
+        final String result = logConfig.createLayout().doLayout(event);
+        assertEquals("foo__bar foo__bar foo__bar", result);
+    }
+
+    @Test
+    public void testExceptionMessageEscaping() {
+        final String[] patterns = new String[] {"%ex", "%exception", "%rEx", "%rootException", "%throwable", "%xEx", "%xException", "%xThrowable", "%m"};
+        for(final String p : patterns) {
+            final LogConfig logConfig = createConfig(p);
+            final PatternLayout layout = logConfig.createLayout();
+
+            final ILoggingEvent event = Mockito.mock(ILoggingEvent.class);
+            Mockito.when(event.getFormattedMessage()).thenReturn("message");
+
+            // single exception
+            Mockito.when(event.getThrowableProxy()).thenReturn(new ThrowableProxy(new RuntimeException("foo\r\nbar")));
+            String result = layout.doLayout(event);
+            assertTrue("pattern " + p + " : " + result, result.contains("foo__bar"));
+
+            // nested exception
+            Mockito.when(event.getThrowableProxy()).thenReturn(new ThrowableProxy(new RuntimeException("foo\r\nbar", new IOException("a\r\nb"))));
+            result = layout.doLayout(event);
+            assertTrue("pattern " + p + " : " + result, result.contains("foo__bar"));
+            assertTrue("pattern " + p + " : " + result, result.contains("a__b"));
+        }
     }
 
     private LogConfig createConfig(String pattern) {

@@ -19,8 +19,9 @@
 
 package org.apache.sling.commons.log.logback.internal.stacktrace;
 
+import org.apache.sling.commons.log.logback.internal.MaskingMessageUtil;
+
 import ch.qos.logback.classic.pattern.EnsureExceptionHandling;
-import ch.qos.logback.classic.pattern.ExtendedThrowableProxyConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import ch.qos.logback.core.Context;
@@ -47,7 +48,7 @@ public class OSGiAwareExceptionHandling extends EnsureExceptionHandling {
         }
     }
 
-    private class OSGiAwareConverter extends ExtendedThrowableProxyConverter {
+    private class OSGiAwareConverter extends MaskingMessageUtil.MaskingExtendedThrowableProxyConverter {
         @Override
         protected void extraData(StringBuilder builder, StackTraceElementProxy step) {
             if (step != null) {

@@ -145,10 +145,11 @@ public class LogConfig {
             }
         }
 
-        PatternLayout pl = new PatternLayout();
+        final PatternLayout pl = new PatternLayout();
         pl.setPattern(logBackPattern);
         pl.setOutputPatternAsHeader(false);
         pl.setContext(loggerContext);
+        MaskingMessageUtil.setMessageConverter(pl);
 
         if (postProcessor != null) {
             pl.setPostCompileProcessor(postProcessor);
@@ -171,5 +172,4 @@ public class LogConfig {
     public interface LogWriterProvider {
         LogWriter getLogWriter(String writerName);
     }
-
 }

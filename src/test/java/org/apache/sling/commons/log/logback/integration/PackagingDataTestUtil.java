@@ -23,6 +23,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.ops4j.pax.tinybundles.core.TinyBundle;
+import org.ops4j.store.StoreFactory;
 import org.osgi.framework.Constants;
 
 import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
@@ -41,7 +42,7 @@ public class PackagingDataTestUtil {
         //Avoid referring to test bundle classes otherwise they get loaded in 2 bundles i.e.
         //pax exam probe bundle and our packagedatatest. So we refer only by class name strings
         String activatorClassName = "org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator";
-        TinyBundle tb = bundle()
+        TinyBundle tb = bundle(StoreFactory.sharedLocalStore())
                 .set(Constants.BUNDLE_ACTIVATOR, activatorClassName)
                 .set(Constants.BUNDLE_SYMBOLICNAME, TEST_BUNDLE_NAME)
                 .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION);

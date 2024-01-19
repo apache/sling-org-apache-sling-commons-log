@@ -1,0 +1,8 @@
+{
+  "jenkins": {
+    "operatingSystems": [
+      "linux"
+    ]
+  }
+}
+

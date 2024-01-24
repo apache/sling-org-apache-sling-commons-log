@@ -23,7 +23,7 @@
   <parent>
     <groupId>org.apache.sling</groupId>
     <artifactId>sling-bundle-parent</artifactId>
-    <version>46</version>
+    <version>52</version>
     <relativePath />
   </parent>
 
@@ -49,7 +49,7 @@
     <logback.version>1.2.13</logback.version>
     <!-- Higher versions of pax exam cause class loading errors -->
     <pax-exam.version>4.13.2</pax-exam.version>
-    <sling.java.version>8</sling.java.version>
+    <sling.java.version>11</sling.java.version>
     <project.build.outputTimestamp>1</project.build.outputTimestamp>
     <bundle.build.dir>
       ${basedir}/target
@@ -60,24 +60,6 @@
   </properties>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <!--
-        Unfortunately the <ignores> sections do not seem to
-        properly work, so the sniffer is disabled by default
-        if the project is built with Java 8.
-      -->
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.8</version>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-
     <plugins>
       <plugin>
         <groupId>biz.aQute.bnd</groupId>
@@ -201,22 +183,39 @@
 
     <!-- OSGi Libraries not included here -->
     <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi.core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>osgi.cmpn</artifactId>
-      <scope>provided</scope>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.framework</artifactId>
+        <scope>provided</scope>
     </dependency>
     <dependency>
         <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.cm</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.service.event</artifactId>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.util.tracker</artifactId>
+        <scope>provided</scope>
+    </dependency>
+     <dependency>
+        <groupId>org.osgi</groupId>
+        <artifactId>org.osgi.resource</artifactId>
+        <scope>provided</scope>
+    </dependency>
+   <dependency>
+        <groupId>org.osgi</groupId>
         <artifactId>org.osgi.annotation.versioning</artifactId>
+        <scope>provided</scope>
     </dependency>
     <dependency>
         <groupId>org.osgi</groupId>
         <artifactId>org.osgi.annotation.bundle</artifactId>
+        <scope>provided</scope>
     </dependency>
 
     <!--  OSGi Command Line Shell support -->
@@ -231,6 +230,7 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <dependency>

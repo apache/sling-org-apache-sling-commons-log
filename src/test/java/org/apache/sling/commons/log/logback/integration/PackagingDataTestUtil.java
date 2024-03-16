@@ -19,10 +19,13 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
+import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
+import org.ops4j.pax.exam.util.PathUtils;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
+import org.ops4j.store.Store;
 import org.ops4j.store.StoreFactory;
 import org.osgi.framework.Constants;
 
@@ -42,7 +45,10 @@ public class PackagingDataTestUtil {
         //Avoid referring to test bundle classes otherwise they get loaded in 2 bundles i.e.
         //pax exam probe bundle and our packagedatatest. So we refer only by class name strings
         String activatorClassName = "org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator";
-        TinyBundle tb = bundle(StoreFactory.sharedLocalStore())
+        final String path = String.format("%s/target/temp", PathUtils.getBaseDir());
+        final File temp = new File(path);
+        final Store store = StoreFactory.newStore(temp);
+        TinyBundle tb = bundle(store)
                 .set(Constants.BUNDLE_ACTIVATOR, activatorClassName)
                 .set(Constants.BUNDLE_SYMBOLICNAME, TEST_BUNDLE_NAME)
                 .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION);

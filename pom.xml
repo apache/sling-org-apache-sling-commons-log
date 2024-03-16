@@ -48,7 +48,7 @@
     <slf4j.version>1.7.32</slf4j.version>
     <logback.version>1.2.10</logback.version>
     <!-- Higher versions of pax exam cause class loading errors -->
-    <pax-exam.version>4.13.2</pax-exam.version>
+    <pax-exam.version>4.13.3</pax-exam.version>
     <sling.java.version>8</sling.java.version>
     <project.build.outputTimestamp>1</project.build.outputTimestamp>
     <bundle.build.dir>
@@ -137,6 +137,7 @@
           </execution>
         </executions>
         <configuration>
+          <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemPropertyVariables>
             <project.bundle.file>${bundle.file.name}</project.bundle.file>
             <project.boot.file>${bundle.file.name}</project.boot.file>
@@ -173,6 +174,12 @@
   </reporting>
 
   <dependencies>
+    <dependency>
+      <groupId>org.ops4j.base</groupId>
+      <artifactId>ops4j-base-store</artifactId>
+      <version>1.5.1</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>

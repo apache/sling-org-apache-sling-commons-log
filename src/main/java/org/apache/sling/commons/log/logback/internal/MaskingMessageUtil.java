@@ -18,8 +18,12 @@
  */
 package org.apache.sling.commons.log.logback.internal;
 
+import java.util.Map;
+import java.util.function.Supplier;
+
+import org.apache.sling.ch.qos.logback.classic.PatternLayout;
+
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.pattern.EnsureExceptionHandling;
 import ch.qos.logback.classic.pattern.ExtendedThrowableProxyConverter;
 import ch.qos.logback.classic.pattern.MessageConverter;
@@ -37,7 +41,11 @@ import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
 /**
  * Converter util to mask certain characters in messages
  */
-public class MaskingMessageUtil extends MessageConverter {
+public class MaskingMessageUtil {
+
+    private MaskingMessageUtil() {
+        // hide the public ctor
+    }
 
     /**
      * Set the message converter for the layout
@@ -46,19 +54,20 @@ public class MaskingMessageUtil extends MessageConverter {
     public static void setMessageConverter(final PatternLayout pl) {
         // need to overwrite all converter for messages and exceptions
         // see https://logback.qos.ch/manual/layouts.html
-        pl.getInstanceConverterMap().put("m", MaskingMessageConverter.class.getName());
-        pl.getInstanceConverterMap().put("msg", MaskingMessageConverter.class.getName());
-        pl.getInstanceConverterMap().put("message", MaskingMessageConverter.class.getName());
+        Map<String, Supplier<Converter<ILoggingEvent>>> instanceConverterSupplierMap = pl.getInstanceConverterSupplierMap();
+        instanceConverterSupplierMap.put("m", MaskingMessageConverter::new);
+        instanceConverterSupplierMap.put("msg", MaskingMessageConverter::new);
+        instanceConverterSupplierMap.put("message", MaskingMessageConverter::new);
 
-        pl.getInstanceConverterMap().put("ex", MaskingThrowableProxyConverter.class.getName());
-        pl.getInstanceConverterMap().put("exception", MaskingThrowableProxyConverter.class.getName());
-        pl.getInstanceConverterMap().put("rEx", MaskingRootCauseFirstThrowableProxyConverter.class.getName());
-        pl.getInstanceConverterMap().put("rootException", MaskingRootCauseFirstThrowableProxyConverter.class.getName());
-        pl.getInstanceConverterMap().put("throwable", MaskingThrowableProxyConverter.class.getName());
+        instanceConverterSupplierMap.put("ex", MaskingThrowableProxyConverter::new);
+        instanceConverterSupplierMap.put("exception", MaskingThrowableProxyConverter::new);
+        instanceConverterSupplierMap.put("rEx", MaskingRootCauseFirstThrowableProxyConverter::new);
+        instanceConverterSupplierMap.put("rootException", MaskingRootCauseFirstThrowableProxyConverter::new);
+        instanceConverterSupplierMap.put("throwable", MaskingThrowableProxyConverter::new);
 
-        pl.getInstanceConverterMap().put("xEx", MaskingExtendedThrowableProxyConverter.class.getName());
-        pl.getInstanceConverterMap().put("xException", MaskingExtendedThrowableProxyConverter.class.getName());
-        pl.getInstanceConverterMap().put("xThrowable", MaskingExtendedThrowableProxyConverter.class.getName());
+        instanceConverterSupplierMap.put("xEx", MaskingExtendedThrowableProxyConverter::new);
+        instanceConverterSupplierMap.put("xException", MaskingExtendedThrowableProxyConverter::new);
+        instanceConverterSupplierMap.put("xThrowable", MaskingExtendedThrowableProxyConverter::new);
 
         // override post processor for ensuring exception handling
         pl.setPostCompileProcessor(new MaskingEnsureExceptionHandling());
@@ -71,7 +80,7 @@ public class MaskingMessageUtil extends MessageConverter {
      */
     public static Encoder<ILoggingEvent> getDefaultEncoder(final Context loggerContext) {
         final PatternLayoutEncoderBase<ILoggingEvent> encoder = new MaskingPatternLayoutEncoder();
-        encoder.setPattern(LogConfigManager.LOG_PATTERN_DEFAULT);
+        encoder.setPattern(LogConstants.LOG_PATTERN_DEFAULT);
         encoder.setContext(loggerContext);
         encoder.start();
         return encoder;
@@ -79,6 +88,7 @@ public class MaskingMessageUtil extends MessageConverter {
 
     /**
      * Replace any carriage returns and line feeds with an underscore
+     *
      * @param msg The message
      * @return converted string
      */
@@ -89,6 +99,10 @@ public class MaskingMessageUtil extends MessageConverter {
          return msg.replace('\n', '_').replace('\r', '_');
     }
 
+    /**
+     * Override the MessageConverter to provide masking of the output
+     */
+    @SuppressWarnings("java:S110")
     public static final class MaskingMessageConverter extends MessageConverter {
         @Override
         public String convert(final ILoggingEvent event) {
@@ -96,6 +110,10 @@ public class MaskingMessageUtil extends MessageConverter {
         }
     }
 
+    /**
+     * Override the ThrowableProxyConverter to provide masking of the output
+     */
+    @SuppressWarnings("java:S110")
     public static final class MaskingThrowableProxyConverter extends ThrowableProxyConverter {
         @Override
         protected String throwableProxyToString(final IThrowableProxy tp) {
@@ -103,6 +121,10 @@ public class MaskingMessageUtil extends MessageConverter {
         }
     }
 
+    /**
+     * Override the RootCauseFirstThrowableProxyConverter to provide masking of the output
+     */
+    @SuppressWarnings("java:S110")
     public static final class MaskingRootCauseFirstThrowableProxyConverter extends RootCauseFirstThrowableProxyConverter {
         @Override
         protected String throwableProxyToString(final IThrowableProxy tp) {
@@ -110,6 +132,10 @@ public class MaskingMessageUtil extends MessageConverter {
         }
     }
 
+    /**
+     * Override the ExtendedThrowableProxyConverter to provide masking of the output
+     */
+    @SuppressWarnings("java:S110")
     public static class MaskingExtendedThrowableProxyConverter extends ExtendedThrowableProxyConverter {
         @Override
         protected String throwableProxyToString(final IThrowableProxy tp) {
@@ -117,9 +143,17 @@ public class MaskingMessageUtil extends MessageConverter {
         }
     }
 
+    /**
+     * An implementation of IThrowableProxy to provide masking of the output
+     */
     public static final class MaskingThrowableProxy implements IThrowableProxy {
         private final IThrowableProxy proxied;
 
+        /**
+         * Constructor
+         *
+         * @param proxied the original throwable proxy object
+         */
         public MaskingThrowableProxy(final IThrowableProxy proxied) {
             this.proxied = proxied;
         }
@@ -130,10 +164,10 @@ public class MaskingMessageUtil extends MessageConverter {
         }
 
         private IThrowableProxy getProxy(final IThrowableProxy p) {
-            if ( p == null ) {
+            if (p == null) {
                 return null;
             }
-            if ( p == proxied || p == this ) {
+            if (p == proxied || p == this) {
                 return this;
             }
             return new MaskingThrowableProxy(p);
@@ -162,19 +196,28 @@ public class MaskingMessageUtil extends MessageConverter {
         @Override
         public IThrowableProxy[] getSuppressed() {
             final IThrowableProxy[] result = proxied.getSuppressed();
-            if ( result == null || result.length == 0 ) {
+            if (result == null || result.length == 0) {
                 return result;
             }
             final IThrowableProxy[] proxies = new IThrowableProxy[result.length];
-            for(int i=0;i<proxies.length;i++) {
+            for (int i = 0; i < proxies.length; i++) {
                 proxies[i] = getProxy(result[i]);
             }
             return proxies;
         }
+
+        @Override
+        public boolean isCyclic() {
+            return proxied.isCyclic();
+        }
     }
 
+    /**
+     * Override the EnsureExceptionHandling to provide masking of the output
+     */
     static final class MaskingEnsureExceptionHandling extends EnsureExceptionHandling {
 
+        @Override
         public void process(Context context, Converter<ILoggingEvent> head) {
             if (head == null) {
                 // this should never happen
@@ -194,6 +237,9 @@ public class MaskingMessageUtil extends MessageConverter {
         }
     }
 
+    /**
+     * Override the PatternLayoutEncoderBase to provide masking of the output
+     */
     static final class MaskingPatternLayoutEncoder extends PatternLayoutEncoderBase<ILoggingEvent> {
 
         @Override
@@ -208,5 +254,6 @@ public class MaskingMessageUtil extends MessageConverter {
             super.start();
         }
     }
+
 }
 

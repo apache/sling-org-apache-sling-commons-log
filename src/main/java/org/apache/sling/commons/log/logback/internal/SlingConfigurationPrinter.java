@@ -20,7 +20,6 @@ package org.apache.sling.commons.log.logback.internal;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
@@ -32,6 +31,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.CoreConstants;
@@ -44,32 +48,29 @@ import ch.qos.logback.core.util.CachingDateFormatter;
  * The <code>SlingConfigurationPrinter</code> is an Apache Felix Web Console
  * plugin to display the currently configured log files.
  */
-@SuppressWarnings("JavadocReference")
 public class SlingConfigurationPrinter {
-    private static final CachingDateFormatter SDF = new CachingDateFormatter("yyyy-MM-dd HH:mm:ss");
-    private static final String MODE_ZIP = "zip";
-    private final LogbackManager logbackManager;
+    private static final CachingDateFormatter dateFormatter = new CachingDateFormatter("yyyy-MM-dd HH:mm:ss");
+    protected static final String MODE_ZIP = "zip";
+    private final LogConfigManager logConfigManager;
 
-    public SlingConfigurationPrinter(LogbackManager logbackManager) {
-        this.logbackManager = logbackManager;
+    public SlingConfigurationPrinter(@NotNull LogConfigManager logConfigManager) {
+        this.logConfigManager = logConfigManager;
     }
 
     /**
      * org.apache.felix.webconsole.ConfigurationPrinter#printConfiguration(java.io.PrintWriter)
      */
-    @SuppressWarnings("UnusedDeclaration")
     public void printConfiguration(PrintWriter printWriter, String mode) {
-        LogbackManager.LoggerStateContext ctx = logbackManager.determineLoggerState();
-
-        int numOfLines = getNumOfLines();
-        Tailer tailer = new Tailer(printWriter, numOfLines);
-
-        dumpLogFileSummary(printWriter, ctx.getAllAppenders());
+        Collection<Appender<ILoggingEvent>> allAppenders = logConfigManager.getAllKnownAppenders().values();
+        dumpLogFileSummary(printWriter, allAppenders);
 
         if (!MODE_ZIP.equals(mode)) {
-            for (Appender<ILoggingEvent> appender : ctx.getAllAppenders()) {
+            int numOfLines = getNumOfLines();
+            Tailer tailer = new Tailer(printWriter, numOfLines);
+
+            for (Appender<ILoggingEvent> appender : allAppenders) {
                 if (appender instanceof FileAppender) {
-                    final File file = new File(((FileAppender) appender).getFile());
+                    final File file = new File(((FileAppender<ILoggingEvent>) appender).getFile());
                     if (file.exists()) {
                         printWriter.print("Log file ");
                         printWriter.println(file.getAbsolutePath());
@@ -80,7 +81,7 @@ public class SlingConfigurationPrinter {
                             try {
                                 tailer.tail(file);
                             } catch (IOException e) {
-                                logbackManager.getLogConfigManager().internalFailure("Error occurred " +
+                                logConfigManager.internalFailure("Error occurred " +
                                         "while processing log file " + file, e);
                             }
                         }
@@ -90,13 +91,11 @@ public class SlingConfigurationPrinter {
             }
         }
 
-        dumpLogbackStatus(logbackManager, printWriter);
+        dumpLogbackStatus(printWriter);
     }
 
     static void includeWholeFile(PrintWriter printWriter, File file) {
-        FileReader fr = null;
-        try {
-            fr = new FileReader(file);
+        try (FileReader fr = new FileReader(file)) {
             final char[] buffer = new char[512];
             int len;
             while ((len = fr.read(buffer)) != -1) {
@@ -104,13 +103,6 @@ public class SlingConfigurationPrinter {
             }
         } catch (IOException ignore) {
             // we just ignore this
-        } finally {
-            if (fr != null) {
-                try {
-                    fr.close();
-                } catch (IOException ignored) {
-                }
-            }
         }
     }
 
@@ -119,19 +111,19 @@ public class SlingConfigurationPrinter {
         pw.println("=======");
         pw.println();
         int counter = 0;
-        final String rootDir = logbackManager.getRootDir();
+        final String rootDir = logConfigManager.getRootDir();
         for (Appender<ILoggingEvent> appender : appenders) {
             if (appender instanceof FileAppender) {
-                File file = new File(((FileAppender) appender).getFile());
+                File file = new File(((FileAppender<ILoggingEvent>)appender).getFile());
                 final File dir = file.getParentFile();
                 final String baseName = file.getName();
                 String absolutePath = dir.getAbsolutePath();
-                String displayName = ((FileAppender) appender).getFile();
+                String displayName = ((FileAppender<ILoggingEvent>)appender).getFile();
                 if (absolutePath.startsWith(rootDir)) {
                     displayName = baseName;
                 }
                 pw.printf("%d. %s %n", ++counter, displayName);
-                final File[] files = getRotatedFiles((FileAppender) appender, -1);
+                final File[] files = getRotatedFiles((FileAppender<ILoggingEvent>)appender, -1);
                 for (File f : files) {
                     pw.printf("  - %s, %s, %s %n", f.getName(), humanReadableByteCount(f.length()), getModifiedDate(f));
                 }
@@ -148,29 +140,38 @@ public class SlingConfigurationPrinter {
      *
      * org.apache.felix.webconsole.AttachmentProvider#getAttachments(String)
      */
-    @SuppressWarnings("UnusedDeclaration")
-    public URL[] getAttachments(String mode) {
+    public @Nullable URL[] getAttachments(String mode) {
         // we only provide urls for mode zip
         if (MODE_ZIP.equals(mode)) {
-            final List<URL> urls = new ArrayList<URL>();
-            LogbackManager.LoggerStateContext ctx = logbackManager.determineLoggerState();
-            for (Appender<ILoggingEvent> appender : ctx.getAllAppenders()) {
+            final List<URL> urls = new ArrayList<>();
+            for (Appender<ILoggingEvent> appender : logConfigManager.getAllKnownAppenders().values()) {
                 if (appender instanceof FileAppender) {
-                    final File[] files = getRotatedFiles((FileAppender) appender, getMaxOldFileCount());
+                    final File[] files = getRotatedFiles((FileAppender<ILoggingEvent>)appender, getMaxOldFileCount());
                     for (File f : files) {
-                        try {
-                            urls.add(f.toURI().toURL());
-                        } catch (MalformedURLException mue) {
-                            // we just ignore this file then
-                        }
+                        maybeAddToUrlsList(urls, f);
                     }
                 }
             }
-            if (urls.size() > 0) {
-                return urls.toArray(new URL[urls.size()]);
+            if (!urls.isEmpty()) {
+                return urls.toArray(URL[]::new);
             }
         }
         return null;
+    }
+
+    /**
+     * add the URL of the file to the list if it is not 
+     * a malformed url
+     *
+     * @param urls the list to add to
+     * @param f the file to process
+     */
+    protected void maybeAddToUrlsList(final List<URL> urls, File f) {
+        try {
+            urls.add(f.toURI().toURL());
+        } catch (MalformedURLException mue) {
+            // we just ignore this file then
+        }
     }
 
     /**
@@ -179,7 +180,7 @@ public class SlingConfigurationPrinter {
      *                        old files to include
      * @return sorted array of files generated by passed appender
      */
-    private File[] getRotatedFiles(FileAppender app, int maxOldFileCount) {
+    protected File[] getRotatedFiles(FileAppender<ILoggingEvent> app, int maxOldFileCount) {
         final File file = new File(app.getFile());
 
         //If RollingFileAppender then make an attempt to list files
@@ -188,22 +189,10 @@ public class SlingConfigurationPrinter {
         if (app instanceof RollingFileAppender) {
             final File dir = file.getParentFile();
             final String baseName = file.getName();
-            File[] result = dir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return name.startsWith(baseName);
-                }
-            });
+            File[] result = dir.listFiles((d, name)-> name.startsWith(baseName));
 
             //Sort the files in reverse
-            Arrays.sort(result, Collections.reverseOrder(new Comparator<File>() {
-                @Override
-                public int compare(File o1, File o2) {
-                    long o1t = o1.lastModified();
-                    long o2t = o2.lastModified();
-                    return o1t < o2t ? -1 : (o1t == o2t ? 0 : 1);
-                }
-            }));
+            Arrays.sort(result, Collections.reverseOrder(Comparator.comparing(File::lastModified)));
 
             if (maxOldFileCount > 0) {
                 int maxCount = Math.min(getMaxOldFileCount(), result.length);
@@ -221,21 +210,21 @@ public class SlingConfigurationPrinter {
     }
 
     private int getNumOfLines(){
-        return logbackManager.getLogConfigManager().getNumOfLines();
+        return logConfigManager.getNumOfLines();
     }
 
     private int getMaxOldFileCount(){
-        return logbackManager.getLogConfigManager().getMaxOldFileCount();
+        return logConfigManager.getMaxOldFileCount();
     }
 
-    @SuppressWarnings("ThrowableResultOfMethodCallIgnored")
-    private static void dumpLogbackStatus(LogbackManager logbackManager, PrintWriter pw) {
-        List<Status> statusList = logbackManager.getStatusManager().getCopyOfStatusList();
+    private void dumpLogbackStatus(PrintWriter pw) {
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        List<Status> statusList = loggerContext.getStatusManager().getCopyOfStatusList();
         pw.println("Logback Status");
         pw.println("--------------------------------------------------");
         for (Status s : statusList) {
             pw.printf("%s *%s* %s - %s %n",
-                    SDF.format(s.getDate()),
+                    dateFormatter.format(s.getTimestamp()),
                     statusLevelAsString(s),
                     abbreviatedOrigin(s),
                     s.getMessage());
@@ -261,23 +250,31 @@ public class SlingConfigurationPrinter {
         }
     }
 
-    private static String statusLevelAsString(Status s) {
-        switch (s.getEffectiveLevel()) {
+    protected String statusLevelAsString(Status s) {
+        String statusLevel;
+        int effectiveLevel = s.getEffectiveLevel();
+        switch (effectiveLevel) {
             case Status.INFO:
-                return "INFO";
+                statusLevel = "INFO";
+                break;
             case Status.WARN:
-                return "WARN";
+                statusLevel = "WARN";
+                break;
             case Status.ERROR:
-                return "ERROR";
+                statusLevel = "ERROR";
+                break;
+             default:
+                 statusLevel = null;
+                 break;
         }
-        return null;
+        return statusLevel;
     }
 
     /**
      * Returns a human-readable version of the file size, where the input represents
      * a specific number of bytes. Based on http://stackoverflow.com/a/3758880/1035417
      */
-    private static String humanReadableByteCount(long bytes) {
+    protected String humanReadableByteCount(long bytes) {
         if (bytes < 0) {
             return "0";
         }
@@ -290,11 +287,11 @@ public class SlingConfigurationPrinter {
         return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
     }
 
-    private static String getModifiedDate(File f){
+    protected String getModifiedDate(File f) {
         long modified = f.lastModified();
-        if (modified == 0){
+        if (modified == 0) {
             return "UNKNOWN";
         }
-        return SDF.format(modified);
+        return dateFormatter.format(modified);
     }
 }

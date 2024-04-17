@@ -38,7 +38,6 @@ import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
-import org.osgi.framework.ServiceRegistration;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
@@ -86,7 +85,7 @@ public class ITJULIntegration extends LogTestBase {
         bar.setLevel(Level.INFO);
 
         props.put("loggers", loggers);
-        ServiceRegistration sr = bundleContext.registerService(Appender.class.getName(), ta, props);
+        bundleContext.registerService(Appender.class, ta, props);
 
         delay();
 

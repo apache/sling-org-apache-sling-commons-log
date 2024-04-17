@@ -33,6 +33,7 @@ import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(PaxExam.class)
@@ -71,7 +72,7 @@ public class ITDefaultConfig extends LogTestBase {
     @Test
     public void supportNestedClassesWithNestedDot() throws Exception {
         //SLING-3037 - No illegalArgumentException thrown
-        LoggerFactory.getLogger("com.foo.Bar$Nested.dot");
+        assertNotNull(LoggerFactory.getLogger("com.foo.Bar$Nested.dot"));
     }
 
 }

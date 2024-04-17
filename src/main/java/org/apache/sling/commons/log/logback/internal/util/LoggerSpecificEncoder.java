@@ -19,37 +19,64 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.sling.commons.log.logback.internal.LogConfig;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
+
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
 
-import org.apache.sling.commons.log.logback.internal.LogConfig;
-
+/**
+ * Pattern layout encoder for specific loggers
+ */
 public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEvent> {
-    private Map<String, Layout<ILoggingEvent>> layoutByCategory = new ConcurrentHashMap<String, Layout<ILoggingEvent>>();
-
+    private Map<String, Layout<ILoggingEvent>> layoutByCategory = new ConcurrentHashMap<>();
     private final Layout<ILoggingEvent> defaultLayout;
 
+    /**
+     * Constructor
+     *
+     * @param defaultLayout the default layout the encoder is for if no better match is found
+     */
     public LoggerSpecificEncoder(Layout<ILoggingEvent> defaultLayout) {
         this.defaultLayout = defaultLayout;
     }
 
+    /**
+     * Encodes the text for the event
+     *
+     * @param event the event to encode
+     */
+    @Override
     public byte[] encode(ILoggingEvent event) {
         String txt = getLayout(event.getLoggerName()).doLayout(event);
         return convertToBytes(txt);
     }
 
-    private Layout<ILoggingEvent> getLayout(String loggerName) {
+    /**
+     * Get layout for the supplied logger
+     *
+     * @param loggerName the name of the logger to match
+     * @return the found layout or the default layout if not found
+     */
+    private @NotNull Layout<ILoggingEvent> getLayout(@NotNull String loggerName) {
         String bestMatchLayoutKey = getBestMatchLayoutKey(loggerName);
         return layoutByCategory.getOrDefault(bestMatchLayoutKey, defaultLayout);
     }
 
-    private String getBestMatchLayoutKey(String loggerName) {
+    /**
+     * Get the best match layout for the supplied logger
+     *
+     * @param loggerName the name of the logger to match
+     * @return the key for the best match or the original loggerName if not found
+     */
+    private @NotNull String getBestMatchLayoutKey(@NotNull String loggerName) {
         if (layoutByCategory.containsKey(loggerName)) {
             // fastpath for exact name match
             return loggerName;
@@ -65,23 +92,33 @@ public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEven
         return bestMatch;
     }
 
+    /**
+     * Covert the string to bytes using the current charset
+     *
+     * @param s the string to convert
+     * @return the string as bytes
+     */
     private byte[] convertToBytes(String s) {
         Charset charset = getCharset();
         if (charset == null) {
             return s.getBytes();
         } else {
-            try {
-                return s.getBytes(charset.name());
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalStateException("An existing charset cannot possibly be unsupported.");
-            }
+            return s.getBytes(charset);
         }
     }
 
+    /**
+     * Add LogConfig which associates all the categories with
+     * the layout
+     *
+     * @param config the config to process
+     */
     public void addLogConfig(LogConfig config) {
-        Layout<ILoggingEvent> layout = config.createLayout();
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        Layout<ILoggingEvent> layout = config.createLayout(loggerContext);
         for (String category : config.getCategories()) {
             layoutByCategory.put(category, layout);
         }
     }
+
 }

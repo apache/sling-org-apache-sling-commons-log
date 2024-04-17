@@ -19,19 +19,30 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
+import static org.apache.sling.commons.log.logback.integration.PackagingDataTestUtil.TEST_BUNDLE_NAME;
+import static org.apache.sling.commons.log.logback.integration.PackagingDataTestUtil.TEST_BUNDLE_VERSION;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
+
 import java.io.File;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
 import javax.inject.Inject;
 
-import ch.qos.logback.classic.LoggerContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator;
-import org.apache.sling.commons.log.logback.internal.LogbackManager;
+import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Option;
@@ -50,22 +61,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.LoggerFactory;
 
-import static org.apache.sling.commons.log.logback.integration.ITConfigAdminSupport.PID;
-import static org.apache.sling.commons.log.logback.integration.PackagingDataTestUtil.TEST_BUNDLE_NAME;
-import static org.apache.sling.commons.log.logback.integration.PackagingDataTestUtil.TEST_BUNDLE_VERSION;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.FACTORY_PID_CONFIGS;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_FILE;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_LEVEL;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_LOGGERS;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.LOG_PACKAGING_DATA;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.CoreOptions.systemProperty;
+import ch.qos.logback.classic.LoggerContext;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerMethod.class)
@@ -83,6 +79,8 @@ public class ITPackagingData extends LogTestBase {
                 systemProperty("pax.exam.osgi.unresolved.fail").value("true"),
                 configAdmin(),
                 mavenBundle("org.osgi", "org.osgi.service.log").versionAsInProject(),
+                mavenBundle("org.osgi", "org.osgi.util.pushstream").versionAsInProject(),
+                mavenBundle("org.osgi", "org.osgi.util.promise").versionAsInProject(),
                 mavenBundle("biz.aQute.bnd", "biz.aQute.bndlib").versionAsInProject(),
                 mavenBundle("org.ops4j.pax.tinybundles", "tinybundles").versionAsInProject(),
                 mavenBundle("commons-io", "commons-io").versionAsInProject()
@@ -101,10 +99,10 @@ public class ITPackagingData extends LogTestBase {
     @Test
     public void packagingEnabled() throws Exception{
         // Set log level to debug for Root logger
-        Configuration config = ca.getConfiguration(PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_PACKAGING_DATA, Boolean.TRUE);
-        p.put(LOG_LEVEL, "INFO");
+        p.put(LogConstants.LOG_PACKAGING_DATA, Boolean.TRUE);
+        p.put(LogConstants.LOG_LEVEL, "INFO");
         config.update(p);
 
         delay();
@@ -119,22 +117,22 @@ public class ITPackagingData extends LogTestBase {
     @Test
     public void packageDataWorking() throws Exception{
         // Enable packaging
-        Configuration config = ca.getConfiguration(PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_PACKAGING_DATA, Boolean.TRUE);
-        p.put(LOG_LEVEL, "INFO");
+        p.put(LogConstants.LOG_PACKAGING_DATA, Boolean.TRUE);
+        p.put(LogConstants.LOG_LEVEL, "INFO");
         config.update(p);
         delay();
 
         //Configure a file logger for test class
-        Configuration config2 = ca.createFactoryConfiguration(FACTORY_PID_CONFIGS, null);
+        Configuration config2 = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p2 = new Hashtable<String, Object>();
-        p2.put(LOG_LOGGERS, new String[] {
+        p2.put(LogConstants.LOG_LOGGERS, new String[] {
                 PackageDataActivator.LOGGER_NAME
         });
         String logFileName = "logs/package-test.log";
-        p2.put(LOG_FILE, logFileName);
-        p2.put(LOG_LEVEL, "INFO");
+        p2.put(LogConstants.LOG_FILE, logFileName);
+        p2.put(LogConstants.LOG_LEVEL, "INFO");
         config2.update(p2);
         delay();
 
@@ -160,13 +158,13 @@ public class ITPackagingData extends LogTestBase {
         //Now read the log file content to assert that stacktrace has version present
         String slingHome = System.getProperty("sling.home");
         File logFile = new File(FilenameUtils.concat(slingHome, logFileName));
-        String logFileContent = FileUtils.readFileToString(logFile);
+        String logFileContent = FileUtils.readFileToString(logFile, Charset.defaultCharset());
 
         System.out.println("--------------------");
         System.out.println(logFileContent);
         System.out.println("--------------------");
 
-        List<String> lines = FileUtils.readLines(logFile);
+        List<String> lines = FileUtils.readLines(logFile, Charset.defaultCharset());
         String testLine = null;
         for (String l : lines) {
             if (l.contains("org.apache.sling.commons.log.logback.integration.bundle.TestRunnable.run(")){
@@ -182,7 +180,7 @@ public class ITPackagingData extends LogTestBase {
     }
 
     private ServiceTracker<WeavingHook, WeavingHook> createWeavingHookTracker() throws InvalidSyntaxException {
-        return createTracker(WeavingHook.class, LogbackManager.PACKAGE_INFO_COLLECTOR_DESC);
+        return createTracker(WeavingHook.class, LogConstants.PACKAGE_INFO_COLLECTOR_DESC);
     }
 
     private <T> ServiceTracker<T,T> createTracker(Class<T> clazz, String desc) throws InvalidSyntaxException {

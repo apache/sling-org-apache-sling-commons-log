@@ -20,14 +20,24 @@ package org.apache.sling.commons.log.logback.internal.config;
 
 import java.util.Dictionary;
 
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.cm.ManagedService;
 
-class GlobalConfigurator extends LogConfigurator implements ManagedService {
+/**
+ * Global logging configuration service
+ */
+public class GlobalConfigurator extends LogConfigurator implements ManagedService {
 
-    @SuppressWarnings("unchecked")
-    public void updated(Dictionary properties) throws org.osgi.service.cm.ConfigurationException { // unchecked
+    /**
+     * Update the global configuration with the supplied configuration
+     * 
+     * @param properties the configuration properties
+     */
+    public void updated(@NotNull Dictionary<String, ?> properties) throws org.osgi.service.cm.ConfigurationException {
         try {
-            getLogConfigManager().updateGlobalConfiguration(properties);
+            @SuppressWarnings("unchecked")
+            Dictionary<String, String> config = (Dictionary<String, String>)properties;
+            getLogConfigManager().updateGlobalConfiguration(config);
         } catch (ConfigurationException ce) {
             throw new org.osgi.service.cm.ConfigurationException(ce.getProperty(), ce.getReason(), ce);
         }

@@ -30,7 +30,7 @@ public class PackageDataActivator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        Hashtable props = new Hashtable();
+        Hashtable<String, Object> props = new Hashtable<>();
         props.put(Constants.SERVICE_DESCRIPTION, LOGGER_NAME);
         context.registerService(Runnable.class.getName(), new TestRunnable(), props);
     }

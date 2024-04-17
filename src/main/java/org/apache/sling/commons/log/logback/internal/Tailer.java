@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.RandomAccessFile;
 
-class Tailer{
+class Tailer {
     static final int BUFFER_SIZE = 1024;
     private final int numOfLines;
     private final TailerListener listener;
@@ -49,19 +49,9 @@ class Tailer{
     }
 
     public void tail(File file) throws IOException {
-        RandomAccessFile raf = null;
-        try{
-            raf = new RandomAccessFile(file, "r");
+        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
             long startPos = getTailStartPos(raf, numOfLines);
             readLines(raf, startPos);
-        } finally {
-            try{
-                if (raf != null) {
-                    raf.close();
-                }
-            } catch (IOException ignore){
-
-            }
         }
     }
 

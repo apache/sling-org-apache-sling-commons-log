@@ -19,13 +19,14 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
-import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
 import ch.qos.logback.core.status.Status;
 
 import java.util.Map;
+
+import org.apache.sling.ch.qos.logback.classic.PatternLayout;
 
 /**
  * Abstract wrapper for {@link PatternLayout} class. Can be extended to implement 'Decorator' design pattern.

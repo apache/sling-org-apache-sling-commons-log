@@ -18,69 +18,118 @@
  */
 package org.apache.sling.commons.log.logback.internal;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.turbo.TurboFilter;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.util.tracker.ServiceTracker;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TurboFilterTracker extends ServiceTracker implements LogbackResetListener{
-    private final LoggerContext loggerContext;
-    private final Map<ServiceReference,TurboFilter> filters = new ConcurrentHashMap<ServiceReference, TurboFilter>();
+import org.jetbrains.annotations.NotNull;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceReference;
+import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.LoggerFactory;
 
-    public TurboFilterTracker(BundleContext context, LoggerContext loggerContext) {
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.turbo.TurboFilter;
+
+/**
+ * Service tracker that listens for TurboFilter services and
+ * applies them to the logging configuration
+ */
+public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
+        implements LogbackResetListener {
+
+    private final Map<ServiceReference<TurboFilter>,TurboFilter> filters = new ConcurrentHashMap<>();
+
+    /**
+     * Constructor
+     *
+     * @param context the bundle context
+     */
+    public TurboFilterTracker(@NotNull BundleContext context) {
         super(context, TurboFilter.class.getName(), null);
-        this.loggerContext = loggerContext;
     }
 
+    /**
+     * Callback when a TurboFilter service has been added
+     *
+     * @param reference the service reference that was added
+     * @return the TurboFilter service object
+     */
     @Override
-    public Object addingService(ServiceReference reference) {
-        TurboFilter tf = (TurboFilter) super.addingService(reference);
-        tf.setContext(loggerContext);
-        tf.start();
+    public @NotNull TurboFilter addingService(@NotNull ServiceReference<TurboFilter> reference) {
+        TurboFilter tf = super.addingService(reference);
 
         attachFilter(tf);
-        filters.put(reference,tf);
+        filters.put(reference, tf);
+
         return tf;
     }
 
+    /**
+     * Callback when a TurboFilter service has been removed
+     * 
+     * @param reference the service reference that was removed
+     * @param service the service object that was being tracked
+     */
     @Override
-    public void removedService(ServiceReference reference, Object service) {
-        TurboFilter tf = (TurboFilter) service;
+    public void removedService(@NotNull ServiceReference<TurboFilter> reference, @NotNull TurboFilter service) {
         filters.remove(reference);
-        loggerContext.getTurboFilterList().remove(tf);
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        loggerContext.getTurboFilterList().remove(service);
+        service.stop();
+
         super.removedService(reference, service);
     }
 
-    @Override
-    public void onResetStart(LoggerContext context) {
-        for(TurboFilter tf : filters.values()){
-            attachFilter(tf);
-        }
-    }
-
+    /**
+     * Close the tracker and cleanup
+     */
     @Override
     public synchronized void close() {
         super.close();
         filters.clear();
     }
 
-    @Override
-    public void onResetComplete(LoggerContext context) {
-
-    }
-
-    public Map<ServiceReference, TurboFilter> getFilters() {
+    /**
+     * Return a view of the current turbo filters that have been tracked
+     * 
+     * @return unmodifiable map of filters where the key is the service reference
+     *          and the value is the service object
+     */
+    public @NotNull Map<ServiceReference<TurboFilter>, TurboFilter> getFilters() {
         return Collections.unmodifiableMap(filters);
     }
 
-    private void attachFilter(TurboFilter tf) {
-        if(!loggerContext.getTurboFilterList().contains(tf)){
+    //~-----------------------------------LogbackResetListener
+
+    /**
+     * Callback before the reset is started
+     *
+     * @param context the logger context being reset
+     */
+    @Override
+    public void onResetStart(@NotNull LoggerContext context) {
+        for (TurboFilter tf : filters.values()) {
+            attachFilter(tf);
+        }
+    }
+
+    //~-----------------------------------Internal Methods
+
+    /**
+     * Attach the turbo filter to the logger context if it is not already there
+     *
+     * @param loggerContext the logger context
+     * @param tf the turbo filter to attach
+     */
+    private void attachFilter(@NotNull TurboFilter tf) {
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        if (!loggerContext.getTurboFilterList().contains(tf)) {
+            tf.setContext(loggerContext);
+            tf.start();
+
             loggerContext.addTurboFilter(tf);
         }
     }
+
 }

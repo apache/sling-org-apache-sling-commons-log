@@ -198,7 +198,6 @@ class FilterTrackerTest {
         assertNotNull(appender);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter1));
 
-        // TODO: modify the props so something different happens?
         tracker.modifiedService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1, filter1);
         appender = knownAppenders.get(appenderName);
         assertNotNull(appender);

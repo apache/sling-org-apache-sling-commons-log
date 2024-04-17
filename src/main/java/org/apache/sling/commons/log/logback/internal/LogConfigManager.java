@@ -315,9 +315,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         // initial setup using framework properties
         setDefaultConfiguration(getBundleConfiguration(bundleContext));
 
-        if (!SLF4JBridgeHandler.isInstalled()) {
-            bridgeHandlerInstalled = maybeInstallSlf4jBridgeHandler(bundleContext);
-        }
+        bridgeHandlerInstalled = maybeInstallSlf4jBridgeHandler(bundleContext);
 
         configAdminSupport.start(bundleContext, this);
 
@@ -480,20 +478,27 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                 .defaultValue(false)
                 .to(Boolean.TYPE);
         if (julSupport) {
-            // make sure configuration is empty unless explicitly set
-            if (System.getProperty(LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_FILE) == null
-                    && System.getProperty(LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_CLASS) == null) {
-                // reset the JUL logging configuration to empty
-                java.util.logging.LogManager.getLogManager().reset();
-                logger.debug("The JUL logging configuration was reset to empty");
-            } else {
-                logger.debug("The JUL logging configuration was not reset to empty as JUL config system properties were set");
-            }
+            if (!isClassNameVisible("org.slf4j.bridge.SLF4JBridgeHandler")) {
+                logger.warn("Failed to re-configure the SLF4JBridgeHandler since that class was not found. "
+                        + "Check if the jul-to-slf4j bundle is deployed.");
+            } else if (!SLF4JBridgeHandler.isInstalled()) {
+                // make sure configuration is empty unless explicitly set
+                if (System.getProperty(LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_FILE) == null
+                        && System.getProperty(LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_CLASS) == null) {
+                    // reset the JUL logging configuration to empty
+                    java.util.logging.LogManager.getLogManager().reset();
+                    logger.debug("The JUL logging configuration was reset to empty");
+                } else {
+                    logger.debug("The JUL logging configuration was not reset to empty as JUL config system properties were set");
+                }
 
-            // enable the JUL handling
-            SLF4JBridgeHandler.removeHandlersForRootLogger();
-            SLF4JBridgeHandler.install();
-            java.util.logging.Logger.getLogger("").setLevel(java.util.logging.Level.FINEST); // Root logger, for example.
+                // enable the JUL handling
+                SLF4JBridgeHandler.removeHandlersForRootLogger();
+                SLF4JBridgeHandler.install();
+                java.util.logging.Logger.getLogger("").setLevel(java.util.logging.Level.FINEST); // Root logger, for example.
+            } else {
+                logger.debug("Failed to re-confiugre JUL as the SLF4JBridgeHandle was already installed elsewhere");
+            }
         }
         return julSupport;
     }
@@ -1733,15 +1738,39 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
     }
 
     private void registerEventHandler() {
-        Dictionary<String,Object> props = new Hashtable<>(); // NOSONAR
-        props.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
-        props.put(Constants.SERVICE_DESCRIPTION, "Sling Log Reset Event Handler");
-        props.put("event.topics", new String[] {
-                LogConstants.RESET_EVENT_TOPIC
-        });
+        String className = "org.osgi.service.event.EventHandler";
+        if (isClassNameVisible(className)) {
+            Dictionary<String,Object> props = new Hashtable<>(); // NOSONAR
+            props.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
+            props.put(Constants.SERVICE_DESCRIPTION, "Sling Log Reset Event Handler");
+            props.put("event.topics", new String[] {
+                    LogConstants.RESET_EVENT_TOPIC
+            });
 
-        registrations.add(bundleContext.registerService("org.osgi.service.event.EventHandler",
-                new ConfigResetRequestHandler(this), props));
+            registrations.add(bundleContext.registerService(className,
+                    new ConfigResetRequestHandler(this), props));
+        } else {
+            logger.warn("Failed to register the config reset event handler since the event handler class was not found. "
+                    + "Check if the eventadmin bundle is deployed.");
+        }
+    }
+
+    /**
+     * Checks if an optional class name is visible to the bundle classloader
+     * 
+     * @param className the class name to check
+     * @return true if the class is visible, false otherwise
+     */
+    boolean isClassNameVisible(String className) {
+        boolean visible;
+        try {
+            // check if the class is visible to our classloader
+            getClass().getClassLoader().loadClass(className);
+            visible = true;
+        } catch (ClassNotFoundException e) {
+            visible = false;
+        }
+        return visible;
     }
 
     /**

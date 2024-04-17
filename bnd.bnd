@@ -2,6 +2,7 @@ Bundle-DocURL: http://sling.apache.org/site/logging.html
 Import-Package: org.osgi.service.cm;version="[1.2,2)";resolution:=dynamic, \
     org.osgi.service.event;version="[1.2,2)";resolution:=dynamic, \
     javax.xml.transform.*;resolution:=dynamic, \
+    org.slf4j.bridge;resolution:=optional, \
     *
 
 Require-Capability: osgi.extender;filter:="(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))"

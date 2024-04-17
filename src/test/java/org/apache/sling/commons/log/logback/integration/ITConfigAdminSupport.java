@@ -131,7 +131,6 @@ public class ITConfigAdminSupport extends LogTestBase {
         assertFalse(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).isDebugEnabled());
     }
 
-//    @Ignore("TODO figure out how to debug this failure")
     @Test
     public void testPackagingDataConfig() throws Exception {
         // Set log level to debug for Root logger

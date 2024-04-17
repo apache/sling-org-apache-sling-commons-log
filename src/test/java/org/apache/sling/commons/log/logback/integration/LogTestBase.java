@@ -77,7 +77,6 @@ public abstract class LogTestBase {
         return options(
             addSpiflyOptions(),
             configAdmin(),
-            eventAdmin(), // TODO is the supposed to be optional?
             mavenBundle("org.apache.felix", "org.apache.felix.converter").versionAsInProject(),
             mavenBundle("org.osgi", "org.osgi.util.function").versionAsInProject(),
             mavenBundle("org.apache.felix", "org.apache.felix.http.servlet-api").versionAsInProject(),
@@ -86,7 +85,6 @@ public abstract class LogTestBase {
             mavenBundle("ch.qos.logback", "logback-core").versionAsInProject(),
             mavenBundle("ch.qos.logback", "logback-classic").versionAsInProject(),
             mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(),
-            mavenBundle("org.slf4j", "jul-to-slf4j").versionAsInProject(),
             addPaxExamSpecificOptions(), addCodeCoverageOption(), addDebugOptions(),
             addExtraOptions(), addDefaultOptions());
     }

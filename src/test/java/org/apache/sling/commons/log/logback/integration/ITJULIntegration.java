@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 
 import java.io.File;
@@ -58,6 +59,7 @@ public class ITJULIntegration extends LogTestBase {
     @Override
     protected Option addExtraOptions() {
         return composite(
+            mavenBundle("org.slf4j", "jul-to-slf4j").versionAsInProject(),
             systemProperty("org.apache.sling.commons.log.julenabled").value("true"),
             frameworkProperty("org.apache.sling.commons.log.configurationFile").value(
                 FilenameUtils.concat(new File(".").getAbsolutePath(), "src/test/resources/test-jul-config.xml")));

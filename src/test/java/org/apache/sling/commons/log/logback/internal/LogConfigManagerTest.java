@@ -63,6 +63,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
+import org.osgi.service.event.EventHandler;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
@@ -165,7 +166,7 @@ class LogConfigManagerTest {
     void testStartWithJulSupport() throws Exception {
         try {
             System.setProperty(LogConstants.JUL_SUPPORT, "true");
-            System.setProperty(LogConstants.LOG_FILE, "logs/hello.log");
+            System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupport.log");
 
             // verify that the msg was logged
             try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
@@ -180,7 +181,7 @@ class LogConfigManagerTest {
             assertNull(logger.getLevel());
             logger.warning("Log Message from JUL");
 
-            assertTrue(TestUtils.containsString(new File("target", "logs/hello.log"),
+            assertTrue(TestUtils.containsString(new File("target", "logs/testStartWithJulSupport.log"),
                     "Log Message from JUL"));
         } finally {
             System.clearProperty(LogConstants.LOG_FILE);
@@ -188,10 +189,57 @@ class LogConfigManagerTest {
         }
     }
     @Test
+    void testStartWithJulSupportWithEventAdminClassNotFound() throws Exception {
+        // mock the class not being visible
+        manager = Mockito.spy(manager);
+        Mockito.doReturn(false).when(manager).isClassNameVisible(EventHandler.class.getName());
+
+        try {
+            System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupportWithEventAdminClassNotFound.log");
+
+            // verify that the msg was logged
+            try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
+                assertDoesNotThrow(() -> manager.start());
+
+                // verify the msg was logged
+                capture.assertContains(Level.WARN, "Failed to register the config reset event handler since the event handler class was not found. "
+                        + "Check if the eventadmin bundle is deployed.");
+            }
+        } finally {
+            System.clearProperty(LogConstants.LOG_FILE);
+        }
+    }
+
+    @Test
+    void testStartWithJulSupportWithSLF4JBridgeClassNotFound() throws Exception {
+        // mock the class not being visible
+        manager = Mockito.spy(manager);
+        Mockito.doReturn(false).when(manager).isClassNameVisible(SLF4JBridgeHandler.class.getName());
+
+        try {
+            System.setProperty(LogConstants.JUL_SUPPORT, "true");
+            System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupportWithSLF4JBridgeClassNotFound.log");
+
+            // verify that the msg was logged
+            try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
+                assertDoesNotThrow(() -> manager.start());
+
+                // verify the msg was logged
+                capture.assertContains(Level.WARN, "Failed to re-configure the SLF4JBridgeHandler since that class was not found. "
+                        + "Check if the jul-to-slf4j bundle is deployed.");
+            }
+        } finally {
+            System.clearProperty(LogConstants.LOG_FILE);
+            System.clearProperty(LogConstants.JUL_SUPPORT);
+        }
+    }
+
+    @Test
     void testStartWithJulSupportButBridgeAlreadyStarted() throws IOException {
         try {
             SLF4JBridgeHandler.install();
             System.setProperty(LogConstants.JUL_SUPPORT, "true");
+            System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupportButBridgeAlreadyStarted.log");
 
             // verify the bridge handler install doesn't get called again
             try (MockedStatic<SLF4JBridgeHandler> bridgeMock = Mockito.mockStatic(SLF4JBridgeHandler.class, CALLS_REAL_METHODS);) {
@@ -209,9 +257,10 @@ class LogConfigManagerTest {
             assertNull(logger.getLevel());
             logger.warning("Log Message from JUL");
 
-            assertTrue(TestUtils.containsString(new File("target", "logs/hello.log"),
+            assertTrue(TestUtils.containsString(new File("target", "logs/testStartWithJulSupportButBridgeAlreadyStarted.log"),
                     "Log Message from JUL"));
         } finally {
+            System.clearProperty(LogConstants.LOG_FILE);
             System.clearProperty(LogConstants.JUL_SUPPORT);
             SLF4JBridgeHandler.uninstall();
         }
@@ -220,6 +269,7 @@ class LogConfigManagerTest {
     @ValueSource(strings = {LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_FILE, LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_CLASS})
     void testStartWithJulSupportWithJULConfigFileSystemPropDefined(String sysProp) throws Exception {
         try {
+            System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupportWithJULConfigFileSystemPropDefined.log");
             System.setProperty(LogConstants.JUL_SUPPORT, "true");
             System.setProperty(sysProp, "somevalue");
 
@@ -236,10 +286,11 @@ class LogConfigManagerTest {
             assertNull(logger.getLevel());
             logger.warning("Log Message from JUL");
 
-            assertTrue(TestUtils.containsString(new File("target", "logs/hello.log"),
+            assertTrue(TestUtils.containsString(new File("target", "logs/testStartWithJulSupportWithJULConfigFileSystemPropDefined.log"),
                     "Log Message from JUL"));
         } finally {
             System.clearProperty(sysProp);
+            System.clearProperty(LogConstants.LOG_FILE);
             System.clearProperty(LogConstants.JUL_SUPPORT);
         }
     }
@@ -685,7 +736,7 @@ class LogConfigManagerTest {
         BundleContext bundleContext = context.bundleContext();
         try {
             System.setProperty(LogConstants.LOG_LEVEL, "warn");
-            System.setProperty(LogConstants.LOG_FILE, "logs/hello.log");
+            System.setProperty(LogConstants.LOG_FILE, "logs/testGetBundleConfiguration.log");
             System.setProperty(LogConstants.LOG_FILE_NUMBER, "5");
             System.setProperty(LogConstants.LOG_FILE_SIZE, LogConstants.LOG_FILE_SIZE_DEFAULT);
             System.setProperty(LogConstants.LOG_PATTERN, LogConstants.LOG_PATTERN_DEFAULT);
@@ -694,7 +745,7 @@ class LogConfigManagerTest {
 
             Dictionary<String, String> bundleConfiguration = manager.getBundleConfiguration(bundleContext);
             assertEquals("warn", bundleConfiguration.get(LogConstants.LOG_LEVEL));
-            assertEquals("logs/hello.log", bundleConfiguration.get(LogConstants.LOG_FILE));
+            assertEquals("logs/testGetBundleConfiguration.log", bundleConfiguration.get(LogConstants.LOG_FILE));
             assertEquals("5", bundleConfiguration.get(LogConstants.LOG_FILE_NUMBER));
             assertEquals(LogConstants.LOG_FILE_SIZE_DEFAULT, bundleConfiguration.get(LogConstants.LOG_FILE_SIZE));
             assertEquals(LogConstants.LOG_PATTERN_DEFAULT, bundleConfiguration.get(LogConstants.LOG_PATTERN));
@@ -1860,6 +1911,15 @@ class LogConfigManagerTest {
         LoggerStateContext loggerState = manager.determineLoggerState();
         assertNotNull(loggerState);
         assertTrue(loggerState.nonOSgiConfiguredLoggers.contains(logger));
+    }
+
+    /**
+     * Test method for {@link org.apache.sling.commons.log.logback.internal.LogConfigManager#isClassNameVisible(java.lang.String)}.
+     */
+    @Test
+    void testIsClassNameVisible() {
+        assertFalse(manager.isClassNameVisible("not.exsting"));
+        assertTrue(manager.isClassNameVisible(LogWriter.class.getName()));
     }
 
 }

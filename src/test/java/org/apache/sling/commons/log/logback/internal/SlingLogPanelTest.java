@@ -430,8 +430,6 @@ class SlingLogPanelTest {
         // verify the deleted config is is not there
         assertTrue(StreamSupport.stream(logConfigManager.getLogConfigs().spliterator(), false)
             .noneMatch(lc -> configPid.equals(lc.getConfigPid())));
-
-        // TODO verify internalFailure output
     }
     @Test
     void testDeleteLoggerConfigWithCaughtConfigurationException() throws Exception {

@@ -53,7 +53,10 @@ public abstract class PatternLayoutBaseOsgi<E> extends PatternLayoutBase<E> {
         }
 
         // set the most specific map last
-        effectiveMap.putAll(getInstanceConverterSupplierMap());
+        Map<String, Supplier<Converter<E>>> instanceMap = getInstanceConverterSupplierMap();
+        if (instanceMap != null) {
+            effectiveMap.putAll(instanceMap);
+        }
         return effectiveMap;
     }
 

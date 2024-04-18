@@ -37,10 +37,6 @@ import ch.qos.logback.core.spi.ScanException;
 
 public class ParserOsgi<E> extends Parser<E> {
 
-    ParserOsgi(TokenStream ts) throws ScanException {
-        super(ts);
-    }
-
     public ParserOsgi(String pattern) throws ScanException {
         this(pattern, new RegularEscapeUtil());
     }

@@ -16,7 +16,7 @@
  */
 package org.apache.sling.commons.log.logback.internal.config;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.apache.sling.commons.log.logback.internal.LogConfigManager;
 import org.apache.sling.commons.log.logback.internal.LogConstants;
@@ -24,7 +24,6 @@ import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextExtension;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -42,7 +41,7 @@ class ConfigAdminSupportTest {
     protected ConfigAdminSupport configAdminSupport;
 
     @BeforeEach
-    protected void beforeEach(TestInfo testInfo) {
+    protected void beforeEach() {
         configAdminSupport = new ConfigAdminSupport();
     }
 

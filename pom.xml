@@ -390,7 +390,17 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <configuration>
               <excludes>
-                <exclude>ch/**</exclude>
+                <exclude>ch/qos/logback/core/pattern/PatternLayoutBase.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/Compiler.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/CompositeNode.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/FormattingNode.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/Node.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/OptionTokenizer.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/Parser.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/SimpleKeywordNode.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/Token.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/TokenStream.*</exclude>
+                <exclude>ch/qos/logback/core/pattern/parser/TokenStream$TokenizerState.*</exclude>
               </excludes>
             </configuration>
           </plugin>

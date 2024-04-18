@@ -33,6 +33,7 @@ import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 import java.io.File;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
@@ -76,6 +77,8 @@ public class ITPackagingData extends LogTestBase {
     @Override
     protected Option addExtraOptions() {
         return composite(
+                // change the tmpdir to a path that is known to be writable
+                systemProperty("java.io.tmpdir").value(Paths.get("target").toAbsolutePath().toString()),
                 systemProperty("pax.exam.osgi.unresolved.fail").value("true"),
                 configAdmin(),
                 mavenBundle("org.osgi", "org.osgi.service.log").versionAsInProject(),

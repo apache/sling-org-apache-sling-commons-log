@@ -810,7 +810,7 @@ class LogConfigManagerTest {
         System.clearProperty(LogConstants.SLING_HOME);
         manager.stop();
         manager = new LogConfigManager(context.bundleContext());
-        assertEquals(new File("log/error.log").getCanonicalPath(),
+        assertEquals(Paths.get("log/error.log").toFile().getAbsolutePath(),
                 manager.getAbsoluteFilePath("log/error.log"));
     }
     @Test
@@ -1034,8 +1034,8 @@ class LogConfigManagerTest {
     void testIsLogbackFileValidWhenFileIsNotReadable() throws Exception {
         // verify that the msg was logged
         try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
-            File file = new File("src/test/resources/logback-test.xml");
-            String logbackPath = file.getCanonicalPath();
+            File file = Paths.get("src/test/resources/logback-test.xml").toFile();
+            String logbackPath = file.getAbsolutePath();
             file = Mockito.spy(file);
             Mockito.doReturn(false).when(file).canRead();
             assertFalse(manager.isLogbackFileValid(file));

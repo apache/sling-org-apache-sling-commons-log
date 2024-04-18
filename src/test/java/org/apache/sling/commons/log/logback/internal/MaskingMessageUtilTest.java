@@ -20,12 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.apache.sling.ch.qos.logback.classic.PatternLayout;
 import org.apache.sling.commons.log.logback.internal.MaskingMessageUtil.MaskingPatternLayoutEncoder;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayoutOsgi;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.encoder.Encoder;
 
@@ -35,11 +35,11 @@ import ch.qos.logback.core.encoder.Encoder;
 class MaskingMessageUtilTest {
 
     /**
-     * Test method for {@link org.apache.sling.commons.log.logback.internal.MaskingMessageUtil#setMessageConverter(ch.qos.logback.classic.PatternLayout)}.
+     * Test method for {@link org.apache.sling.commons.log.logback.internal.MaskingMessageUtil#setMessageConverter(ch.qos.logback.classic.PatternLayoutOsgi)}.
      */
     @Test
     void testSetMessageConverter() {
-        PatternLayout pl = new PatternLayout();
+        PatternLayoutOsgi pl = new PatternLayoutOsgi();
         MaskingMessageUtil.setMessageConverter(pl);
         assertEquals(11, pl.getInstanceConverterSupplierMap().size());
     }

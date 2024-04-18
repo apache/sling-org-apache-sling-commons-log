@@ -19,25 +19,24 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
+import java.util.Map;
+
+import ch.qos.logback.classic.PatternLayoutOsgi;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
 import ch.qos.logback.core.status.Status;
-
-import java.util.Map;
-
-import org.apache.sling.ch.qos.logback.classic.PatternLayout;
 
 /**
  * Abstract wrapper for {@link PatternLayout} class. Can be extended to implement 'Decorator' design pattern.
  *
  * @apiNote This has probably no use outside of testing
  */
-public abstract class AbstractPatternLayoutWrapper extends PatternLayout {
+public abstract class AbstractPatternLayoutWrapper extends PatternLayoutOsgi {
 
-    protected final PatternLayout wrapped;
+    protected final PatternLayoutOsgi wrapped;
 
-    protected AbstractPatternLayoutWrapper(final PatternLayout wrapped) {
+    protected AbstractPatternLayoutWrapper(final PatternLayoutOsgi wrapped) {
         this.wrapped = wrapped;
     }
 

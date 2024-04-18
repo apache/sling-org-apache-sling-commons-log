@@ -11,17 +11,16 @@
  * under the terms of the GNU Lesser General Public License version 2.1
  * as published by the Free Software Foundation.
  */
-package org.apache.sling.ch.qos.logback.classic;
+package ch.qos.logback.classic;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import org.apache.sling.ch.qos.logback.core.pattern.PatternLayoutBase;
 
 import ch.qos.logback.classic.pattern.*;
 import ch.qos.logback.classic.pattern.color.HighlightingCompositeConverter;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.CoreConstants;
+import ch.qos.logback.core.pattern.PatternLayoutBaseOsgi;
 import ch.qos.logback.core.pattern.color.*;
 import ch.qos.logback.core.pattern.parser.Parser;
 
@@ -37,10 +36,10 @@ import ch.qos.logback.core.pattern.parser.Parser;
  * 
  */
 
-public class PatternLayout extends PatternLayoutBase<ILoggingEvent> {
+public class PatternLayoutOsgi extends PatternLayoutBaseOsgi<ILoggingEvent> {
 
-    public static final Map<String, String> DEFAULT_CONVERTER_MAP = new HashMap<String, String>();
-    public static final Map<String, String> CONVERTER_CLASS_TO_KEY_MAP = new HashMap<String, String>();
+    public static final Map<String, String> DEFAULT_CONVERTER_MAP = new HashMap<>();
+    public static final Map<String, String> CONVERTER_CLASS_TO_KEY_MAP = new HashMap<>();
 
     /**
      * @deprecated replaced by DEFAULT_CONVERTER_MAP
@@ -162,7 +161,7 @@ public class PatternLayout extends PatternLayoutBase<ILoggingEvent> {
 
     }
 
-    public PatternLayout() {
+    public PatternLayoutOsgi() {
         this.postCompileProcessor = new EnsureExceptionHandling();
     }
 

@@ -24,13 +24,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.sling.ch.qos.logback.classic.PatternLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayoutOsgi;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
 
@@ -95,7 +95,7 @@ public class LogConfig {
         return resetToDefault;
     }
 
-    public @NotNull PatternLayout createLayout(@NotNull LoggerContext loggerContext) {
+    public @NotNull PatternLayoutOsgi createLayout(@NotNull LoggerContext loggerContext) {
         // The java.util.MessageFormat pattern to use for formatting log
         // messages with the root logger.
         // This is a java.util.MessageFormat pattern supporting up to six
@@ -137,7 +137,7 @@ public class LogConfig {
             }
         }
 
-        final PatternLayout pl = new PatternLayout();
+        final PatternLayoutOsgi pl = new PatternLayoutOsgi();
         pl.setPattern(logBackPattern);
         pl.setOutputPatternAsHeader(false);
         pl.setContext(loggerContext);

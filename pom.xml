@@ -60,7 +60,7 @@
         <artifactId>maven-javadoc-plugin</artifactId>
         <configuration>
           <stylesheet>maven</stylesheet>
-          <excludePackageNames>org.apache.sling.ch.*:*.impl:*.internal:</excludePackageNames>
+          <excludePackageNames>ch.*:*.impl:*.internal:</excludePackageNames>
           <notimestamp>true</notimestamp>
         </configuration>
       </plugin>
@@ -77,9 +77,41 @@
             </goals>
             <configuration>
               <excludes combine.children="append">
-                <exclude>src/main/java/org/apache/sling/ch/**</exclude>
+                <exclude>src/main/java/ch/**</exclude>
               </excludes>
               <consoleOutput>true</consoleOutput>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <createDependencyReducedPom>false</createDependencyReducedPom>
+              <artifactSet>
+                <includes>
+                  <include>ch.qos.logback</include>
+                </includes>
+              </artifactSet>
+              <relocations>
+                <relocation>
+                  <pattern>ch.qos.logback</pattern>
+                  <shadedPattern>org.apache.sling.ch.qos.logback</shadedPattern>
+                  <includes>
+                    <include>ch.qos.logback.core.pattern.PatternLayoutBase*</include>
+                    <include>ch.qos.logback.core.pattern.parser.*</include>
+                    <include>ch.qos.logback.classic.PatternLayoutOsgi*</include>
+                  </includes>
+                </relocation>
+              </relocations>
             </configuration>
           </execution>
         </executions>
@@ -358,7 +390,7 @@
             <artifactId>jacoco-maven-plugin</artifactId>
             <configuration>
               <excludes>
-                <exclude>org/apache/sling/ch/**</exclude>
+                <exclude>ch/**</exclude>
               </excludes>
             </configuration>
           </plugin>

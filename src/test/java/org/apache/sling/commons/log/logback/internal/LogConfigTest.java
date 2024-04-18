@@ -28,7 +28,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Set;
 
-import org.apache.sling.ch.qos.logback.classic.PatternLayout;
 import org.apache.sling.commons.log.helpers.LogCapture;
 import org.apache.sling.commons.log.logback.internal.LogConfig.LogWriterProvider;
 import org.apache.sling.commons.log.logback.internal.util.TestUtils;
@@ -39,6 +38,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayoutOsgi;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.ThrowableProxy;
 import ch.qos.logback.core.Context;
@@ -134,7 +134,7 @@ class LogConfigTest {
      */
     @Test
     void testCreateLayout() {
-        PatternLayout pl = logConfig.createLayout((LoggerContext)LoggerFactory.getILoggerFactory());
+        PatternLayoutOsgi pl = logConfig.createLayout((LoggerContext)LoggerFactory.getILoggerFactory());
         assertNotNull(pl);
     }
 
@@ -146,7 +146,7 @@ class LogConfigTest {
                 "logwriter1", true, LogConstants.PID, false);
 
         String convertedPattern = "%d{dd.MM.yyyy HH:mm:ss.SSS} *%level* [%thread] %logger %message%n";
-        PatternLayout pl = logConfig.createLayout((LoggerContext)LoggerFactory.getILoggerFactory());
+        PatternLayoutOsgi pl = logConfig.createLayout((LoggerContext)LoggerFactory.getILoggerFactory());
         assertEquals(convertedPattern, pl.getPattern());
     }
 
@@ -159,7 +159,7 @@ class LogConfigTest {
 
         // verify that the msg was logged
         try (LogCapture capture = new LogCapture(logConfig.getClass().getName(), true)) {
-            PatternLayout pl = TestUtils.doWorkWithoutRootConsoleAppender(() -> {
+            PatternLayoutOsgi pl = TestUtils.doWorkWithoutRootConsoleAppender(() -> {
                 return logConfig.createLayout((LoggerContext)LoggerFactory.getILoggerFactory());
             });
 
@@ -226,7 +226,7 @@ class LogConfigTest {
         LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
         for(final String p : patterns) {
             final LogConfig logConfig = createConfig(p);
-            final PatternLayout layout = logConfig.createLayout(loggerContext);
+            final PatternLayoutOsgi layout = logConfig.createLayout(loggerContext);
 
             final ILoggingEvent event = Mockito.mock(ILoggingEvent.class);
             Mockito.when(event.getFormattedMessage()).thenReturn("message");

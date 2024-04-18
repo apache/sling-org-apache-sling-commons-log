@@ -11,7 +11,7 @@
  * under the terms of the GNU Lesser General Public License version 2.1
  * as published by the Free Software Foundation.
  */
-package org.apache.sling.ch.qos.logback.core.pattern.parser;
+package ch.qos.logback.core.pattern.parser;
 
 import java.util.Map;
 import java.util.function.Supplier;
@@ -19,77 +19,16 @@ import java.util.function.Supplier;
 import ch.qos.logback.core.pattern.CompositeConverter;
 import ch.qos.logback.core.pattern.Converter;
 import ch.qos.logback.core.pattern.DynamicConverter;
-import ch.qos.logback.core.pattern.LiteralConverter;
-import ch.qos.logback.core.spi.ContextAwareBase;
-import ch.qos.logback.core.status.ErrorStatus;
 import ch.qos.logback.core.util.OptionHelper;
 
-class Compiler<E> extends ContextAwareBase {
+class CompilerOsgi<E> extends Compiler<E> {
 
-    Converter<E> head;
-    Converter<E> tail;
-    final Node top;
-    // converters whose value is a class name
-    final Map<String, String> converterMap;
     // converters whose value is a supplier function
     final Map<String, Supplier<Converter<E>>> converterSupplierMap;
 
-    Compiler(final Node top, final Map<String, String> converterMap, Map<String, Supplier<Converter<E>>> converterSupplierMap) {
-        this.top = top;
-        this.converterMap = converterMap;
+    CompilerOsgi(final Node top, final Map<String, String> converterMap, Map<String, Supplier<Converter<E>>> converterSupplierMap) {
+        super(top, converterMap);
         this.converterSupplierMap = converterSupplierMap;
-    }
-
-    Converter<E> compile() {
-        head = tail = null;
-        for (Node n = top; n != null; n = n.getNext()) {
-            switch (n.getType()) {
-            case 0: //Node.LITERAL:
-                addToList(new LiteralConverter<E>((String) n.getValue()));
-                break;
-            case 2: //Node.COMPOSITE_KEYWORD:
-                CompositeNode cn = (CompositeNode) n;
-                CompositeConverter<E> compositeConverter = createCompositeConverter(cn);
-                if (compositeConverter == null) {
-                    addError("Failed to create converter for [%" + cn.getValue() + "] keyword");
-                    addToList(new LiteralConverter<E>("%PARSER_ERROR[" + cn.getValue() + "]"));
-                    break;
-                }
-                compositeConverter.setFormattingInfo(cn.getFormatInfo());
-                compositeConverter.setOptionList(cn.getOptions());
-                Compiler<E> childCompiler = new Compiler<E>(cn.getChildNode(), converterMap, converterSupplierMap);
-                childCompiler.setContext(context);
-                Converter<E> childConverter = childCompiler.compile();
-                compositeConverter.setChildConverter(childConverter);
-                addToList(compositeConverter);
-                break;
-            case 1: //Node.SIMPLE_KEYWORD:
-                SimpleKeywordNode kn = (SimpleKeywordNode) n;
-                DynamicConverter<E> dynaConverter = createConverter(kn);
-                if (dynaConverter != null) {
-                    dynaConverter.setFormattingInfo(kn.getFormatInfo());
-                    dynaConverter.setOptionList(kn.getOptions());
-                    addToList(dynaConverter);
-                } else {
-                    // if the appropriate dynaconverter cannot be found, then replace
-                    // it with a dummy LiteralConverter indicating an error.
-                    Converter<E> errConveter = new LiteralConverter<E>("%PARSER_ERROR[" + kn.getValue() + "]");
-                    addStatus(new ErrorStatus("[" + kn.getValue() + "] is not a valid conversion word", this));
-                    addToList(errConveter);
-                }
-
-            }
-        }
-        return head;
-    }
-
-    private void addToList(Converter<E> c) {
-        if (head == null) {
-            head = tail = c;
-        } else {
-            tail.setNext(c);
-            tail = c;
-        }
     }
 
     /**
@@ -99,6 +38,7 @@ class Compiler<E> extends ContextAwareBase {
      * @return
      */
     @SuppressWarnings("unchecked")
+    @Override
     DynamicConverter<E> createConverter(SimpleKeywordNode kn) {
         DynamicConverter<E> converter = null;
         String keyword = (String) kn.getValue();
@@ -137,6 +77,7 @@ class Compiler<E> extends ContextAwareBase {
      * @return
      */
     @SuppressWarnings("unchecked")
+    @Override
     CompositeConverter<E> createCompositeConverter(CompositeNode cn) {
         CompositeConverter<E> converter = null;
         String keyword = (String) cn.getValue();
@@ -167,13 +108,4 @@ class Compiler<E> extends ContextAwareBase {
         return converter;
     }
 
-    // public void setStatusManager(StatusManager statusManager) {
-    // this.statusManager = statusManager;
-    // }
-    //
-    // void addStatus(Status status) {
-    // if(statusManager != null) {
-    // statusManager.add(status);
-    // }
-    // }
 }

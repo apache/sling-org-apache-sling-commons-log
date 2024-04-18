@@ -21,9 +21,8 @@ package org.apache.sling.commons.log.logback.internal;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.apache.sling.ch.qos.logback.classic.PatternLayout;
-
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayoutOsgi;
 import ch.qos.logback.classic.pattern.EnsureExceptionHandling;
 import ch.qos.logback.classic.pattern.ExtendedThrowableProxyConverter;
 import ch.qos.logback.classic.pattern.MessageConverter;
@@ -51,7 +50,7 @@ public class MaskingMessageUtil {
      * Set the message converter for the layout
      * @param pl The layout
      */
-    public static void setMessageConverter(final PatternLayout pl) {
+    public static void setMessageConverter(final PatternLayoutOsgi pl) {
         // need to overwrite all converter for messages and exceptions
         // see https://logback.qos.ch/manual/layouts.html
         Map<String, Supplier<Converter<ILoggingEvent>>> instanceConverterSupplierMap = pl.getInstanceConverterSupplierMap();
@@ -244,7 +243,7 @@ public class MaskingMessageUtil {
 
         @Override
         public void start() {
-            PatternLayout patternLayout = new PatternLayout();
+            PatternLayoutOsgi patternLayout = new PatternLayoutOsgi();
             patternLayout.setContext(context);
             patternLayout.setPattern(getPattern());
             patternLayout.setOutputPatternAsHeader(outputPatternAsHeader);

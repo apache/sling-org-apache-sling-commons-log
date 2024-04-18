@@ -798,7 +798,7 @@ class LogConfigManagerTest {
     @Test
     void testGetAbsoluteFilePath() throws IOException {
         // absolute path
-        assertEquals("/tmp/path1",
+        assertEquals(Paths.get("/tmp/path1").toAbsolutePath().toString(),
                 manager.getAbsoluteFilePath("/tmp/path1"));
 
         // relative path
@@ -1689,7 +1689,7 @@ class LogConfigManagerTest {
             ModelInterpretationContext mic = new ModelInterpretationContext(loggerContext);
             manager.addSubsitutionProperties(mic);
             assertEquals(Paths.get(System.getProperty(systemPropName), "logs/testing.log").toAbsolutePath().toString(),
-                    mic.subst("${sling.home}/logs/testing.log"));
+                    Paths.get(mic.subst("${sling.home}/logs/testing.log")).toString());
         } finally {
             System.clearProperty(systemPropName);
         }
@@ -1704,7 +1704,7 @@ class LogConfigManagerTest {
         ModelInterpretationContext mic = new ModelInterpretationContext(loggerContext);
         manager.addSubsitutionProperties(mic);
         assertEquals(Paths.get("logs/testing.log").toAbsolutePath().toString(),
-                mic.subst("${sling.home}/logs/testing.log"));
+                Paths.get(mic.subst("${sling.home}/logs/testing.log")).toString());
     }
 
     /**

@@ -34,6 +34,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -53,6 +54,8 @@ import org.apache.sling.testing.mock.osgi.junit5.OsgiContextExtension;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -191,10 +194,11 @@ class SlingConfigurationPrinterTest {
             assertTrue(output.contains(String.format("Log file %s", tempFile.toString())));
             assertTrue(output.contains(String.format("1. %s", tempFile.toString())));
         } finally {
-            Files.delete(tempFile);
+            tempFile.toFile().deleteOnExit();
         }
     }
 
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "log file can't be deleted while open")
     @Test
     void testPrintConfigurationWithLogFileThatDoesNotExist() throws IOException {
         // delete the log file
@@ -209,6 +213,7 @@ class SlingConfigurationPrinterTest {
             assertFalse(output.contains(String.format("Log file %s", logFilePath)));
         }
     }
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "log file readable state can't be set")
     @Test
     void testPrintConfigurationWithCaughtIOExceptionWhileTailing() throws IOException {
         // make the file not readable
@@ -325,7 +330,8 @@ class SlingConfigurationPrinterTest {
         File[] rotatedFiles = slingConfigPrinter.getRotatedFiles(appender, -1);
         assertNotNull(rotatedFiles);
         assertEquals(1, rotatedFiles.length);
-        assertEquals("target/logs/testGetRotatedFiles.log", rotatedFiles[0].getPath());
+        assertEquals(Paths.get("target/logs/testGetRotatedFiles.log").toString(),
+                rotatedFiles[0].getPath());
     }
 
     @ParameterizedTest

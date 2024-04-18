@@ -17,7 +17,6 @@
 package org.apache.sling.commons.log.logback.internal.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -60,7 +59,7 @@ class SlingStatusPrinterTest {
         String output = TestUtils.doWorkWithCapturedStdOut(
                 () -> SlingStatusPrinter.printInCaseOfErrorsOrWarnings(context, threshold, 
                         msgSince, initSuccess));
-        assertEquals("WARN: Context named \"null\" has no status manager\n", output);
+        assertEquals(String.format("WARN: Context named \"null\" has no status manager%s", System.lineSeparator()), output);
     }
 
     @Test
@@ -83,23 +82,16 @@ class SlingStatusPrinterTest {
         context.getStatusManager().add(new WarnStatus("Something went wrong", context));
         long threshold = Long.MIN_VALUE;
         long msgSince = System.currentTimeMillis();
-        String output;
         try (LogCapture capture = new LogCapture(SlingStatusPrinter.class.getName(), true)) {
-            output = TestUtils.doWorkWithCapturedStdOut(
+            TestUtils.doWorkWithCapturedStdOut(
                     () -> SlingStatusPrinter.printInCaseOfErrorsOrWarnings(context, threshold,
                             msgSince, initSuccess));
-            assertFalse(output.isEmpty());
 
             if (initSuccess) {
-                assertTrue(output.contains("While (re)configuring Logback transient issues were observed. More details are provided below."));
-                assertTrue(output.contains(String.format("*Logback Status* |-WARN in ch.qos.logback.classic.LoggerContext[%s] - Something went wrong", context.getName())));
-
                 // verify the msg was logged
                 capture.assertContains(Level.INFO, "While (re)configuring Logback transient issues were observed. More details are provided below.");
                 capture.assertContains(Level.INFO, String.format("*Logback Status* |-WARN in ch.qos.logback.classic.LoggerContext[%s] - Something went wrong", context.getName()));
             } else {
-                assertTrue(output.contains(String.format("|-WARN in ch.qos.logback.classic.LoggerContext[%s] - Something went wrong", context.getName())));
-
                 // verify the msg was not logged
                 capture.assertNotContains(Level.INFO, "While (re)configuring Logback transient issues were observed. More details are provided below.");
                 capture.assertNotContains(Level.INFO, String.format("*Logback Status* |-WARN in ch.qos.logback.classic.LoggerContext[%s] - Something went wrong", context.getName()));

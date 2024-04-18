@@ -55,6 +55,8 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -187,6 +189,7 @@ class SlingLogPanelTest {
         }
     }
 
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "log file can't be deleted while open")
     @Test
     void testTailWithFileNotExist() throws IOException {
         File file = new File("target", "logs/slingLogPanelTest.log");
@@ -338,6 +341,7 @@ class SlingLogPanelTest {
             assertTrue(output.contains(String.format("<td>Source %s</td>", logbackFilePath)));
         }
     }
+    @DisabledOnOs(value = OS.WINDOWS, disabledReason = "log file readable state can't be set")
     @Test
     void testRenderWithLogbackFileWithCaughtIOException() throws Exception {
         logConfigManager.stop();
@@ -361,6 +365,7 @@ class SlingLogPanelTest {
                     PrintWriter pw = new PrintWriter(strWriter)) {
                 // make the file not readable so it throws IOException during render
                 file.setReadable(false);
+                assertFalse(file.canRead());
 
                 // verify that the msg was logged
                 try (LogCapture capture = new LogCapture(logPanel.getClass().getName(), true)) {

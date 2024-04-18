@@ -36,7 +36,8 @@ class MaskingExtendedThrowableProxyConverterTest {
     void testThrowableProxyToStringIThrowableProxy() {
         MaskingExtendedThrowableProxyConverter t = new MaskingExtendedThrowableProxyConverter();
         IThrowableProxy tp = new ThrowableProxy(new Exception("Something happened"));
-        assertEquals("java.lang.Exception: Something happened\n", t.throwableProxyToString(tp));
+        assertEquals(String.format("java.lang.Exception: Something happened%s", System.lineSeparator()),
+                t.throwableProxyToString(tp));
     }
 
 }

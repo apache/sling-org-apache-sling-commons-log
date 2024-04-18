@@ -36,7 +36,8 @@ class MaskingRootCauseFirstThrowableProxyConverterTest {
     void testThrowableProxyToStringIThrowableProxy() {
         MaskingRootCauseFirstThrowableProxyConverter t = new MaskingRootCauseFirstThrowableProxyConverter();
         IThrowableProxy tp = new ThrowableProxy(new Exception("Something happened"));
-        assertEquals("java.lang.Exception: Something happened\n", t.throwableProxyToString(tp));
+        assertEquals(String.format("java.lang.Exception: Something happened%s", System.lineSeparator()),
+                t.throwableProxyToString(tp));
     }
 
 }

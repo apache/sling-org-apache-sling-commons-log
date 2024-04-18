@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import java.io.ByteArrayInputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.text.MessageFormat;
 
 import org.apache.sling.commons.log.helpers.LogCapture;
 import org.junit.jupiter.api.Test;
@@ -60,10 +61,10 @@ class XmlUtilTest {
         InputSource source = Mockito.mock(InputSource.class);
         ByteArrayInputStream byteStream = new ByteArrayInputStream("<hello><world>Text Here</world></hello>".getBytes());
         Mockito.doReturn(byteStream).when(source).getByteStream();
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><hello>\n"
-                + "  <world>Text Here</world>\n"
-                + "</hello>\n"
-                + "", 
+        assertEquals(MessageFormat.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?><hello>{0}"
+                + "  <world>Text Here</world>{0}"
+                + "</hello>{0}"
+                + "", System.lineSeparator()),
             XmlUtil.prettyPrint(source));
     }
     @Test
@@ -71,10 +72,10 @@ class XmlUtilTest {
         InputSource source = Mockito.mock(InputSource.class);
         Reader reader = new StringReader("<hello><world>Text Here</world></hello>");
         Mockito.doReturn(reader).when(source).getCharacterStream();
-        assertEquals("<?xml version=\"1.0\" encoding=\"UTF-8\"?><hello>\n"
-                + "  <world>Text Here</world>\n"
-                + "</hello>\n"
-                + "", 
+        assertEquals(MessageFormat.format("<?xml version=\"1.0\" encoding=\"UTF-8\"?><hello>{0}"
+                + "  <world>Text Here</world>{0}"
+                + "</hello>{0}"
+                + "", System.lineSeparator()),
             XmlUtil.prettyPrint(source));
     }
     @Test

@@ -49,7 +49,7 @@ public class DefaultConfigurator extends ContextAwareBase implements Configurato
             // start with basic console output configuration
             configurator.doConfigure(getConfigResource());
         } catch (JoranException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // NOSONAR
         }
 
         // don't fall through to the original handlers

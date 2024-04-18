@@ -275,7 +275,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         // log the message to error stream also
         System.err.println(message); // NOSONAR
         if (t != null) {
-            t.printStackTrace();
+            t.printStackTrace(); // NOSONAR
         }
     }
 

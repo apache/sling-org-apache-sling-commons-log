@@ -60,7 +60,7 @@ import ch.qos.logback.core.spi.ErrorCodes;
 public final class OsgiAction extends BaseModelAction {
 
     /**
-     * Build the OsgiAppenderRefModel for the given inputs
+     * Build the OsgiModel for the given inputs
      *
      * @param interpretationContext the Sax event interpretation context
      * @param name the element name

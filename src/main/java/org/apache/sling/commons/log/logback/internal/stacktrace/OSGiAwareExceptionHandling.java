@@ -28,9 +28,18 @@ import ch.qos.logback.core.Context;
 import ch.qos.logback.core.pattern.Converter;
 import ch.qos.logback.core.pattern.ConverterUtil;
 
+/**
+ * Extend EnsureExceptionHandling to add extra OSGi bundle info to the lines
+ * in the stack trace output
+ */
 public class OSGiAwareExceptionHandling extends EnsureExceptionHandling {
     private final PackageInfoCollector collector;
 
+    /**
+     * Constructor
+     *
+     * @param collector the package information collecgtor
+     */
     public OSGiAwareExceptionHandling(PackageInfoCollector collector) {
         this.collector = collector;
     }
@@ -43,12 +52,19 @@ public class OSGiAwareExceptionHandling extends EnsureExceptionHandling {
         }
         if (!chainHandlesThrowable(head)) {
             Converter<ILoggingEvent> tail = ConverterUtil.findTail(head);
-            Converter<ILoggingEvent> exConverter = new OSGiAwareConverter();
+            Converter<ILoggingEvent> exConverter = new OSGiAwareConverter(collector);
             tail.setNext(exConverter);
         }
     }
 
-    private class OSGiAwareConverter extends MaskingMessageUtil.MaskingExtendedThrowableProxyConverter {
+    @SuppressWarnings("java:S110")
+    static class OSGiAwareConverter extends MaskingMessageUtil.MaskingExtendedThrowableProxyConverter {
+        private final PackageInfoCollector collector;
+
+        public OSGiAwareConverter(PackageInfoCollector collector) {
+            this.collector = collector;
+        }
+
         @Override
         protected void extraData(StringBuilder builder, StackTraceElementProxy step) {
             if (step != null) {
@@ -58,5 +74,7 @@ public class OSGiAwareExceptionHandling extends EnsureExceptionHandling {
                 }
             }
         }
+
     }
+
 }

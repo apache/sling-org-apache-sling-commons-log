@@ -18,53 +18,67 @@
  */
 package org.apache.sling.commons.log.logback.internal.config;
 
+import java.util.function.Supplier;
+
 import org.apache.sling.commons.log.logback.internal.LogConfigManager;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.ServiceFactory;
 import org.osgi.framework.ServiceRegistration;
 
-public class ConfigurationServiceFactory implements ServiceFactory {
+/**
+ * Factory of logging configuration services
+ *
+ * @param <S> the type of LogConfigurator provided by the factory
+ */
+public class ConfigurationServiceFactory<S extends LogConfigurator> implements ServiceFactory<S> {
 
     private final LogConfigManager logConfigManager;
-
-    private final String serviceClass;
-
+    private final Supplier<S> svcSupplier;
     private int useCount;
+    private S service;
 
-    private Object service;
-
-    public ConfigurationServiceFactory(final LogConfigManager logConfigManager, final String serviceClass) {
-        this.logConfigManager = logConfigManager;
-        this.serviceClass = serviceClass;
+    /**
+     * Constructor
+     *
+     * @param mgr the log configuration manager
+     * @param svcSupplier the supplier that creates the service instance
+     */
+    public ConfigurationServiceFactory(@NotNull LogConfigManager mgr, @NotNull Supplier<S> svcSupplier) {
+        this.logConfigManager = mgr;
+        this.svcSupplier = svcSupplier;
     }
 
-    public Object getService(Bundle bundle, ServiceRegistration registration) {
+    /**
+     * Get or create the service for the supplied registration. The useCount is
+     * incremented for each call.
+     * 
+     * @return the service for the registration
+     */
+    @Override
+    public @NotNull S getService(@NotNull Bundle bundle, @NotNull ServiceRegistration<S> registration) {
         if (service == null) {
             useCount = 1;
-            service = createInstance();
+            service = svcSupplier.get();
+            service.setLogConfigManager(logConfigManager);
         } else {
             useCount++;
         }
         return service;
     }
 
-    public void ungetService(Bundle bundle, ServiceRegistration registration, Object service) {
+    /**
+     * Unget the service for the supplied registration. This decrements the useCount 
+     * and if that reaches zero then the service object is disposed
+     */
+    @Override
+    public void ungetService(@NotNull Bundle bundle, @NotNull ServiceRegistration<S> registration, @NotNull S svc) {
         useCount--;
         if (useCount <= 0) {
             service = null;
+            // reset in case the value has gone below zero
+            useCount = 0;
         }
     }
 
-    private Object createInstance() {
-        try {
-            Class<?> type = getClass().getClassLoader().loadClass(serviceClass);
-            Object instance = type.newInstance();
-            if (instance instanceof LogConfigurator) {
-                ((LogConfigurator) instance).setLogConfigManager(logConfigManager);
-            }
-            return instance;
-        } catch (Throwable t) {
-            throw new RuntimeException("Failed to create " + serviceClass + " instance", t);
-        }
-    }
 }

@@ -19,6 +19,15 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.util.PathUtils.getBaseDir;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -33,7 +42,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.sling.commons.log.logback.internal.LogConfigManager;
+import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -45,17 +54,6 @@ import org.osgi.framework.BundleContext;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
-
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.FACTORY_PID_CONFIGS;
-import static org.apache.sling.commons.log.logback.internal.LogConfigManager.PID;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.util.PathUtils.getBaseDir;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -83,7 +81,7 @@ public class ITConfigPrinter extends LogTestBase {
     @Inject
     private BundleContext bundleContext;
 
-    private ServiceTracker tracker;
+    private ServiceTracker<?, ?> tracker;
 
     private Object configPrinter;
 
@@ -106,10 +104,10 @@ public class ITConfigPrinter extends LogTestBase {
     @Test
     public void includeOnlyLastNFiles() throws Exception {
         waitForPrinter();
-        Configuration config = ca.getConfiguration(PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LogConfigManager.PRINTER_MAX_INCLUDED_FILES, 3);
-        p.put(LogConfigManager.LOG_LEVEL, "INFO");
+        p.put(LogConstants.PRINTER_MAX_INCLUDED_FILES, 3);
+        p.put(LogConstants.LOG_LEVEL, "INFO");
         config.update(p);
 
         delay();
@@ -133,11 +131,11 @@ public class ITConfigPrinter extends LogTestBase {
     }
 
     private void createLogConfig(String fileName, String... logConfigs) throws IOException {
-        Configuration config = ca.createFactoryConfiguration(FACTORY_PID_CONFIGS, null);
+        Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LogConfigManager.LOG_LOGGERS, logConfigs);
-        p.put(LogConfigManager.LOG_LEVEL, "DEBUG");
-        p.put(LogConfigManager.LOG_FILE, fileName);
+        p.put(LogConstants.LOG_LOGGERS, logConfigs);
+        p.put(LogConstants.LOG_LEVEL, "DEBUG");
+        p.put(LogConstants.LOG_FILE, fileName);
         config.update(p);
 
         delay();
@@ -155,6 +153,7 @@ public class ITConfigPrinter extends LogTestBase {
         return null;
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void waitForPrinter() throws InterruptedException {
         if (configPrinter == null){
             tracker = new ServiceTracker(bundleContext,

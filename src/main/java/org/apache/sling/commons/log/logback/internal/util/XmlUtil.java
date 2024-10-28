@@ -21,6 +21,7 @@ package org.apache.sling.commons.log.logback.internal.util;
 
 import java.io.StringWriter;
 
+import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
@@ -28,28 +29,50 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.slf4j.Logger;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
+/**
+ * Utilities to help processing XML
+ */
 public class XmlUtil {
-    private static Logger log = LoggerFactory.getLogger(XmlUtil.class);
 
-    public static String prettyPrint(InputSource is) {
-        try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+    /**
+     * Constructor
+     */
+    private XmlUtil() {
+        // to hide public ctor
+    }
+
+    /**
+     * Return a pretty string representation of the xml supplied
+     *
+     * @param is the source for the xml content
+     * @return the pretty formatted xml 
+     */
+    public static @NotNull String prettyPrint(@NotNull InputSource is) {
+        try (StringWriter strWriter = new StringWriter()){
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            // to protect a javax.xml.transform.TransformerFactory from XXE
+            transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+            transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+
+            Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
             // initialize StreamResult with File object to save to file
-            StreamResult result = new StreamResult(new StringWriter());
+            StreamResult result = new StreamResult(strWriter);
             Source source = new SAXSource(is);
             transformer.transform(source, result);
-            return result.getWriter().toString();
+            return strWriter.toString();
         } catch (Exception e) {
             // Catch generic error as panel should still work if xml apis are
             // not
             // resolved
-            log.warn("Error occurred while transforming xml", e);
+            LoggerFactory.getLogger(XmlUtil.class)
+                .warn("Error occurred while transforming xml", e);
         } finally {
             Util.close(is);
         }
@@ -57,7 +80,13 @@ public class XmlUtil {
         return "Source not found";
     }
 
-    public static String escapeXml(final String input) {
+    /**
+     * Escape the special characters of the input to be safe as an xml string
+     *
+     * @param input the input to process
+     * @return the input with the xml special characters replaced with entities
+     */
+    public static @Nullable String escapeXml(@Nullable final String input) {
         if (input == null) {
             return null;
         }
@@ -79,6 +108,6 @@ public class XmlUtil {
                 b.append(c);
             }
         }
-        return b.toString().replaceAll("\\$", "&#37;");
+        return b.toString().replace("$", "&#37;");
     }
 }

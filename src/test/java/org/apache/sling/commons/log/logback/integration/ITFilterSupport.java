@@ -68,7 +68,7 @@ public class ITFilterSupport extends LogTestBase{
         assertEquals(1, ta.events.size());
 
         SimpleTurboFilter stf = new SimpleTurboFilter();
-        ServiceRegistration sr  = bundleContext.registerService(TurboFilter.class.getName(), stf, null);
+        ServiceRegistration<TurboFilter> sr  = bundleContext.registerService(TurboFilter.class, stf, null);
 
         delay();
 
@@ -109,7 +109,8 @@ public class ITFilterSupport extends LogTestBase{
         SimpleFilter stf = new SimpleFilter();
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("appenders", "TestAppender");
-        ServiceRegistration sr  = bundleContext.registerService(Filter.class.getName(), stf, props);
+        @SuppressWarnings("rawtypes")
+        ServiceRegistration<Filter> sr  = bundleContext.registerService(Filter.class, stf, props);
 
         delay();
 
@@ -139,8 +140,8 @@ public class ITFilterSupport extends LogTestBase{
 
     @Test
     public void filterUsingWildcard() throws Exception{
-        TestAppender ta1 = registerAppender("filterUsingWildcard1", "app1");
-        TestAppender ta2 = registerAppender("filterUsingWildcard2", "app2");
+        /*TestAppender ta1 = */registerAppender("filterUsingWildcard1", "app1");
+        /*TestAppender ta2 = */registerAppender("filterUsingWildcard2", "app2");
 
         //Set additivity to false to prevent other appender like CONSOLE from
         //interfering
@@ -149,8 +150,8 @@ public class ITFilterSupport extends LogTestBase{
         org.slf4j.Logger baz2 = LoggerFactory.getLogger("filterUsingWildcard2.foo.baz");
         ((ch.qos.logback.classic.Logger)baz2).setAdditive(false);
 
-        final List<String> msgs = new ArrayList<String>();
-        Filter stf = new Filter<ILoggingEvent>(){
+        final List<String> msgs = new ArrayList<>();
+        Filter<ILoggingEvent> stf = new Filter<>() {
             @Override
             public FilterReply decide(ILoggingEvent event) {
                 msgs.add(event.getMessage());
@@ -160,7 +161,7 @@ public class ITFilterSupport extends LogTestBase{
 
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("appenders", "*");
-        ServiceRegistration sr  = bundleContext.registerService(Filter.class.getName(), stf, props);
+        bundleContext.registerService(Filter.class, stf, props);
 
         delay();
 
@@ -184,7 +185,7 @@ public class ITFilterSupport extends LogTestBase{
         baz.setLevel(Level.INFO);
 
         props.put("loggers", loggers);
-        ServiceRegistration sr = bundleContext.registerService(Appender.class.getName(), ta, props);
+        bundleContext.registerService(Appender.class, ta, props);
 
         delay();
         return ta;

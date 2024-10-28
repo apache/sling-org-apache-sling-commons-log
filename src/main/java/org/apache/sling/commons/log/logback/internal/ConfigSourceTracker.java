@@ -19,16 +19,14 @@
 
 package org.apache.sling.commons.log.logback.internal;
 
-import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import ch.qos.logback.classic.LoggerContext;
-
 import org.apache.sling.commons.log.logback.ConfigProvider;
 import org.apache.sling.commons.log.logback.internal.util.XmlUtil;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Filter;
@@ -36,33 +34,54 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
-import org.xml.sax.InputSource;
 
-public class ConfigSourceTracker extends ServiceTracker implements LogbackResetListener {
+import ch.qos.logback.classic.LoggerContext;
+
+/**
+ * Service tracker that listens for ConfigProvider services and
+ * applies them to the logging configuration
+ */
+public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
+        implements LogbackResetListener {
+
     /**
      * Service property name indicating that String object is a Logback config
      * fragment
      */
-    private static final String PROP_LOGBACK_CONFIG = "logbackConfig";
+    public static final String PROP_LOGBACK_CONFIG = "logbackConfig";
 
     /**
      * Reverse sorted map of ConfigSource based on ranking of ServiceReferences
      */
-    private final Map<ServiceReference, ConfigSourceInfo> inputSources = new ConcurrentSkipListMap<ServiceReference, ConfigSourceInfo>(
+    private final Map<ServiceReference<Object>, ConfigSourceInfo> inputSources = new ConcurrentSkipListMap<>(
         Collections.reverseOrder());
 
-    private final LogbackManager logbackManager;
+    private final LogConfigManager logConfigManager;
 
-    public ConfigSourceTracker(BundleContext context, LogbackManager logbackManager) throws InvalidSyntaxException {
+    /**
+     * Constructor
+     *
+     * @param context the bundle context
+     * @param logConfigManager the LogConfigManger to apply the configuration to
+     * @throws InvalidSyntaxException if {@link #createFilter()} returns something invalid
+     */
+    public ConfigSourceTracker(@NotNull BundleContext context, @NotNull LogConfigManager logConfigManager) throws InvalidSyntaxException {
         super(context, createFilter(), null);
-        this.logbackManager = logbackManager;
-        super.open();
+        this.logConfigManager = logConfigManager;
     }
 
-    public Collection<ConfigSourceInfo> getSources() {
+    /**
+     * Return the current set of config source information
+     * 
+     * @return collection of config source information
+     */
+    public @NotNull Collection<ConfigSourceInfo> getSources() {
         return inputSources.values();
     }
 
+    /**
+     * Close the tracker and cleanup
+     */
     @Override
     public synchronized void close() {
         super.close();
@@ -71,84 +90,111 @@ public class ConfigSourceTracker extends ServiceTracker implements LogbackResetL
 
     // ~--------------------------------- ServiceTracker
 
+    /**
+     * Callback when a ConfigProvider service has been added
+     *
+     * @param reference the service reference that was added
+     * @return the Appender service object
+     */
     @Override
-    public Object addingService(ServiceReference reference) {
+    public @NotNull ConfigProvider addingService(@NotNull ServiceReference<Object> reference) {
         Object o = super.addingService(reference);
-        inputSources.put(reference, new ConfigSourceInfo(reference, getConfig(o)));
-        logbackManager.configChanged();
-        return o;
+        ConfigProvider cp = getConfig(o);
+        inputSources.put(reference, new ConfigSourceInfo(reference, cp));
+        logConfigManager.configChanged();
+        return cp;
     }
 
+    /**
+     * Callback when an Appender service has been modified
+     * 
+     * @param reference the service reference that was modified
+     * @param service the service object that was being tracked
+     */
     @Override
-    public void modifiedService(ServiceReference reference, Object service) {
+    public void modifiedService(@NotNull ServiceReference<Object> reference, @NotNull ConfigProvider service) {
         super.modifiedService(reference, service);
         // A ConfigProvider can modify its service registration properties
         // to indicate that config has changed and a reload is required
-        logbackManager.configChanged();
+        logConfigManager.configChanged();
     }
 
+    /**
+     * Callback when an Appender service has been removed
+     * 
+     * @param reference the service reference that was removed
+     * @param service the service object that was being tracked
+     */
     @Override
-    public void removedService(ServiceReference reference, Object service) {
-        if (inputSources.remove(reference) != null) {
-            logbackManager.configChanged();
-        }
+    public void removedService(@NotNull ServiceReference<Object> reference, @NotNull ConfigProvider service) {
+        inputSources.remove(reference);
+        logConfigManager.configChanged();
     }
 
-    // ~----------------------------------- LogbackResetListener
+    //~-----------------------------------LogbackResetListener
+
+    /**
+     * Callback before the reset is started
+     *
+     * @param context the logger context being reset
+     */
     @Override
-    public void onResetStart(LoggerContext context) {
+    public void onResetStart(@NotNull LoggerContext context) {
         // export the tracker instance. It would later be used in
         // OSGiInternalAction
         context.putObject(ConfigSourceTracker.class.getName(), this);
     }
 
-    @Override
-    public void onResetComplete(LoggerContext context) {
-
-    }
-
     // ~----------------------------------ConfigSourceInfo
 
+    /**
+     * Contains the details of the config source that was added
+     */
     public static class ConfigSourceInfo {
-        private final ServiceReference reference;
+        private final ServiceReference<Object> reference;
 
         private final ConfigProvider configProvider;
 
-        public ConfigSourceInfo(ServiceReference reference, ConfigProvider configProvider) {
+        public ConfigSourceInfo(@NotNull ServiceReference<Object> reference, @NotNull ConfigProvider configProvider) {
             this.reference = reference;
             this.configProvider = configProvider;
         }
 
-        public ConfigProvider getConfigProvider() {
+        public @NotNull ConfigProvider getConfigProvider() {
             return configProvider;
         }
 
-        public ServiceReference getReference() {
+        public @NotNull ServiceReference<Object> getReference() {
             return reference;
         }
 
-        public String getSourceAsString() {
+        public @NotNull String getSourceAsString() {
             return XmlUtil.prettyPrint(getConfigProvider().getConfigSource());
         }
 
-        public String getSourceAsEscapedString() {
+        public @NotNull String getSourceAsEscapedString() {
             return XmlUtil.escapeXml(getSourceAsString());
         }
 
-        public String toString() {
+        public @NotNull String toString() {
             return String.format("Service ID %s", reference.getProperty(Constants.SERVICE_ID));
         }
     }
 
-    private static ConfigProvider getConfig(Object o) {
+    private static @NotNull ConfigProvider getConfig(@NotNull Object o) {
         // If string then wrap it in StringSourceProvider
         if (o instanceof String) {
-            return new StringSourceProvider((String) o);
+            return new StringConfigProvider((String) o);
         }
         return (ConfigProvider) o;
     }
 
-    private static Filter createFilter() throws InvalidSyntaxException {
+    /**
+     * Creates the filter that this tracker will match against
+     * 
+     * @return the filter
+     */
+    private static @NotNull Filter createFilter() throws InvalidSyntaxException {
         // Look for either ConfigProvider or String's with property
         // logbackConfig set
         String filter = String.format("(|(objectClass=%s)(&(objectClass=java.lang.String)(%s=*)))",
@@ -156,15 +202,4 @@ public class ConfigSourceTracker extends ServiceTracker implements LogbackResetL
         return FrameworkUtil.createFilter(filter);
     }
 
-    private static class StringSourceProvider implements ConfigProvider {
-        private final String source;
-
-        private StringSourceProvider(String source) {
-            this.source = source;
-        }
-
-        public InputSource getConfigSource() {
-            return new InputSource(new StringReader(source));
-        }
-    }
 }

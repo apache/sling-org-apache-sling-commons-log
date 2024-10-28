@@ -23,47 +23,59 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 
 import org.apache.sling.commons.log.logback.internal.LogConfigManager;
+import org.apache.sling.commons.log.logback.internal.LogConstants;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
 
+/**
+ * Helper to handle registration of the configurable
+ * logging services
+ *
+ */
 public class ConfigAdminSupport {
 
-    private ServiceRegistration loggingConfigurable;
+    private ServiceRegistration<?> loggingConfigurable;
+    private ServiceRegistration<?> writerConfigurer;
+    private ServiceRegistration<?> configConfigurer;
 
-    private ServiceRegistration writerConfigurer;
-
-    private ServiceRegistration configConfigurer;
-
-    public ConfigAdminSupport(BundleContext context, LogConfigManager logConfigManager) {
+    /**
+     * Register the configurable logging services
+     *
+     * @param context the bundle context
+     * @param logConfigManager the log config manager
+     */
+    public void start(@NotNull BundleContext context, @NotNull LogConfigManager logConfigManager) {
         // prepare registration properties (will be reused)
-        Dictionary<String, String> props = new Hashtable<String, String>();
-        props.put(Constants.SERVICE_VENDOR, "The Apache Software Foundation");
+        Dictionary<String, String> props = new Hashtable<>(); // NOSONAR
+        props.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
 
         // register for official (global) configuration now
-        props.put(Constants.SERVICE_PID, LogConfigManager.PID);
+        props.put(Constants.SERVICE_PID, LogConstants.PID);
         props.put(Constants.SERVICE_DESCRIPTION, "LogManager Configuration Admin support");
         loggingConfigurable = context.registerService("org.osgi.service.cm.ManagedService",
-            new ConfigurationServiceFactory(logConfigManager,
-                "org.apache.sling.commons.log.logback.internal.config.GlobalConfigurator"), props);
+            new ConfigurationServiceFactory<>(logConfigManager, GlobalConfigurator::new), props);
 
         // register for log writer configuration
-        ConfigurationServiceFactory msf = new ConfigurationServiceFactory(logConfigManager,
-            "org.apache.sling.commons.log.logback.internal.config.LogWriterManagedServiceFactory");
-        props.put(Constants.SERVICE_PID, LogConfigManager.FACTORY_PID_WRITERS);
+        ConfigurationServiceFactory<LogWriterManagedServiceFactory> msf = new ConfigurationServiceFactory<>(logConfigManager,
+                LogWriterManagedServiceFactory::new);
+        props.put(Constants.SERVICE_PID, LogConstants.FACTORY_PID_WRITERS);
         props.put(Constants.SERVICE_DESCRIPTION, "LogWriter configurator");
         writerConfigurer = context.registerService("org.osgi.service.cm.ManagedServiceFactory", msf, props);
 
         // register for log configuration
-        msf = new ConfigurationServiceFactory(logConfigManager,
-            "org.apache.sling.commons.log.logback.internal.config.LoggerManagedServiceFactory");
-        props.put(Constants.SERVICE_PID, LogConfigManager.FACTORY_PID_CONFIGS);
+        ConfigurationServiceFactory<LoggerManagedServiceFactory> msf2 = new ConfigurationServiceFactory<>(logConfigManager,
+                LoggerManagedServiceFactory::new);
+        props.put(Constants.SERVICE_PID, LogConstants.FACTORY_PID_CONFIGS);
         props.put(Constants.SERVICE_DESCRIPTION, "Logger configurator");
-        configConfigurer = context.registerService("org.osgi.service.cm.ManagedServiceFactory", msf, props);
-
+        configConfigurer = context.registerService("org.osgi.service.cm.ManagedServiceFactory", msf2, props);
     }
 
-    public void shutdown() {
+    /**
+     * Unregister the configurable logging services
+     */
+    public void stop() {
         if (loggingConfigurable != null) {
             loggingConfigurable.unregister();
             loggingConfigurable = null;
@@ -79,4 +91,5 @@ public class ConfigAdminSupport {
             configConfigurer = null;
         }
     }
+
 }

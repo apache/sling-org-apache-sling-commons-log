@@ -21,6 +21,11 @@ package org.apache.sling.commons.log.logback.webconsole;
 
 import java.util.Arrays;
 
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * Encapsulates the info about a logger configuration
+ */
 public final class LoggerConfig {
     private final String pid;
     private final String logLevel;
@@ -28,31 +33,65 @@ public final class LoggerConfig {
     private final String logFile;
     private boolean additive;
 
-    public LoggerConfig(String pid, String logLevel, String[] loggers, String logFile, boolean additive) {
+    /**
+     * Constructor
+     * @param pid the pid of the logger configuration (may be null)
+     * @param logLevel the log level for the loggers (may be null)
+     * @param loggers the set of loggers
+     * @param logFile the target file for the logging output
+     * @param additive true if root should log too, false otherwise
+     */
+    public LoggerConfig(@Nullable String pid, @Nullable String logLevel, @Nullable String[] loggers, @Nullable String logFile, boolean additive) {
         this.pid = pid;
         this.logLevel = logLevel;
-        this.loggers = Arrays.copyOf(loggers, loggers.length);
+        this.loggers = loggers == null ? null : Arrays.copyOf(loggers, loggers.length);
         this.logFile = logFile;
         this.additive = additive;
     }
 
-    public String getPid() {
+    /**
+     * Gets the PID
+     *
+     * @return the pid of the logger configuration (may be null)
+     */
+    public @Nullable String getPid() {
         return pid;
     }
 
-    public String getLogLevel() {
+    /**
+     * Gets the log level
+     *
+     * @return the log level for the loggers (may be null)
+     */
+    public @Nullable String getLogLevel() {
         return logLevel;
     }
 
-    public String[] getLoggers() {
+    /**
+     * Gets the loggers
+     *
+     * @return the set of loggers
+     */
+    public @Nullable String[] getLoggers() {
         return loggers;
     }
 
-    public String getLogFile() {
+    /**
+     * Gets the log file
+     *
+     * @return the target file for the logging output
+     */
+    public @Nullable String getLogFile() {
         return logFile;
     }
 
+    /**
+     * Gets additive value
+     *
+     * @return true if root should log too, false otherwise
+     */
     public boolean isAdditive() {
         return additive;
     }
+
 }

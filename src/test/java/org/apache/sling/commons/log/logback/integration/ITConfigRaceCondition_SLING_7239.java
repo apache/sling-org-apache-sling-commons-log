@@ -28,6 +28,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 
+import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -44,10 +45,6 @@ import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 
 import static java.lang.String.format;
-import static org.apache.sling.commons.log.logback.integration.ITConfigAdminSupport.FACTORY_PID_CONFIGS;
-import static org.apache.sling.commons.log.logback.integration.ITConfigAdminSupport.LOG_FILE;
-import static org.apache.sling.commons.log.logback.integration.ITConfigAdminSupport.LOG_LEVEL;
-import static org.apache.sling.commons.log.logback.integration.ITConfigAdminSupport.LOG_LOGGERS;
 import static org.junit.Assert.fail;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
@@ -140,15 +137,15 @@ public class ITConfigRaceCondition_SLING_7239 extends LogTestBase {
     }
 
     private void createLogConfig(int index) throws IOException {
-        Configuration config = ca.createFactoryConfiguration(FACTORY_PID_CONFIGS, null);
+        Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_LOGGERS, new String[]{
+        p.put(LogConstants.LOG_LOGGERS, new String[]{
                 "foo.bar." + index
         });
-        p.put(LOG_LEVEL, "DEBUG");
+        p.put(LogConstants.LOG_LEVEL, "DEBUG");
 
         File logFile = new File(tmpFolder.getRoot(), "error-" + index + ".log");
-        p.put(LOG_FILE, logFile.getAbsolutePath());
+        p.put(LogConstants.LOG_FILE, logFile.getAbsolutePath());
         config.update(p);
     }
 }

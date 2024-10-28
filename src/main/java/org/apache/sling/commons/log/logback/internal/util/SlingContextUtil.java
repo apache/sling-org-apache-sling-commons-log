@@ -19,6 +19,8 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.spi.ContextAwareBase;
 
@@ -26,15 +28,30 @@ import ch.qos.logback.core.spi.ContextAwareBase;
  * Custom util such that origin can be customized
  */
 public class SlingContextUtil extends ContextAwareBase {
+    /**
+     * The declared origin value
+     */
     private final Object origin;
 
-    public SlingContextUtil(Context context, Object origin) {
+    /**
+     * Constructor
+     *
+     * @param context the logging context
+     * @param origin the origin object
+     */
+    public SlingContextUtil(@NotNull Context context, @NotNull Object origin) {
         this.origin = origin;
         setContext(context);
     }
 
+    /**
+     * Return the origin where this instance was declared
+     *
+     * @return the declared origin
+     */
     @Override
-    protected Object getDeclaredOrigin() {
+    protected @NotNull Object getDeclaredOrigin() {
         return origin;
     }
+
 }

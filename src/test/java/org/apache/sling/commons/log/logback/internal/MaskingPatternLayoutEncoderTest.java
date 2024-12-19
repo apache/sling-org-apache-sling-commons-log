@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sling.commons.log.logback.internal.MaskingMessageUtil.MaskingPatternLayoutEncoder;
 import org.junit.jupiter.api.Test;
 
-import ch.qos.logback.classic.PatternLayoutOsgi;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Layout;
 
@@ -38,8 +38,8 @@ class MaskingPatternLayoutEncoderTest {
         MaskingPatternLayoutEncoder encoder = new MaskingPatternLayoutEncoder();
         encoder.start();
         Layout<ILoggingEvent> layout = encoder.getLayout();
-        assertTrue(layout instanceof PatternLayoutOsgi);
-        assertEquals(11, ((PatternLayoutOsgi)layout).getInstanceConverterSupplierMap().size());
+        assertTrue(layout instanceof PatternLayout);
+        assertEquals(11, ((PatternLayout)layout).getInstanceConverterMap().size());
     }
 
 }

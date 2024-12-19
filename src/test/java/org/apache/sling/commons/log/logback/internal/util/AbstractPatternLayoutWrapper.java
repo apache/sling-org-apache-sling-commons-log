@@ -20,10 +20,12 @@
 package org.apache.sling.commons.log.logback.internal.util;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
-import ch.qos.logback.classic.PatternLayoutOsgi;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Context;
+import ch.qos.logback.core.pattern.DynamicConverter;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
 import ch.qos.logback.core.status.Status;
 
@@ -32,11 +34,11 @@ import ch.qos.logback.core.status.Status;
  *
  * @apiNote This has probably no use outside of testing
  */
-public abstract class AbstractPatternLayoutWrapper extends PatternLayoutOsgi {
+public abstract class AbstractPatternLayoutWrapper extends PatternLayout {
 
-    protected final PatternLayoutOsgi wrapped;
+    protected final PatternLayout wrapped;
 
-    protected AbstractPatternLayoutWrapper(final PatternLayoutOsgi wrapped) {
+    protected AbstractPatternLayoutWrapper(final PatternLayout wrapped) {
         this.wrapped = wrapped;
     }
 
@@ -130,13 +132,15 @@ public abstract class AbstractPatternLayoutWrapper extends PatternLayoutOsgi {
         return wrapped.isStarted();
     }
 
+    @Deprecated
     @Override
     public Map<String, String> getDefaultConverterMap() {
         return wrapped.getDefaultConverterMap();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Map<String, String> getEffectiveConverterMap() {
+    public Map<String, Supplier<DynamicConverter>> getEffectiveConverterMap() {
         return wrapped.getEffectiveConverterMap();
     }
 
@@ -160,8 +164,9 @@ public abstract class AbstractPatternLayoutWrapper extends PatternLayoutOsgi {
         return wrapped.toString();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Map<String, String> getInstanceConverterMap() {
+    public Map<String, Supplier<DynamicConverter>> getInstanceConverterMap() {
         return wrapped.getInstanceConverterMap();
     }
 

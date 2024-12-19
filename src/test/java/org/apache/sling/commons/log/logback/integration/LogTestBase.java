@@ -77,7 +77,7 @@ public abstract class LogTestBase {
         return options(
             addSpiflyOptions(),
             configAdmin(),
-            mavenBundle("org.apache.felix", "org.apache.felix.converter").versionAsInProject(),
+            mavenBundle("org.osgi", "org.osgi.util.converter").versionAsInProject(),
             mavenBundle("org.osgi", "org.osgi.util.function").versionAsInProject(),
             mavenBundle("org.apache.felix", "org.apache.felix.http.servlet-api").versionAsInProject(),
             // the current project (the bundle under test)

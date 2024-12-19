@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.PatternLayoutOsgi;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.encoder.Encoder;
 
@@ -35,13 +35,13 @@ import ch.qos.logback.core.encoder.Encoder;
 class MaskingMessageUtilTest {
 
     /**
-     * Test method for {@link org.apache.sling.commons.log.logback.internal.MaskingMessageUtil#setMessageConverter(ch.qos.logback.classic.PatternLayoutOsgi)}.
+     * Test method for {@link org.apache.sling.commons.log.logback.internal.MaskingMessageUtil#setMessageConverter(ch.qos.logback.classic.PatternLayout)}.
      */
     @Test
     void testSetMessageConverter() {
-        PatternLayoutOsgi pl = new PatternLayoutOsgi();
+        PatternLayout pl = new PatternLayout();
         MaskingMessageUtil.setMessageConverter(pl);
-        assertEquals(11, pl.getInstanceConverterSupplierMap().size());
+        assertEquals(11, pl.getInstanceConverterMap().size());
     }
 
     /**

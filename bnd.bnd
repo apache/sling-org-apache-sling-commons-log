@@ -3,14 +3,7 @@ Import-Package: org.osgi.service.cm;version="[1.2,2)";resolution:=dynamic, \
     org.osgi.service.event;version="[1.2,2)";resolution:=dynamic, \
     javax.xml.transform.*;resolution:=dynamic, \
     org.slf4j.bridge;resolution:=optional, \
-    ch.qos.logback.classic;version="[1.5,2)", \
-    ch.qos.logback.core.pattern;version="[1.5,2)", \
-    ch.qos.logback.core.pattern.parser;version="[1.5,2)", \
     *
 
 Require-Capability: osgi.extender;filter:="(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))"
 Provide-Capability: osgi.serviceloader;osgi.serviceloader="ch.qos.logback.classic.spi.Configurator"
-
--includeresource:\
-  @logback-core-*.jar!/ch/qos/logback/core/pattern/parser/*, \
-  @logback-core-*.jar!/ch/qos/logback/core/pattern/PatternLayoutBase*

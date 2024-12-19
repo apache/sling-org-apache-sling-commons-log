@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.PatternLayoutOsgi;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.spi.LoggingEvent;
 
@@ -60,7 +60,7 @@ class LoggerSpecificEncoderTest {
     @BeforeEach
     protected void beforeEach() {
         LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-        PatternLayoutOsgi defaultLayout = new PatternLayoutOsgi();
+        PatternLayout defaultLayout = new PatternLayout();
         defaultLayout.setPattern(LogConstants.LOG_PATTERN_DEFAULT);
         defaultLayout.setContext(loggerContext);
         defaultLayout.start();
@@ -102,7 +102,7 @@ class LoggerSpecificEncoderTest {
     void testAddLogConfig() {
         LogConfig logConfig = Mockito.mock(LogConfig.class);
         LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-        PatternLayoutOsgi layout = new PatternLayoutOsgi();
+        PatternLayout layout = new PatternLayout();
         layout.setPattern("%msg");
         layout.setContext(loggerContext);
         layout.start();
@@ -136,7 +136,7 @@ class LoggerSpecificEncoderTest {
 
         LogConfig logConfig = Mockito.mock(LogConfig.class);
         LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-        PatternLayoutOsgi layout = new PatternLayoutOsgi();
+        PatternLayout layout = new PatternLayout();
         layout.setPattern("%msg");
         layout.setContext(loggerContext);
         layout.start();
@@ -228,7 +228,7 @@ class LoggerSpecificEncoderTest {
         private final String prefix;
 
         private PrefixTestLayout(String prefix) {
-            super(mock(PatternLayoutOsgi.class));
+            super(mock(PatternLayout.class));
             this.prefix = prefix;
         }
 

@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.PatternLayoutOsgi;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
 
@@ -95,7 +95,7 @@ public class LogConfig {
         return resetToDefault;
     }
 
-    public @NotNull PatternLayoutOsgi createLayout(@NotNull LoggerContext loggerContext) {
+    public @NotNull PatternLayout createLayout(@NotNull LoggerContext loggerContext) {
         // The java.util.MessageFormat pattern to use for formatting log
         // messages with the root logger.
         // This is a java.util.MessageFormat pattern supporting up to six
@@ -137,7 +137,7 @@ public class LogConfig {
             }
         }
 
-        final PatternLayoutOsgi pl = new PatternLayoutOsgi();
+        final PatternLayout pl = new PatternLayout();
         pl.setPattern(logBackPattern);
         pl.setOutputPatternAsHeader(false);
         pl.setContext(loggerContext);

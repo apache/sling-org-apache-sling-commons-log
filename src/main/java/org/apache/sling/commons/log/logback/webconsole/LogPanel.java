@@ -25,6 +25,10 @@ import java.io.PrintWriter;
 import org.osgi.annotation.versioning.ProviderType;
 
 
+/**
+ * Interface for the Felix Web Console plugin that displays the
+ * current active log bundle configuration
+ */
 @ProviderType
 public interface LogPanel {
     /**
@@ -46,15 +50,47 @@ public interface LogPanel {
      */
     String PATH_TAILER = "tailer.txt";
 
+    /**
+     * The app root
+     */
     String APP_ROOT = "slinglog";
 
+    /**
+     * The base location for UI resources
+     */
     String RES_LOC = APP_ROOT + "/res/ui";
 
+    /**
+     * Tails the content of the given appender to the supplied print writer
+     *
+     * @param pw the print writer to render to
+     * @param appenderName the name of the appender to tail
+     * @param options the options for what content to include in the output
+     * @throws IOException if any failure rendering the tailed log file
+     */
     void tail(PrintWriter pw, String appenderName, TailerOptions options) throws IOException;
 
+    /**
+     * Renders the logging configuration details to the supplied print writer
+     *
+     * @param pw the print writer to render to
+     * @param consoleAppRoot the app root
+     * @throws IOException if any failure rendering the logging configuration
+     */
     void render(PrintWriter pw, String consoleAppRoot) throws IOException;
 
+    /**
+     * Deletes a logger configuration
+     *
+     * @param pid the pid of the configuration to delete
+     */
     void deleteLoggerConfig(String pid);
 
+    /**
+     * Creates a logger configuration
+     *
+     * @param config the configuration details
+     * @throws IOException if any failure applying the logger configuration
+     */
     void createLoggerConfig(LoggerConfig config) throws IOException;
 }

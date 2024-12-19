@@ -19,16 +19,19 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
-import java.util.Iterator;
 
 import javax.inject.Inject;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
+import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Option;
@@ -40,47 +43,12 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 
-@SuppressWarnings("UnusedDeclaration")
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
 public class ITConfigAdminSupport extends LogTestBase {
-    // Constants taken from LogbackManager as they are not publicly accessible
-    public static final String LOG_LEVEL = "org.apache.sling.commons.log.level";
-
-    public static final String LOG_FILE = "org.apache.sling.commons.log.file";
-
-    public static final String LOGBACK_FILE = "org.apache.sling.commons.log.configurationFile";
-
-    public static final String LOG_FILE_NUMBER = "org.apache.sling.commons.log.file.number";
-
-    public static final String LOG_FILE_SIZE = "org.apache.sling.commons.log.file.size";
-
-    public static final String LOG_PATTERN = "org.apache.sling.commons.log.pattern";
-
-    public static final String LOG_PATTERN_DEFAULT = "%d{dd.MM.yyyy HH:mm:ss.SSS} *%level* [%thread] %logger %msg%n";
-
-    public static final String LOG_LOGGERS = "org.apache.sling.commons.log.names";
-
-    public static final String LOG_LEVEL_DEFAULT = "INFO";
-
-    public static final int LOG_FILE_NUMBER_DEFAULT = 5;
-
-    public static final String LOG_FILE_SIZE_DEFAULT = "'.'yyyy-MM-dd";
-
-    public static final String PID = "org.apache.sling.commons.log.LogManager";
-
-    public static final String FACTORY_PID_WRITERS = PID + ".factory.writer";
-
-    public static final String FACTORY_PID_CONFIGS = PID + ".factory.config";
-
-    public static final String LOG_PACKAGING_DATA = "org.apache.sling.commons.log.packagingDataEnabled";
 
     @Inject
     private ConfigurationAdmin ca;
@@ -98,12 +66,12 @@ public class ITConfigAdminSupport extends LogTestBase {
     @Test
     public void testChangeLogLevelWithConfig() throws Exception {
         // Set log level to debug for foo1.bar
-        Configuration config = ca.createFactoryConfiguration(FACTORY_PID_CONFIGS, null);
+        Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_LOGGERS, new String[] {
+        p.put(LogConstants.LOG_LOGGERS, new String[] {
             "foo1.bar"
         });
-        p.put(LOG_LEVEL, "DEBUG");
+        p.put(LogConstants.LOG_LEVEL, "DEBUG");
         config.update(p);
 
         delay();
@@ -123,12 +91,12 @@ public class ITConfigAdminSupport extends LogTestBase {
         assertEquals(Level.TRACE, lgLog.getLevel());
 
         // Set log level to debug for foo2.bar
-        Configuration config = ca.createFactoryConfiguration(FACTORY_PID_CONFIGS, null);
+        Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_LOGGERS, new String[]{
+        p.put(LogConstants.LOG_LOGGERS, new String[]{
                 "foo2.bar"
         });
-        p.put(LOG_LEVEL, "DEFAULT");
+        p.put(LogConstants.LOG_LEVEL, "DEFAULT");
         config.update(p);
 
         delay();
@@ -142,9 +110,9 @@ public class ITConfigAdminSupport extends LogTestBase {
     @Test
     public void testChangeGlobalConfig() throws Exception {
         // Set log level to debug for Root logger
-        Configuration config = ca.getConfiguration(PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_LEVEL, "DEBUG");
+        p.put(LogConstants.LOG_LEVEL, "DEBUG");
         config.update(p);
 
         delay();
@@ -152,9 +120,9 @@ public class ITConfigAdminSupport extends LogTestBase {
         assertTrue(LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME).isDebugEnabled());
 
         // Reset back to Info
-        config = ca.getConfiguration(PID, null);
+        config = ca.getConfiguration(LogConstants.PID, null);
         p = new Hashtable<String, Object>();
-        p.put(LOG_LEVEL, "INFO");
+        p.put(LogConstants.LOG_LEVEL, "INFO");
         config.update(p);
 
         delay();
@@ -166,10 +134,10 @@ public class ITConfigAdminSupport extends LogTestBase {
     @Test
     public void testPackagingDataConfig() throws Exception {
         // Set log level to debug for Root logger
-        Configuration config = ca.getConfiguration(PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_PACKAGING_DATA, Boolean.TRUE);
-        p.put(LOG_LEVEL, "INFO");
+        p.put(LogConstants.LOG_PACKAGING_DATA, Boolean.TRUE);
+        p.put(LogConstants.LOG_LEVEL, "INFO");
         config.update(p);
 
         delay();
@@ -179,10 +147,10 @@ public class ITConfigAdminSupport extends LogTestBase {
 
     @Test
     public void testExternalConfig() throws Exception {
-        Configuration config = ca.getConfiguration(PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LOG_LEVEL, "DEBUG");
-        p.put(LOGBACK_FILE,absolutePath("test1-external-config.xml"));
+        p.put(LogConstants.LOG_LEVEL, "DEBUG");
+        p.put(LogConstants.LOGBACK_FILE,absolutePath("test1-external-config.xml"));
         config.update(p);
 
         delay();

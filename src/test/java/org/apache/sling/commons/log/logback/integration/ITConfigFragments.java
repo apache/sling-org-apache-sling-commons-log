@@ -19,6 +19,10 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -37,11 +41,6 @@ import org.osgi.service.event.EventAdmin;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
 public class ITConfigFragments extends LogTestBase {
@@ -53,7 +52,6 @@ public class ITConfigFragments extends LogTestBase {
     static {
         // uncomment to enable debugging of this test class
         // paxRunnerVmOption = DEBUG_VM_OPTION;
-
     }
 
     @Inject
@@ -61,7 +59,7 @@ public class ITConfigFragments extends LogTestBase {
 
     @Override
     protected Option addExtraOptions() {
-        return mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject();
+        return eventAdmin();
     }
 
     @Test
@@ -109,7 +107,7 @@ public class ITConfigFragments extends LogTestBase {
 
         fcp.fileName = "test-reset-config-2.xml";
 
-        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary)null));
+        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary<String, ?>)null));
 
         delay();
 

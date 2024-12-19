@@ -26,36 +26,60 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.apache.sling.commons.log.logback.internal.LogConfigManager;
+import org.apache.sling.commons.log.logback.internal.LogConstants;
+import org.jetbrains.annotations.NotNull;
 import org.osgi.service.cm.ManagedServiceFactory;
 
-class LoggerManagedServiceFactory extends LogConfigurator implements ManagedServiceFactory {
+/**
+ * Factory for non-global logging configuration services
+ */
+public class LoggerManagedServiceFactory extends LogConfigurator implements ManagedServiceFactory {
 
+    /**
+     * The default file name when a value is not supplied in the configuration
+     */
     public static final String LOG_FILE_DEFAULT = "logs/error.log";
 
-    public String getName() {
+    /**
+     * Descriptive name of this factory
+     *
+     * @return the name for the factory
+     */
+    public @NotNull String getName() {
         return "Logger configurator";
     }
 
-    @SuppressWarnings("unchecked")
-    public void updated(String pid, @SuppressWarnings("rawtypes") Dictionary configuration)
-            throws org.osgi.service.cm.ConfigurationException {
+    /**
+     * Update the logger configuration for the supplied configuration service
+     *
+     * @param pid the service identifier for the service
+     * @param configuration the configuration properties to apply
+     */
+    public void updated(@NotNull String pid, @NotNull Dictionary<String, ?> configuration) throws org.osgi.service.cm.ConfigurationException {
         try {
-            Dictionary<String, Object> conf = configuration;
-            if (configuration.get(LogConfigManager.LOG_FILE) == null) {
+            Dictionary<String, ?> conf = configuration;
+
+            // calculate a filename if one is not supplied
+            if (configuration.get(LogConstants.LOG_FILE) == null) {
                 List<String> keys = Collections.list(configuration.keys());
                 Map<String, Object> confCopy = keys.stream()
                            .collect(Collectors.toMap(Function.identity(), configuration::get)); 
-                confCopy.put(LogConfigManager.LOG_FILE, LOG_FILE_DEFAULT);
+                confCopy.put(LogConstants.LOG_FILE, LOG_FILE_DEFAULT);
                 conf = new Hashtable<>(confCopy);
             }
+
             getLogConfigManager().updateLoggerConfiguration(pid, conf, true);
         } catch (ConfigurationException ce) {
             throw new org.osgi.service.cm.ConfigurationException(ce.getProperty(), ce.getReason(), ce);
         }
     }
 
-    public void deleted(String pid) {
+    /**
+     * Remove the logger configuration for the supplied configuration service
+     *
+     * @param pid the service identifier for the service
+     */
+    public void deleted(@NotNull String pid) {
         try {
             getLogConfigManager().updateLoggerConfiguration(pid, null, true);
         } catch (ConfigurationException ce) {
@@ -63,4 +87,5 @@ class LoggerManagedServiceFactory extends LogConfigurator implements ManagedServ
             getLogConfigManager().internalFailure("Unexpected Configuration Problem", ce);
         }
     }
+
 }

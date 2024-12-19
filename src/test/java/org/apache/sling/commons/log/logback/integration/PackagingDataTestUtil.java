@@ -19,18 +19,14 @@
 
 package org.apache.sling.commons.log.logback.integration;
 
-import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
-import static org.ops4j.pax.tinybundles.core.TinyBundles.withBnd;
-
-import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.ops4j.pax.exam.util.PathUtils;
 import org.ops4j.pax.tinybundles.core.TinyBundle;
-import org.ops4j.store.Store;
-import org.ops4j.store.StoreFactory;
 import org.osgi.framework.Constants;
+
+import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
+import static org.ops4j.pax.tinybundles.core.TinyBundles.withBnd;
 
 /**
  * Have to use a separate class due to TinyBundles having issue and recommends put bundle
@@ -45,13 +41,9 @@ public class PackagingDataTestUtil {
         //Avoid referring to test bundle classes otherwise they get loaded in 2 bundles i.e.
         //pax exam probe bundle and our packagedatatest. So we refer only by class name strings
         String activatorClassName = "org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator";
-        final String path = String.format("%s/target/temp", PathUtils.getBaseDir());
-        final File temp = new File(path);
-        final Store store = StoreFactory.newStore(temp);
-        // ee is not needed and causes problems when running with Java 11 since the version of bndlib is too old
-        TinyBundle tb = bundle(store)
+        TinyBundle tb = bundle()
+                .set(aQute.bnd.osgi.Constants.NOEE, "true") // disable the EE Reqiure-Capability since the old bndlib version only supports java <= 8
                 .set(Constants.BUNDLE_ACTIVATOR, activatorClassName)
-                .set("-noee", Boolean.TRUE.toString())
                 .set(Constants.BUNDLE_SYMBOLICNAME, TEST_BUNDLE_NAME)
                 .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION);
         add(tb, "org.apache.sling.commons.log.logback.integration.bundle.TestRunnable");

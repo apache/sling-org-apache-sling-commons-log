@@ -28,7 +28,7 @@
   </parent>
 
   <artifactId>org.apache.sling.commons.log</artifactId>
-  <version>5.5.1-SNAPSHOT</version>
+  <version>6.0.0-SNAPSHOT</version>
 
   <name>Apache Sling Commons Log</name>
   <description>
@@ -45,70 +45,18 @@
   </scm>
 
   <properties>
-    <slf4j.version>1.7.32</slf4j.version>
-    <logback.version>1.2.13</logback.version>
+    <slf4j.version>2.0.13</slf4j.version>
+    <logback.version>1.5.13</logback.version>
     <!-- Higher versions of pax exam cause class loading errors -->
-    <pax-exam.version>4.13.3</pax-exam.version>
-    <sling.java.version>11</sling.java.version>
+    <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
+    <junit-jupiter.version>5.10.2</junit-jupiter.version>
     <project.build.outputTimestamp>1706531563</project.build.outputTimestamp>
-    <bundle.build.dir>
-      ${basedir}/target
-    </bundle.build.dir>
-    <bundle.file.name>
-      ${bundle.build.dir}/${project.build.finalName}.jar
-    </bundle.file.name>
   </properties>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>biz.aQute.bnd</groupId>
-        <artifactId>bnd-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>biz.aQute.bnd</groupId>
-        <artifactId>bnd-baseline-maven-plugin</artifactId>
-        <configuration>
-          <!-- Disable for changes between logback 1.2.8 and 1.2.9 and 1.2.10-->
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-      <!-- Required for pax exam-->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>1.0-alpha-2</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>set-system-properties</goal>
-            </goals>
-            <phase>pre-integration-test</phase>
-            <configuration>
-              <properties>
-                <property>
-                  <name>project.bundle.file</name>
-                  <value>${bundle.file.name}</value>
-                </property>
-              </properties>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.servicemix.tooling</groupId>
-        <artifactId>depends-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>generate-depends-file</id>
-            <goals>
-              <goal>generate-depends-file</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      <!-- integration tests run with pax-exam -->
-      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <executions>
           <execution>
@@ -121,52 +69,70 @@
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemPropertyVariables>
-            <project.bundle.file>${bundle.file.name}</project.bundle.file>
-            <project.boot.file>${bundle.file.name}</project.boot.file>
-            <coverage.command>${coverage.command}</coverage.command>
-            <http.port>${http.port}</http.port>
+            <bundle.filename>${basedir}/target/${project.build.finalName}.jar</bundle.filename>
           </systemPropertyVariables>
         </configuration>
       </plugin>
-       <plugin>
-            <groupId>org.apache.rat</groupId>
-            <artifactId>apache-rat-plugin</artifactId>
-            <configuration>
-                <excludes>
-                    <exclude>README.md</exclude>
-                </excludes>
-            </configuration>
-        </plugin>
-     </plugins>
-  </build>
-
-
-
-  <reporting>
-    <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <!-- No javadocs at all -->
-          <skip>true</skip>
-        </configuration>
+        <groupId>org.apache.servicemix.tooling</groupId>
+        <artifactId>depends-maven-plugin</artifactId>
       </plugin>
     </plugins>
-  </reporting>
-
+  </build>
   <dependencies>
     <dependency>
-      <groupId>org.ops4j.base</groupId>
-      <artifactId>ops4j-base-store</artifactId>
-      <version>1.5.1</version>
-      <scope>test</scope>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.framework</artifactId>
+      <scope>provided</scope>
     </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.annotation.versioning</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.cm</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.component.annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.event</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.util.converter</artifactId>
+      <version>1.0.9</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.resource</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.util.tracker</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jetbrains</groupId>
+      <artifactId>annotations</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>${slf4j.version}</version>
       <scope>provided</scope>
+      <version>${slf4j.version}</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -176,94 +142,119 @@
       <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>${logback.version}</version>
+      <groupId>org.slf4j</groupId>
+      <artifactId>log4j-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
       <scope>compile</scope>
+      <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>jcl-over-slf4j</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>compile</scope>
+      <optional>true</optional>
+    </dependency>
+
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>${logback.version}</version>
-      <scope>compile</scope>
-    </dependency>
-
-    <!-- OSGi Libraries not included here -->
-    <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.framework</artifactId>
-        <scope>provided</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.service.cm</artifactId>
-        <scope>provided</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.service.event</artifactId>
-        <scope>provided</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.util.tracker</artifactId>
-        <scope>provided</scope>
-    </dependency>
-     <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.resource</artifactId>
-        <scope>provided</scope>
-    </dependency>
-   <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.annotation.versioning</artifactId>
-        <scope>provided</scope>
-    </dependency>
-    <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.annotation.bundle</artifactId>
-        <scope>provided</scope>
-    </dependency>
-
-    <!--  OSGi Command Line Shell support -->
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.gogo.runtime</artifactId>
-      <version>0.6.1</version>
       <scope>provided</scope>
+      <version>${logback.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <scope>provided</scope>
+      <version>${logback.version}</version>
     </dependency>
 
-    <!-- testing -->
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+      <version>5.11.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-api</artifactId>
+      <scope>test</scope>
+      <version>${junit-jupiter.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-engine</artifactId>
+      <scope>test</scope>
+      <version>${junit-jupiter.version}</version>
+    </dependency>
+    <!--JUnit Jupiter Engine to depend on the JUnit4 engine and JUnit 4 API  -->
+    <dependency>
+      <groupId>org.junit.vintage</groupId>
+      <artifactId>junit-vintage-engine</artifactId>
+      <scope>test</scope>
+      <version>${junit-jupiter.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter-params</artifactId>
+      <scope>test</scope>
+      <version>${junit-jupiter.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.testing.osgi-mock.core</artifactId>
+      <version>3.4.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.sling</groupId>
+      <artifactId>org.apache.sling.testing.osgi-mock.junit5</artifactId>
+      <version>3.4.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.awaitility</groupId>
+      <artifactId>awaitility</artifactId>
+      <version>4.2.1</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.framework</artifactId>
-      <version>7.0.1</version>
+      <version>7.0.5</version>
       <scope>test</scope>
     </dependency>
 
-    <!-- Pax Exam Dependencies -->
+    <!-- Pax Exam -->
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam</artifactId>
+      <version>${org.ops4j.pax.exam.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ops4j.pax.exam</groupId>
+      <artifactId>pax-exam-cm</artifactId>
+      <version>${org.ops4j.pax.exam.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
       <groupId>org.ops4j.pax.exam</groupId>
       <artifactId>pax-exam-container-forked</artifactId>
-      <version>${pax-exam.version}</version>
+      <version>${org.ops4j.pax.exam.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.ops4j.pax.exam</groupId>
       <artifactId>pax-exam-junit4</artifactId>
-      <version>${pax-exam.version}</version>
+      <version>${org.ops4j.pax.exam.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.ops4j.pax.exam</groupId>
       <artifactId>pax-exam-link-mvn</artifactId>
-      <version>${pax-exam.version}</version>
+      <version>${org.ops4j.pax.exam.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -273,10 +264,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-        <groupId>org.osgi</groupId>
-        <artifactId>org.osgi.service.log</artifactId>
-        <version>1.3.0</version>
-        <scope>test</scope>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.service.log</artifactId>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.inject</groupId>
@@ -286,26 +276,7 @@
     <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.configadmin</artifactId>
-      <version>1.8.16</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-      <version>2.4</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.sling</groupId>
-      <artifactId>org.apache.sling.commons.logservice</artifactId>
-      <version>1.0.2</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.ops4j.pax.url</groupId>
-      <artifactId>pax-url-wrap</artifactId>
-      <version>2.6.10</version>
+      <version>1.9.26</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -315,122 +286,28 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.metatype</artifactId>
-      <version>1.1.2</version>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.util.function</artifactId>
+      <version>1.2.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.util.pushstream</artifactId>
+      <version>1.1.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.util.promise</artifactId>
+      <version>1.3.0</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.scr</artifactId>
-      <version>2.0.12</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-integration</artifactId>
-      <version>1.3</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>2.28.2</version>
+      <artifactId>org.apache.felix.http.servlet-api</artifactId>
+      <version>2.1.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <!--
-        copy the package such that IDEs may easily use it without
-        setting the system property
-    -->
-    <profile>
-      <id>ide</id>
-      <build>
-        <plugins>
-          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>log-file-create</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>run</goal>
-                </goals>
-                <configuration>
-                  <target>
-                    <copy file="${project.build.directory}/${project.build.finalName}.jar" tofile="${project.build.directory}/slinglogback.jar" />
-                  </target>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>coverage</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <executions>
-              <execution>
-                <id>prepare-agent</id>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <configuration>
-                  <propertyName>coverage.command</propertyName>
-                  <includes>
-                    <include>org.apache.sling.commons.log.logback.*</include>
-                  </includes>
-                </configuration>
-              </execution>
-              <!-- Default to setup argLine required by surefire -->
-              <execution>
-                <id>prepare-agent-surefire</id>
-                <phase>test-compile</phase>
-                <goals>
-                  <goal>prepare-agent</goal>
-                </goals>
-                <configuration>
-                  <includes>
-                    <include>org.apache.sling.commons.log.logback.*</include>
-                  </includes>
-                </configuration>
-              </execution>
-              <execution>
-                <id>report</id>
-                <phase>post-integration-test</phase>
-                <goals>
-                  <goal>report</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>check</id>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-                <configuration>
-                  <!-- Disabling the check for now -->
-                  <skip>true</skip>
-                  <check>
-                    <classRatio>100</classRatio>
-                    <instructionRatio>90</instructionRatio>
-                    <methodRatio>95</methodRatio>
-                    <branchRatio>85</branchRatio>
-                    <complexityRatio>85</complexityRatio>
-                    <lineRatio>90</lineRatio>
-                  </check>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-</profiles>
 </project>

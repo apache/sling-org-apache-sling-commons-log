@@ -24,30 +24,57 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.framework.hooks.weaving.WovenClass;
 
-public class PackageInfoCollector implements WeavingHook{
+/**
+ * WeavingHook to keep track of which bundle contains
+ * the java package for each woven class
+ */
+public class PackageInfoCollector implements WeavingHook {
+    /**
+     * package to bundle mapping where the key is the package name and
+     * the value is the set of bundles that contain the package
+     */
     private final ConcurrentMap<String, Set<String>> pkgInfoMapping = new ConcurrentHashMap<>();
 
     @Override
-    public void weave(WovenClass wovenClass) {
+    public void weave(@NotNull WovenClass wovenClass) {
         add(wovenClass.getBundleWiring().getBundle(), wovenClass.getClassName());
     }
 
+    /**
+     * Returns the number of packages that have been encountered
+     * 
+     * @return the number of packages
+     */
     public int size() {
         return pkgInfoMapping.size();
     }
 
-    void add(Bundle bundle, String className) {
+    /**
+     * Add the package mapping for the class name
+     *
+     * @param bundle the bundle the class came from
+     * @param className the name of the class
+     */
+    void add(@NotNull Bundle bundle, @NotNull String className) {
         String packageName = getPackageName(className);
 
         Set<String> infos = pkgInfoMapping.computeIfAbsent(packageName, k -> Collections.synchronizedSet(new HashSet<>()));
         infos.add(getInfo(bundle));
     }
 
-    String getBundleInfo(String className) {
+    /**
+     * Gets the bundle info for the supplied classname
+     *
+     * @param className the class name to lookup
+     * @return the bundle info string or null if not found or ambiguous
+     */
+    @Nullable String getBundleInfo(@Nullable String className) {
         if (className == null) {
             return null;
         }
@@ -56,22 +83,35 @@ public class PackageInfoCollector implements WeavingHook{
 
         //If multiple infos are found then we cannot determine the exact version
         //so better not to provide any info
-        if (infos == null || infos.size() > 1 || infos.size() == 0) {
+        if (infos == null || infos.size() > 1 || infos.isEmpty()) {
             return null;
         }
-        return infos.iterator().next();
+        return infos.stream().findFirst().orElse(null);
     }
 
-    private static String getInfo(Bundle bundle) {
+    /**
+     * Create an info string for the bundle
+     *
+     * @param bundle the bundle to process
+     * @return information string describing the bundle
+     */
+    private static @NotNull String getInfo(@NotNull Bundle bundle) {
         return bundle.getSymbolicName() + ":" + bundle.getVersion();
     }
 
-    static String getPackageName(String className) {
+    /**
+     * Calculate the package name for the class name
+     *
+     * @param className the class name to process
+     * @return the name of the package (or empty string of the root package)
+     */
+    static @NotNull String getPackageName(@NotNull String className) {
         int lastIndexOfDot = className.lastIndexOf('.');
         String result = "";
-        if (lastIndexOfDot > 0){
+        if (lastIndexOfDot > 0) {
             result = className.substring(0, lastIndexOfDot);
         }
         return result;
     }
+
 }

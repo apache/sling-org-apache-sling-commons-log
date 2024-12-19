@@ -19,13 +19,15 @@
 
 package org.apache.sling.commons.log.logback.internal.util;
 
+import java.util.Map;
+import java.util.function.Supplier;
+
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Context;
+import ch.qos.logback.core.pattern.DynamicConverter;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
 import ch.qos.logback.core.status.Status;
-
-import java.util.Map;
 
 /**
  * Abstract wrapper for {@link PatternLayout} class. Can be extended to implement 'Decorator' design pattern.
@@ -130,13 +132,15 @@ public abstract class AbstractPatternLayoutWrapper extends PatternLayout {
         return wrapped.isStarted();
     }
 
+    @Deprecated
     @Override
     public Map<String, String> getDefaultConverterMap() {
         return wrapped.getDefaultConverterMap();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Map<String, String> getEffectiveConverterMap() {
+    public Map<String, Supplier<DynamicConverter>> getEffectiveConverterMap() {
         return wrapped.getEffectiveConverterMap();
     }
 
@@ -160,8 +164,9 @@ public abstract class AbstractPatternLayoutWrapper extends PatternLayout {
         return wrapped.toString();
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
-    public Map<String, String> getInstanceConverterMap() {
+    public Map<String, Supplier<DynamicConverter>> getInstanceConverterMap() {
         return wrapped.getInstanceConverterMap();
     }
 

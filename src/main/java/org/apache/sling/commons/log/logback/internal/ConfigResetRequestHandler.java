@@ -22,15 +22,28 @@ package org.apache.sling.commons.log.logback.internal;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
+/**
+ * Event handler for processing a logging configurion reset request 
+ */
 public class ConfigResetRequestHandler implements EventHandler {
-    private final LogbackManager logbackManager;
+    private final LogConfigManager logConfigManager;
 
-    public ConfigResetRequestHandler(LogbackManager logbackManager) {
-        this.logbackManager = logbackManager;
+    /**
+     * Constructor
+     *
+     * @param logConfigManager the logging configuration manager
+     */
+    public ConfigResetRequestHandler(LogConfigManager logConfigManager) {
+        this.logConfigManager = logConfigManager;
     }
 
+    /**
+     * Handles the event and informs the logConfigManager
+     * that the config has changed and a reset should be done
+     */
     @Override
     public void handleEvent(Event event) {
-        logbackManager.configChanged();
+        logConfigManager.configChanged();
     }
+
 }

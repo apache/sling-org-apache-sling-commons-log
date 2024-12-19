@@ -19,16 +19,30 @@
 package org.apache.sling.commons.log.logback.internal.config;
 
 import org.apache.sling.commons.log.logback.internal.LogConfigManager;
+import org.jetbrains.annotations.NotNull;
 
+/**
+ * Base class for logging configuration services
+ */
 public class LogConfigurator {
 
     private LogConfigManager logConfigManager;
 
-    void setLogConfigManager(final LogConfigManager logConfigManager) {
+    /**
+     * Set the log configuration manager
+     *
+     * @param logConfigManager the manger to use
+     */
+    void setLogConfigManager(@NotNull final LogConfigManager logConfigManager) {
         this.logConfigManager = logConfigManager;
     }
 
-    LogConfigManager getLogConfigManager() {
+    /**
+     * get the log configuration manager
+     *
+     * @return the manger currently being used
+     */
+    @NotNull LogConfigManager getLogConfigManager() {
         return logConfigManager;
     }
 

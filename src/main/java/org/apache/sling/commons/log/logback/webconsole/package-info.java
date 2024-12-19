@@ -22,7 +22,7 @@
  *
  * @version 1.0
  */
-@Version("1.0.1")
+@Version("1.0.2")
 package org.apache.sling.commons.log.logback.webconsole;
 
 

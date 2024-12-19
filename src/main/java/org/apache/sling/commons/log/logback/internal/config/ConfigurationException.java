@@ -18,29 +18,65 @@
  */
 package org.apache.sling.commons.log.logback.internal.config;
 
-public class ConfigurationException extends Exception {
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+/**
+ * Exception for any errors encountered while utilizing any
+ * properties for configuration services
+ */
+public class ConfigurationException extends Exception {
     private static final long serialVersionUID = -9213226340780391070L;
 
+    /**
+     * the property that was invalid
+     */
     private final String property;
-
+    /**
+     * the reason that the property value was invalid
+     */
     private final String reason;
 
-    public ConfigurationException(final String property, final String reason) {
+    /**
+     * Constructor
+     *
+     * @param property the property that was invalid
+     * @param reason the reason that the property value was invalid
+     */
+    public ConfigurationException(@NotNull final String property, @NotNull final String reason) {
         this(property, reason, null);
     }
 
-    public ConfigurationException(final String property, final String reason, final Throwable cause) {
-        super("", cause);
+    /**
+     * Constructor
+     *
+     * @param property the property that was invalid
+     * @param reason the reason that the property value was invalid
+     * @param cause the exception that caused the failure
+     */
+    public ConfigurationException(@NotNull final String property, @NotNull final String reason,
+            @Nullable final Throwable cause) {
+        super(String.format("Property %s was invalid. Reason: %s", property, reason), cause);
         this.property = property;
         this.reason = reason;
     }
 
-    public String getProperty() {
+    /**
+     * The property that was invalid
+     *
+     * @return the property name that caused the failure
+     */
+    public @NotNull String getProperty() {
         return property;
     }
 
-    public String getReason() {
+    /**
+     * The reason that the property value was invalid
+     *
+     * @return the reason that the property was invalid
+     */
+    public @NotNull String getReason() {
         return reason;
     }
+
 }

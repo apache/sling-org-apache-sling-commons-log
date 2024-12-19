@@ -24,7 +24,13 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import org.apache.sling.commons.log.logback.internal.Tailer.TailerListener;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+/**
+ * Implementation if TailerListener that filters the lines
+ * based on matching a regex pattern
+ */
 class FilteringListener implements TailerListener {
     public static final String MATCH_ALL = "*";
     private final Pattern pattern;
@@ -41,20 +47,30 @@ class FilteringListener implements TailerListener {
      *              string also. In that case search would be done in a
      *              case insensitive way
      */
-    public FilteringListener(PrintWriter pw, String regex){
+    public FilteringListener(@NotNull PrintWriter pw, @Nullable String regex){
         this.pw = pw;
         this.regex = regex != null ? regex.toLowerCase(Locale.ENGLISH) : null;
         this.pattern = createPattern(regex);
     }
 
+    /**
+     * Writes the line to the print writer if {@link #include(String)}
+     * returns true
+     */
     @Override
-    public void handle(String line) {
+    public void handle(@NotNull String line) {
         if (include(line)){
             pw.println(line);
         }
     }
 
-    private boolean include(String line) {
+    /**
+     * Checks if the line should be included in the output
+     * 
+     * @param line the line to check
+     * @return true to include the line, false otherwise
+     */
+    private boolean include(@NotNull String line) {
         if (pattern == null) {
             return true;
         }
@@ -66,7 +82,13 @@ class FilteringListener implements TailerListener {
         return pattern.matcher(line).matches();
     }
 
-    private static Pattern createPattern(String regex) {
+    /**
+     * Creates the pattern to match lines against
+     *
+     * @param regex the regex (null or * will match all)
+     * @return
+     */
+    private static Pattern createPattern(@Nullable String regex) {
         if (regex == null || MATCH_ALL.equals(regex)){
             return null;
         }

@@ -1,34 +1,9 @@
 Bundle-DocURL: http://sling.apache.org/site/logging.html
-Import-Package: !org.slf4j.impl, \
-              !org.osgi.service.cm, \
-              !javax.servlet, \
-              !javax.servlet.http, \
-              !org.osgi.service.event, \
-              !javax.xml.transform, \
-              !javax.xml.transform.sax, \
-              !javax.xml.transform.stream, \
-              org.osgi.framework;version=1.3, \
-              !org.codehaus.*, \
-              !javax.jms, \
-              !javax.mail, \
-              !javax.mail.internet, \
-              javax.management; \
-              javax.naming; \
-              javax.sql; \
-              javax.xml.parsers; \
-              org.xml.sax.*; \
-              sun.reflect;resolution:=optional, \
-              *
-DynamicImport-Package: org.osgi.service.cm;version=1.2, \
-              org.osgi.service.event;version=1.2, \
-              javax.xml.transform, \
-              javax.xml.transform.sax, \
-              javax.xml.transform.stream
-Export-Package: ch.qos.logback.classic*, \
-              ch.qos.logback.core*, \
-              org.slf4j.impl;version=${slf4j.version}, \
-              org.apache.sling.commons.log.logback, \
-              org.apache.sling.commons.log.logback.webconsole
-Conditional-Package: org.slf4j.bridge
--fixupmessages: 
+Import-Package: org.osgi.service.cm;version="[1.2,2)";resolution:=dynamic, \
+    org.osgi.service.event;version="[1.2,2)";resolution:=dynamic, \
+    javax.xml.transform.*;resolution:=dynamic, \
+    org.slf4j.bridge;resolution:=optional, \
+    *
 
+Require-Capability: osgi.extender;filter:="(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))"
+Provide-Capability: osgi.serviceloader;osgi.serviceloader="ch.qos.logback.classic.spi.Configurator"

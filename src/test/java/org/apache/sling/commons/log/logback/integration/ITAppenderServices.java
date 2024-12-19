@@ -33,6 +33,7 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,7 +65,8 @@ public class ITAppenderServices extends LogTestBase {
     @Inject
     private ConfigurationAdmin ca;
 
-    private ServiceRegistration sr;
+    @SuppressWarnings("rawtypes")
+    private ServiceRegistration<Appender> sr;
 
     @Inject
     private EventAdmin eventAdmin;
@@ -79,7 +81,7 @@ public class ITAppenderServices extends LogTestBase {
     protected Option addExtraOptions() {
         return composite(
                 configAdmin(), mavenBundle("commons-io", "commons-io").versionAsInProject(),
-                mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject()
+                eventAdmin()
         );
     }
 
@@ -114,7 +116,10 @@ public class ITAppenderServices extends LogTestBase {
         foobar.debug("two");
         foobar.info("three");
 
-        assertEquals(2, ta.events.size());
+        assertTrue(ta.events.size() >= 2);
+        assertTrue(ta.events.stream().anyMatch(e -> "one".equals(e.getFormattedMessage())));
+        assertFalse(ta.events.stream().anyMatch(e -> "two".equals(e.getFormattedMessage())));
+        assertTrue(ta.events.stream().anyMatch(le -> "three".equals(le.getFormattedMessage())));
     }
 
     @Test
@@ -150,10 +155,10 @@ public class ITAppenderServices extends LogTestBase {
 
     @Test
     public void testOsgiAppenderRef() throws Exception {
-        Configuration config = ca.getConfiguration(ITConfigAdminSupport.PID, null);
+        Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(ITConfigAdminSupport.LOG_LEVEL, "INFO");
-        p.put(ITConfigAdminSupport.LOGBACK_FILE,absolutePath("test-osg-appender-ref-config.xml"));
+        p.put(LogConstants.LOG_LEVEL, "INFO");
+        p.put(LogConstants.LOGBACK_FILE, absolutePath("test-osg-appender-ref-config.xml"));
         config.update(p);
 
         delay();
@@ -187,7 +192,7 @@ public class ITAppenderServices extends LogTestBase {
         final int stopCount = ta.stopCount;
         final int startCount = ta.startCount;
 
-        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary)null));
+        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary<String, ?>)null));
 
         new RetryLoop(new RetryLoop.Condition() {
             @Override
@@ -214,7 +219,7 @@ public class ITAppenderServices extends LogTestBase {
         TestAppender ta = new TestAppender();
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("loggers", loggers);
-        sr = bundleContext.registerService(Appender.class.getName(), ta, props);
+        sr = bundleContext.registerService(Appender.class, ta, props);
         delay();
         return ta;
     }

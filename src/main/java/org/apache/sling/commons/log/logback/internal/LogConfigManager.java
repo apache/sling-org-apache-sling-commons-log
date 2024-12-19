@@ -16,7 +16,7 @@
  */
 package org.apache.sling.commons.log.logback.internal;
 
-import static ch.qos.logback.core.spi.ConfigurationEvent.newConfigurationEndedEvent;
+import static ch.qos.logback.core.spi.ConfigurationEvent.newConfigurationEndedSuccessfullyEvent;
 
 import java.io.File;
 import java.net.URL;
@@ -1472,7 +1472,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                 joranConfigurator.processModel(failsafeTop);
                 addInfo("Re-registering previous fallback configuration once more as a fallback configuration point");
                 joranConfigurator.registerSafeConfiguration(failsafeTop);
-                context.fireConfigurationEvent(newConfigurationEndedEvent(this));
+                context.fireConfigurationEvent(newConfigurationEndedSuccessfullyEvent(this));
                 addInfo("after registerSafeConfiguration");
             } catch (Exception e) {
                 addError("Unexpected exception thrown by a configuration considered safe.", e);

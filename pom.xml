@@ -46,7 +46,7 @@
 
   <properties>
     <slf4j.version>2.0.13</slf4j.version>
-    <logback.version>1.5.5</logback.version>
+    <logback.version>1.5.13</logback.version>
     <!-- Higher versions of pax exam cause class loading errors -->
     <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
     <junit-jupiter.version>5.10.2</junit-jupiter.version>
@@ -55,68 +55,6 @@
 
   <build>
     <plugins>
-      <!-- override to exclude the forked logback copied classes -->
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <stylesheet>maven</stylesheet>
-          <excludePackageNames>ch.*:*.impl:*.internal:</excludePackageNames>
-          <notimestamp>true</notimestamp>
-        </configuration>
-      </plugin>
-      <!-- override to exclude the forked logback copied classes -->
-      <plugin>
-        <groupId>org.apache.rat</groupId>
-        <artifactId>apache-rat-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>rat-check</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <excludes combine.children="append">
-                <exclude>src/main/java/ch/**</exclude>
-              </excludes>
-              <consoleOutput>true</consoleOutput>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-shade-plugin</artifactId>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>shade</goal>
-            </goals>
-            <configuration>
-              <createDependencyReducedPom>false</createDependencyReducedPom>
-              <artifactSet>
-                <includes>
-                  <include>ch.qos.logback</include>
-                </includes>
-              </artifactSet>
-              <relocations>
-                <relocation>
-                  <pattern>ch.qos.logback</pattern>
-                  <shadedPattern>org.apache.sling.ch.qos.logback</shadedPattern>
-                  <includes>
-                    <include>ch.qos.logback.core.pattern.PatternLayoutBase*</include>
-                    <include>ch.qos.logback.core.pattern.parser.*</include>
-                    <include>ch.qos.logback.classic.PatternLayoutOsgi*</include>
-                  </includes>
-                </relocation>
-              </relocations>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
@@ -367,45 +305,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.converter</artifactId>
-      <version>1.0.18</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.http.servlet-api</artifactId>
       <version>2.1.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <profiles>
-    <!-- override to exclude the forked logback copied classes -->
-    <profile>
-      <id>jacoco-report</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.jacoco</groupId>
-            <artifactId>jacoco-maven-plugin</artifactId>
-            <configuration>
-              <excludes>
-                <exclude>ch/qos/logback/core/pattern/PatternLayoutBase.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/Compiler.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/CompositeNode.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/FormattingNode.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/Node.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/OptionTokenizer.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/Parser.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/SimpleKeywordNode.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/Token.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/TokenStream.*</exclude>
-                <exclude>ch/qos/logback/core/pattern/parser/TokenStream$TokenizerState.*</exclude>
-              </excludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
 </project>

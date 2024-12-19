@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.PatternLayoutOsgi;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.pattern.EnsureExceptionHandling;
 import ch.qos.logback.classic.pattern.ExtendedThrowableProxyConverter;
 import ch.qos.logback.classic.pattern.MessageConverter;
@@ -35,6 +35,7 @@ import ch.qos.logback.core.Context;
 import ch.qos.logback.core.encoder.Encoder;
 import ch.qos.logback.core.pattern.Converter;
 import ch.qos.logback.core.pattern.ConverterUtil;
+import ch.qos.logback.core.pattern.DynamicConverter;
 import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
 
 /**
@@ -50,23 +51,24 @@ public class MaskingMessageUtil {
      * Set the message converter for the layout
      * @param pl The layout
      */
-    public static void setMessageConverter(final PatternLayoutOsgi pl) {
+    public static void setMessageConverter(final PatternLayout pl) {
         // need to overwrite all converter for messages and exceptions
         // see https://logback.qos.ch/manual/layouts.html
-        Map<String, Supplier<Converter<ILoggingEvent>>> instanceConverterSupplierMap = pl.getInstanceConverterSupplierMap();
-        instanceConverterSupplierMap.put("m", MaskingMessageConverter::new);
-        instanceConverterSupplierMap.put("msg", MaskingMessageConverter::new);
-        instanceConverterSupplierMap.put("message", MaskingMessageConverter::new);
+        @SuppressWarnings("rawtypes")
+        Map<String, Supplier<DynamicConverter>> instanceConverterMap = pl.getInstanceConverterMap();
+        instanceConverterMap.put("m", MaskingMessageConverter::new);
+        instanceConverterMap.put("msg", MaskingMessageConverter::new);
+        instanceConverterMap.put("message", MaskingMessageConverter::new);
 
-        instanceConverterSupplierMap.put("ex", MaskingThrowableProxyConverter::new);
-        instanceConverterSupplierMap.put("exception", MaskingThrowableProxyConverter::new);
-        instanceConverterSupplierMap.put("rEx", MaskingRootCauseFirstThrowableProxyConverter::new);
-        instanceConverterSupplierMap.put("rootException", MaskingRootCauseFirstThrowableProxyConverter::new);
-        instanceConverterSupplierMap.put("throwable", MaskingThrowableProxyConverter::new);
+        instanceConverterMap.put("ex", MaskingThrowableProxyConverter::new);
+        instanceConverterMap.put("exception", MaskingThrowableProxyConverter::new);
+        instanceConverterMap.put("rEx", MaskingRootCauseFirstThrowableProxyConverter::new);
+        instanceConverterMap.put("rootException", MaskingRootCauseFirstThrowableProxyConverter::new);
+        instanceConverterMap.put("throwable", MaskingThrowableProxyConverter::new);
 
-        instanceConverterSupplierMap.put("xEx", MaskingExtendedThrowableProxyConverter::new);
-        instanceConverterSupplierMap.put("xException", MaskingExtendedThrowableProxyConverter::new);
-        instanceConverterSupplierMap.put("xThrowable", MaskingExtendedThrowableProxyConverter::new);
+        instanceConverterMap.put("xEx", MaskingExtendedThrowableProxyConverter::new);
+        instanceConverterMap.put("xException", MaskingExtendedThrowableProxyConverter::new);
+        instanceConverterMap.put("xThrowable", MaskingExtendedThrowableProxyConverter::new);
 
         // override post processor for ensuring exception handling
         pl.setPostCompileProcessor(new MaskingEnsureExceptionHandling());
@@ -243,7 +245,7 @@ public class MaskingMessageUtil {
 
         @Override
         public void start() {
-            PatternLayoutOsgi patternLayout = new PatternLayoutOsgi();
+            PatternLayout patternLayout = new PatternLayout();
             patternLayout.setContext(context);
             patternLayout.setPattern(getPattern());
             patternLayout.setOutputPatternAsHeader(outputPatternAsHeader);

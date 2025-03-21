@@ -119,12 +119,8 @@ public class ITPackagingData extends LogTestBase {
 
     @Test
     public void packageDataWorking() throws Exception{
-        System.getenv().entrySet().stream()
-            .filter(e -> e.getKey().contains("BUILD") || e.getKey().contains("JENKINS") )
-            .forEach( System.out::println );
         Assume.assumeFalse("SLING-12711", 
-            System.getProperty("os.name").toLowerCase().contains("windows") &&
-            System.getenv("JENKINS_URL") != null);
+            System.getProperty("os.name").toLowerCase().contains("windows"));
 
         // Enable packaging
         Configuration config = ca.getConfiguration(PID, null);

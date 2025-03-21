@@ -119,6 +119,7 @@ public class ITPackagingData extends LogTestBase {
 
     @Test
     public void packageDataWorking() throws Exception{
+        System.out.format("OS: %s, BUILD_NUMBER: %s%n", System.getProperty("os.name"), System.getenv("BUILD_NUMBER"));
         Assume.assumeFalse("SLING-12711", 
             System.getProperty("os.name").toLowerCase().contains("windows") &&
             System.getenv("JENKINS_URL") != null);

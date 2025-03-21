@@ -119,7 +119,6 @@
           </execution>
         </executions>
         <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <systemPropertyVariables>
             <project.bundle.file>${bundle.file.name}</project.bundle.file>
             <project.boot.file>${bundle.file.name}</project.boot.file>

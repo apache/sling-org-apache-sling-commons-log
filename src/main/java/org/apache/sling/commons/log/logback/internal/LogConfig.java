@@ -36,7 +36,7 @@ import ch.qos.logback.core.pattern.PostCompileProcessor;
 
 public class LogConfig {
     private static final String[] LEGACY_MARKERS = {
-        "{0}", "{1}", "{2}", "{3}", "{4}", "{5}"
+        "{0}", "{1}", "{2}", "{3}", "{4}", "{5}", "{6}"
     };
 
     private final String configPid;
@@ -106,6 +106,7 @@ public class LogConfig {
         // {3} the name of the logger,
         // {4} the debug level and
         // {5} the actual debug message
+        // {6} id of the request
         Pattern date = Pattern.compile("\\{0,date,(.+?)\\}");
         Matcher m = date.matcher(pattern);
         String logBackPattern = pattern;
@@ -129,7 +130,7 @@ public class LogConfig {
             // [%thread] %logger %msg%n
             try {
                 logBackPattern = MessageFormat.format(logBackPattern, "zero", "%marker", "%thread", "%logger", "%level",
-                        "%message") + "%n";
+                        "%message", "%X{xrequestid}") + "%n";
             } catch (IllegalArgumentException e) {
                 LoggerFactory.getLogger(getClass())
                     .warn("Invalid message format provided [{}]. Would use the default pattern",logBackPattern, e);

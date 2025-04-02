@@ -44,6 +44,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator;
 import org.apache.sling.commons.log.logback.internal.LogConstants;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Option;
@@ -119,6 +120,9 @@ public class ITPackagingData extends LogTestBase {
 
     @Test
     public void packageDataWorking() throws Exception{
+        Assume.assumeFalse("SLING-12711", 
+            System.getProperty("os.name").toLowerCase().contains("windows"));
+
         // Enable packaging
         Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();

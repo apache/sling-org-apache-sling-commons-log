@@ -24,50 +24,41 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
+
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.pattern.PostCompileProcessor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class LogConfig {
     private static final String[] LEGACY_MARKERS = {
         "{0}", "{1}", "{2}", "{3}", "{4}", "{5}"
     };
 
-    private static final Logger log = LoggerFactory.getLogger(LogConfig.class);
-
     private final String configPid;
-
     private final Set<String> categories;
-
     private final Level logLevel;
-
     private final String pattern;
-
     private final String logWriterName;
-
     private final LogWriterProvider logWriterProvider;
-
-    private final LoggerContext loggerContext;
-
     private final boolean isAdditiv;
-
     private final boolean resetToDefault;
 
     private PostCompileProcessor<ILoggingEvent> postProcessor;
 
+    @SuppressWarnings("java:S107")
     LogConfig(LogWriterProvider logWriterProvider, final String pattern, Set<String> categories, Level logLevel,
-              String logWriterName, final boolean isAdditiv, String configPid, LoggerContext loggerContext, boolean resetToDefault) {
+              String logWriterName, final boolean isAdditiv, String configPid, boolean resetToDefault) {
         this.logWriterProvider = logWriterProvider;
         this.configPid = configPid;
         this.pattern = pattern;
         this.categories = Collections.unmodifiableSet(categories);
         this.logLevel = logLevel;
         this.logWriterName = logWriterName;
-        this.loggerContext = loggerContext;
         this.isAdditiv = isAdditiv;
         this.resetToDefault = resetToDefault;
     }
@@ -84,7 +75,7 @@ public class LogConfig {
         return logLevel;
     }
 
-    public String getLogWriterName() {
+    public @Nullable String getLogWriterName() {
         return logWriterName;
     }
 
@@ -96,7 +87,7 @@ public class LogConfig {
         return this.isAdditiv;
     }
 
-    public LogWriter getLogWriter() {
+    public @NotNull LogWriter getLogWriter() {
         return logWriterProvider.getLogWriter(getLogWriterName());
     }
 
@@ -104,7 +95,7 @@ public class LogConfig {
         return resetToDefault;
     }
 
-    public PatternLayout createLayout() {
+    public @NotNull PatternLayout createLayout(@NotNull LoggerContext loggerContext) {
         // The java.util.MessageFormat pattern to use for formatting log
         // messages with the root logger.
         // This is a java.util.MessageFormat pattern supporting up to six
@@ -133,15 +124,16 @@ public class LogConfig {
         }
 
         if (legacyPattern) {
-            // Default {0,date,dd.MM.yyyy HH:mm:ss.SSS} *{4}* [{2}] {3} {5}
+            // NOSONAR - Default {0,date,dd.MM.yyyy HH:mm:ss.SSS} *{4}* [{2}] {3} {5}
             // Convert patterns to %d{dd.MM.yyyy HH:mm:ss.SSS} *%level*
             // [%thread] %logger %msg%n
             try {
                 logBackPattern = MessageFormat.format(logBackPattern, "zero", "%marker", "%thread", "%logger", "%level",
                         "%message") + "%n";
             } catch (IllegalArgumentException e) {
-                log.warn("Invalid message format provided [{}]. Would use the default pattern",logBackPattern, e);
-                logBackPattern = LogConfigManager.LOG_PATTERN_DEFAULT;
+                LoggerFactory.getLogger(getClass())
+                    .warn("Invalid message format provided [{}]. Would use the default pattern",logBackPattern, e);
+                logBackPattern = LogConstants.LOG_PATTERN_DEFAULT;
             }
         }
 
@@ -160,16 +152,16 @@ public class LogConfig {
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "LogConfig{" + "configPid='" + configPid + '\'' + ", categories=" + categories + ", logLevel="
             + logLevel + ", logWriterName='" + logWriterName + '\'' + '}';
     }
 
-    public void setPostProcessor(PostCompileProcessor<ILoggingEvent> postProcessor) {
+    public void setPostProcessor(@Nullable PostCompileProcessor<ILoggingEvent> postProcessor) {
         this.postProcessor = postProcessor;
     }
 
     public interface LogWriterProvider {
-        LogWriter getLogWriter(String writerName);
+        @NotNull LogWriter getLogWriter(@NotNull String writerName);
     }
 }

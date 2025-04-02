@@ -38,7 +38,7 @@ import java.util.TreeSet;
 
 import org.apache.sling.commons.log.logback.internal.AppenderTracker.AppenderInfo;
 import org.apache.sling.commons.log.logback.internal.ConfigSourceTracker.ConfigSourceInfo;
-import org.apache.sling.commons.log.logback.internal.LogbackManager.LoggerStateContext;
+import org.apache.sling.commons.log.logback.internal.LogConfigManager.LoggerStateContext;
 import org.apache.sling.commons.log.logback.internal.config.ConfigurationException;
 import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
 import org.apache.sling.commons.log.logback.internal.util.Util;
@@ -56,6 +56,7 @@ import org.xml.sax.InputSource;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.classic.turbo.TurboFilter;
 import ch.qos.logback.core.Appender;
@@ -73,7 +74,9 @@ import ch.qos.logback.core.util.CachingDateFormatter;
  */
 public class SlingLogPanel implements LogPanel {
 
-    private final CachingDateFormatter SDF = new CachingDateFormatter("yyyy-MM-dd HH:mm:ss");
+    private static final String SUBCONTEXT_SERVICES = "services";
+
+    private final CachingDateFormatter dateFormatter = new CachingDateFormatter("yyyy-MM-dd HH:mm:ss");
 
     private static final String[] LEVEL_NAMES = {
             Level.ERROR.levelStr,
@@ -82,30 +85,28 @@ public class SlingLogPanel implements LogPanel {
             Level.DEBUG.levelStr,
             Level.TRACE.levelStr,
             Level.OFF.levelStr,
-            LogConfigManager.LOG_LEVEL_RESET_TO_DEFAULT
+            LogConstants.LOG_LEVEL_RESET_TO_DEFAULT
     };
 
     private static final String PACKAGE_SEPARATOR = ".";
 
-    private final LogbackManager logbackManager;
+    private final LogConfigManager logConfigManger;
     private final BundleContext bundleContext;
 
-    private static final org.slf4j.Logger log = LoggerFactory.getLogger(SlingLogPanel.class);
-
-    public SlingLogPanel(final LogbackManager logbackManager, final BundleContext bundleContext) {
-        this.logbackManager = logbackManager;
+    public SlingLogPanel(final LogConfigManager logConfigManger, final BundleContext bundleContext) {
+        this.logConfigManger = logConfigManger;
         this.bundleContext = bundleContext;
     }
 
     @Override
     public void tail(PrintWriter pw, String appenderName, TailerOptions options) throws IOException {
-        final LoggerStateContext ctx = logbackManager.determineLoggerState();
+        final LoggerStateContext ctx = logConfigManger.determineLoggerState();
         renderAppenderContent(ctx, pw, appenderName, options);
     }
 
     @Override
     public void render(PrintWriter pw, String consoleAppRoot) throws IOException {
-        final LoggerStateContext ctx = logbackManager.determineLoggerState();
+        final LoggerStateContext ctx = logConfigManger.determineLoggerState();
         appendLoggerStatus(pw, ctx);
         appendOsgiConfiguredLoggerData(pw, consoleAppRoot);
         appendOtherLoggerData(pw, ctx);
@@ -113,7 +114,7 @@ public class SlingLogPanel implements LogPanel {
         appendTurboFilterData(pw, consoleAppRoot, ctx);
         appendLogbackMainConfig(pw);
         appendLogbackFragments(pw, consoleAppRoot);
-        appendLogbackStatus(pw, ctx);
+        appendLogbackStatus(pw);
         addScriptBlock(pw, ctx);
     }
 
@@ -122,7 +123,7 @@ public class SlingLogPanel implements LogPanel {
         try {
             removeLogger(pid);
         } catch (ConfigurationException e) {
-            internalFailure("", e);
+            internalFailure("Failed to delete logger config", e);
         }
     }
 
@@ -132,10 +133,11 @@ public class SlingLogPanel implements LogPanel {
             configureLogger(config.getPid(), config.getLogLevel(), config.getLoggers(),
                     config.getLogFile(), config.isAdditive());
         } catch (ConfigurationException e) {
-            internalFailure("", e);
+            internalFailure("Failed to create logger config", e);
         }
     }
 
+    @SuppressWarnings("java:S1192")
     private void addScriptBlock(final PrintWriter pw, final LoggerStateContext ctx) {
         pw.println("<script type=\"text/javascript\" src=\"" + RES_LOC + "/slinglog.js\"></script>");
         pw.println("<script type=\"text/javascript\" src=\"" + RES_LOC + "/jquery.autocomplete.min.js\"></script>");
@@ -145,13 +147,14 @@ public class SlingLogPanel implements LogPanel {
         pw.println("<script>");
         // write all present loggers as script variable so the autocomplete script can search over them
         pw.println("var loggers=[");
-        Set<String> loggers = new TreeSet<String>();
+        Set<String> loggers = new TreeSet<>();
 
-        for (Logger logger : ctx.loggerContext.getLoggerList()) {
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        for (Logger logger : loggerContext.getLoggerList()) {
             loggers.add(logger.getName());
         }
 
-        Set<String> packageList = new TreeSet<String>();
+        Set<String> packageList = new TreeSet<>();
         for (String logger : loggers) {
             int pos = logger.lastIndexOf(PACKAGE_SEPARATOR);
             if (pos != -1) {
@@ -180,6 +183,7 @@ public class SlingLogPanel implements LogPanel {
                 ctx.getNumberOfLoggers(), ctx.getNumOfAppenders(), ctx.getNumOfDynamicAppenders(), ctx.packageInfoCollector.size());
     }
 
+    @SuppressWarnings("java:S1192")
     private void appendOsgiConfiguredLoggerData(final PrintWriter pw, final String consoleAppRoot) {
         pw.println("<div class='table'>");
 
@@ -200,10 +204,9 @@ public class SlingLogPanel implements LogPanel {
         pw.println("</thead>");
         pw.println("<tbody class='ui-widget-content'>");
 
-        final LogConfigManager configManager = logbackManager.getLogConfigManager();
-        final String rootPath = logbackManager.getRootDir();
-        final boolean shortenPaths = areAllLogfilesInSameFolder(configManager.getLogConfigs(), rootPath);
-        for (final LogConfig logConfig : configManager.getLogConfigs()) {
+        final String rootPath = logConfigManger.getRootDir();
+        final boolean shortenPaths = areAllLogfilesInSameFolder(logConfigManger.getLogConfigs(), rootPath);
+        for (final LogConfig logConfig : logConfigManger.getLogConfigs()) {
             pw.print("<tr id=\"");
             pw.print( XmlUtil.escapeXml(logConfig.getConfigPid()) );
             pw.println("\">");
@@ -233,9 +236,11 @@ public class SlingLogPanel implements LogPanel {
             pw.println("</td>");
 
             final String pid = logConfig.getConfigPid();
-            String url = createUrl(consoleAppRoot, "configMgr", pid, true);
-            if (logConfig.getCategories().contains(Logger.ROOT_LOGGER_NAME)) {
+            String url;
+            if (logConfig.getCategories().contains(org.slf4j.Logger.ROOT_LOGGER_NAME)) {
                 url = createUrl(consoleAppRoot, "configMgr", pid, false);
+            } else {
+                url = createUrl(consoleAppRoot, "configMgr", pid, true);
             }
             pw.print("<td>");
             pw.print(url);
@@ -256,7 +261,7 @@ public class SlingLogPanel implements LogPanel {
         pw.println("\"></span></td>");
         pw.print("<td><span class=\"logAdditive\" data-currentAdditivity=\"false\"></span></td>");
         pw.print("<td><span id=\"defaultLogfile\" data-defaultlogfile=\"");
-        pw.print( XmlUtil.escapeXml(getPath(configManager.getDefaultWriter().getFileName(), rootPath, shortenPaths)));
+        pw.print( XmlUtil.escapeXml(getPath(logConfigManger.getDefaultWriter().getFileName(), rootPath, shortenPaths)));
         pw.println("\" class=\"logFile\"></span></td>");
         pw.println("<td><span class=\"loggers\"></span></td>");
         pw.println("<td><input type='submit' class=\"configureLink\" value='Add new Logger' /></td></tr></tfoot>");
@@ -265,7 +270,8 @@ public class SlingLogPanel implements LogPanel {
         pw.println("</div>");
     }
 
-    private void appendOtherLoggerData(final PrintWriter pw, final LoggerStateContext ctx) throws UnsupportedEncodingException {
+    @SuppressWarnings("java:S1192")
+    private void appendOtherLoggerData(final PrintWriter pw, final LoggerStateContext ctx) {
         if (ctx.nonOSgiConfiguredLoggers.isEmpty()) {
             return;
         }
@@ -355,7 +361,8 @@ public class SlingLogPanel implements LogPanel {
     }
 
     private void appendTurboFilterData(final PrintWriter pw, final String consoleAppRoot, final LoggerStateContext ctx) {
-        if (ctx.loggerContext.getTurboFilterList().isEmpty()) {
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        if (loggerContext.getTurboFilterList().isEmpty()) {
             return;
         }
 
@@ -376,7 +383,7 @@ public class SlingLogPanel implements LogPanel {
         pw.println("<tbody class='ui-widget-content'>");
 
 
-        for (final TurboFilter tf : ctx.loggerContext.getTurboFilterList()) {
+        for (final TurboFilter tf : loggerContext.getTurboFilterList()) {
             pw.println("<tr>");
             pw.println("<td>");
             pw.print(XmlUtil.escapeXml(getName(tf)));
@@ -394,7 +401,7 @@ public class SlingLogPanel implements LogPanel {
     }
 
 
-    private void appendLogbackStatus(final PrintWriter pw, final LoggerStateContext ctx) {
+    private void appendLogbackStatus(final PrintWriter pw) {
         pw.println("<div class='table'>");
 
         pw.println("<div class='ui-widget-header ui-corner-top buttonGroup'>Logback Status</div>");
@@ -412,11 +419,12 @@ public class SlingLogPanel implements LogPanel {
 
         pw.println("<tbody class='ui-widget-content'  >");
 
-        final List<Status> statusList = ctx.loggerContext.getStatusManager().getCopyOfStatusList();
+        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        final List<Status> statusList = loggerContext.getStatusManager().getCopyOfStatusList();
         for (final Status s : statusList) {
             pw.println("<tr>");
             pw.print("<td class=\"date\">");
-            pw.print(SDF.format(s.getDate()));
+            pw.print(dateFormatter.format(s.getTimestamp()));
             pw.println("</td>");
             pw.print("<td class=\"level\">");
             pw.print(statusLevelAsString(s));
@@ -452,14 +460,14 @@ public class SlingLogPanel implements LogPanel {
         File configFile = null;
         URL url = null;
         InputSource source = null;
-        try {
+        try { // NOSONAR
             String msg;
-            configFile = logbackManager.getLogConfigManager().getLogbackConfigFile();
+            configFile = logConfigManger.getLogbackConfigFile();
             if (configFile != null) {
                 source = new InputSource(new BufferedInputStream(new FileInputStream(configFile)));
                 msg = "Source " + configFile.getAbsolutePath();
             } else {
-                url = logbackManager.getDefaultConfig();
+                url = logConfigManger.getDefaultConfigURL();
                 URLConnection uc = url.openConnection();
                 uc.setDefaultUseCaches(false);
                 source = new InputSource(new BufferedInputStream(uc.getInputStream()));
@@ -479,11 +487,14 @@ public class SlingLogPanel implements LogPanel {
             pw.print("</pre>");
             pw.println("</td></tr>");
         } catch (IOException e) {
-            String msg = "Error occurred while opening file [" + configFile + "]";
+            String msg;
             if (url != null) {
                 msg = "Error occurred while opening url [" + url + "]";
+            } else {
+                msg = "Error occurred while opening file [" + configFile + "]";
             }
-            log.warn(msg, e);
+            LoggerFactory.getLogger(getClass())
+                .warn(msg, e);
         } finally {
             Util.close(source);
         }
@@ -493,7 +504,7 @@ public class SlingLogPanel implements LogPanel {
     }
 
     private void appendLogbackFragments(final PrintWriter pw, final String consoleAppRoot) {
-        final Collection<ConfigSourceInfo> configSources = logbackManager.getConfigSourceTracker().getSources();
+        final Collection<ConfigSourceInfo> configSources = logConfigManger.getConfigSourceTracker().getSources();
 
         if (configSources.isEmpty()) {
             return;
@@ -506,7 +517,7 @@ public class SlingLogPanel implements LogPanel {
 
         for (final ConfigSourceInfo ci : configSources) {
             final String pid = ci.getReference().getProperty(Constants.SERVICE_ID).toString();
-            final String url = createUrl(consoleAppRoot, "services", pid);
+            final String url = createUrl(consoleAppRoot, SUBCONTEXT_SERVICES, pid);
             pw.println("<tr>");
             pw.print("<td>");
             pw.print(url);
@@ -536,17 +547,10 @@ public class SlingLogPanel implements LogPanel {
      * @param rootPath   root path
      * @return true if all logfiles are in the same folder
      */
-    private boolean areAllLogfilesInSameFolder(final Iterable<LogConfig> logConfigs, final String rootPath) {
-        String lastPath = null;
+    boolean areAllLogfilesInSameFolder(final Iterable<LogConfig> logConfigs, final String rootPath) {
         for (final LogConfig config : logConfigs) {
-            String path = getPath(config.getLogWriter().getFileName(), null, false);
+            String path = config.getLogWriter().getFileName();
             if (!path.startsWith(rootPath)) {
-                return false;
-            }
-            path = path.substring(0, rootPath.length());
-            if (lastPath == null) {
-                lastPath = path;
-            } else if (!path.equals(lastPath)) {
                 return false;
             }
         }
@@ -555,24 +559,27 @@ public class SlingLogPanel implements LogPanel {
 
     private void renderAppenderContent(LoggerStateContext ctx, PrintWriter pw, String appenderName, TailerOptions opts)
             throws IOException {
-        for (final Appender<ILoggingEvent> appender : ctx.appenders.values()) {
-            if (appender instanceof FileAppender && appenderName.equals(appender.getName())) {
-                final File file = new File(((FileAppender) appender).getFile());
-                if (file.exists()) {
-                    if (opts.tailAll()) {
-                        SlingConfigurationPrinter.includeWholeFile(pw, file);
-                    } else {
-                        int numOfLines = opts.getNumOfLines();
-                        if (numOfLines == 0){
-                            numOfLines = logbackManager.getLogConfigManager().getNumOfLines();
-                        }
-                        new Tailer(new FilteringListener(pw, opts.getRegex()), numOfLines).tail(file);
+        FileAppender<ILoggingEvent> fileAppender = (FileAppender<ILoggingEvent>)ctx.appenders.values()
+            .stream()
+            .filter(a -> a instanceof FileAppender && appenderName.equals(a.getName()))
+            .findFirst()
+            .orElse(null);
+        if (fileAppender == null) {
+            pw.printf("No file appender with name [%s] found", XmlUtil.escapeXml(appenderName));
+        } else {
+            final File file = new File(fileAppender.getFile());
+            if (file.exists()) {
+                if (opts.tailAll()) {
+                    SlingConfigurationPrinter.includeWholeFile(pw, file);
+                } else {
+                    int numOfLines = opts.getNumOfLines();
+                    if (numOfLines == 0) {
+                        numOfLines = logConfigManger.getNumOfLines();
                     }
+                    new Tailer(new FilteringListener(pw, opts.getRegex()), numOfLines).tail(file);
                 }
-                return;
             }
         }
-        pw.printf("No appender with name [%s] found", XmlUtil.escapeXml(appenderName));
     }
 
     private String getLinkedName(FileAppender<ILoggingEvent> appender) throws UnsupportedEncodingException {
@@ -582,7 +589,7 @@ public class SlingLogPanel implements LogPanel {
                 APP_ROOT,
                 PATH_TAILER,
                 PARAM_TAIL_NUM_OF_LINES,
-                logbackManager.getLogConfigManager().getNumOfLines(),
+                logConfigManger.getNumOfLines(),
                 PARAM_TAIL_GREP,
                 FilteringListener.MATCH_ALL,
                 PARAM_APPENDER_NAME,
@@ -607,49 +614,51 @@ public class SlingLogPanel implements LogPanel {
             logFile, boolean additive)
             throws IOException, ConfigurationException {
         // try to get the configadmin service reference
-        ServiceReference sr = this.bundleContext
-                .getServiceReference(ConfigurationAdmin.class.getName());
+        ServiceReference<ConfigurationAdmin> sr = this.bundleContext
+                .getServiceReference(ConfigurationAdmin.class);
         if (sr != null) {
+            ConfigurationAdmin configAdmin = null;
             try {
                 if (logLevel == null) {
-                    throw new ConfigurationException(LogConfigManager.LOG_LEVEL,
+                    throw new ConfigurationException(LogConstants.LOG_LEVEL,
                             "Log level has to be specified.");
                 }
                 if (loggers == null) {
-                    throw new ConfigurationException(LogConfigManager.LOG_LOGGERS,
+                    throw new ConfigurationException(LogConstants.LOG_LOGGERS,
                             "Logger categories have to be specified.");
                 }
                 if (logFile == null) {
-                    throw new ConfigurationException(LogConfigManager.LOG_FILE,
+                    throw new ConfigurationException(LogConstants.LOG_FILE,
                             "LogFile name has to be specified.");
                 }
                 // try to get the configadmin
-                final ConfigurationAdmin configAdmin = (ConfigurationAdmin) this.bundleContext
-                        .getService(sr);
+                configAdmin = this.bundleContext.getService(sr);
                 if (configAdmin != null) {
                     Configuration config;
                     if (pid == null || pid.length() == 0) {
-                        config = configAdmin.createFactoryConfiguration(LogConfigManager.FACTORY_PID_CONFIGS);
+                        config = configAdmin.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS);
                     } else {
                         config = configAdmin.getConfiguration(pid);
                     }
                     if (config != null) {
-                        Dictionary<String, Object> dict = new Hashtable<String, Object>();
-                        dict.put(LogConfigManager.LOG_LEVEL, logLevel.toLowerCase());
-                        dict.put(LogConfigManager.LOG_LOGGERS, loggers);
-                        dict.put(LogConfigManager.LOG_FILE, logFile);
+                        Dictionary<String, Object> dict = new Hashtable<>(); // NOSONAR
+                        dict.put(LogConstants.LOG_LEVEL, logLevel.toLowerCase());
+                        dict.put(LogConstants.LOG_LOGGERS, loggers);
+                        dict.put(LogConstants.LOG_FILE, logFile);
 
                         if (additive){
-                            dict.put(LogConfigManager.LOG_ADDITIV, "true");
+                            dict.put(LogConstants.LOG_ADDITIV, "true");
                         } else {
-                            dict.put(LogConfigManager.LOG_ADDITIV, "false");
+                            dict.put(LogConstants.LOG_ADDITIV, "false");
                         }
                         config.update(dict);
                     }
                 }
             } finally {
-                // release the configadmin reference
-                this.bundleContext.ungetService(sr);
+                if (configAdmin != null) {
+                    // release the configadmin reference
+                    this.bundleContext.ungetService(sr);
+                }
             }
         }
     }
@@ -664,25 +673,25 @@ public class SlingLogPanel implements LogPanel {
     private void removeLogger(final String pid)
             throws ConfigurationException {
         // try to get the configadmin service reference
-        ServiceReference sr = this.bundleContext
-                .getServiceReference(ConfigurationAdmin.class.getName());
+        ServiceReference<ConfigurationAdmin> sr = this.bundleContext
+                .getServiceReference(ConfigurationAdmin.class);
         if (sr != null) {
+            ConfigurationAdmin configAdmin = null;
             try {
                 if (pid == null) {
-                    throw new ConfigurationException(LogConfigManager.PID,
+                    throw new ConfigurationException(LogConstants.PID,
                             "PID has to be specified.");
                 }
                 // try to get the configadmin
-                final ConfigurationAdmin configAdmin = (ConfigurationAdmin) this.bundleContext
-                        .getService(sr);
+                configAdmin = this.bundleContext.getService(sr);
                 if (configAdmin != null) {
                     try {
                         Configuration config = configAdmin.getConfiguration(pid);
                         if (config != null) {
                             config.delete();
                         } else {
-                            throw new ConfigurationException(LogConfigManager.PID,
-                                    "No configuration for this PID:" + pid);
+                            throw new ConfigurationException(LogConstants.PID,
+                                    "No configuration for this PID: " + pid);
                         }
                     } catch (IOException ioe) {
                         internalFailure(
@@ -691,24 +700,26 @@ public class SlingLogPanel implements LogPanel {
                     }
                 }
             } finally {
-                // release the configadmin reference
-                this.bundleContext.ungetService(sr);
+                if (configAdmin != null) {
+                    // release the configadmin reference
+                    this.bundleContext.ungetService(sr);
+                }
             }
         }
     }
 
     private void internalFailure(String msg, Exception e) {
-        logbackManager.getLogConfigManager().internalFailure(msg, e);
+        logConfigManger.internalFailure(msg, e);
     }
 
-    private String getLevelStr(LogConfig logConfig) {
-        if (logConfig.isResetToDefault()){
-            return LogConfigManager.LOG_LEVEL_RESET_TO_DEFAULT;
+    String getLevelStr(LogConfig logConfig) {
+        if (logConfig.isResetToDefault()) {
+            return LogConstants.LOG_LEVEL_RESET_TO_DEFAULT;
         }
         return logConfig.getLogLevel().levelStr;
     }
 
-    private static String getName(TurboFilter tf) {
+    String getName(TurboFilter tf) {
         if (tf.getName() != null) {
             return String.format("%s (%s)", tf.getName(), tf.getClass().getName());
         } else {
@@ -716,35 +727,35 @@ public class SlingLogPanel implements LogPanel {
         }
     }
 
-    private static String formatPid(final String consoleAppRoot, final TurboFilter tf,
+    String formatPid(final String consoleAppRoot, final TurboFilter tf,
                                     final LoggerStateContext ctx) {
-        ServiceReference sr = ctx.getTurboFilterRef(tf);
+        ServiceReference<TurboFilter> sr = ctx.getTurboFilterRef(tf);
         if (sr != null) {
             final String pid = sr.getProperty(Constants.SERVICE_ID).toString();
-            return createUrl(consoleAppRoot, "services", pid);
+            return createUrl(consoleAppRoot, SUBCONTEXT_SERVICES, pid);
         } else {
             return "[config]";
         }
     }
 
-    private static String getName(Appender<ILoggingEvent> appender) throws UnsupportedEncodingException {
+    String getName(Appender<ILoggingEvent> appender) {
         // For normal file appender we also display the name of appender
         if (appender instanceof FileAppender) {
-            return String.format("File : [%s] %s", appender.getName(), ((FileAppender) appender).getFile());
+            return String.format("File : [%s] %s", appender.getName(), ((FileAppender<ILoggingEvent>)appender).getFile());
         }
 
         final String appenderName = appender.getName();
-        if(appenderName == null){
+        if (appenderName == null) {
             return appender.getClass().getName();
         } else {
             return String.format("%s (%s)", appender.getName(), appender.getClass().getName());
         }
     }
 
-    private static String formatPid(final String consoleAppRoot, final Appender<ILoggingEvent> appender,
+    String formatPid(final String consoleAppRoot, final Appender<ILoggingEvent> appender,
                                     final LoggerStateContext ctx) {
         if (appender instanceof SlingRollingFileAppender) {
-            final LogWriter lw = ((SlingRollingFileAppender) appender).getLogWriter();
+            final LogWriter lw = ((SlingRollingFileAppender<ILoggingEvent>) appender).getLogWriter();
             String pid = lw.getConfigurationPID();
             if (lw.isImplicit()) {
                 pid = lw.getImplicitConfigPID();
@@ -754,37 +765,37 @@ public class SlingLogPanel implements LogPanel {
             final AppenderInfo ai = ctx.dynamicAppenders.get(appender);
 
             final String pid = ai.pid;
-            return createUrl(consoleAppRoot, "services", pid);
+            return createUrl(consoleAppRoot, SUBCONTEXT_SERVICES, pid);
         } else {
             return "[others]";
         }
     }
 
-    private static String getConfigColTitle(String consoleAppRoot) {
+    String getConfigColTitle(String consoleAppRoot) {
         return (consoleAppRoot == null) ? "PID" : "Configuration";
     }
 
-    private static String createUrl(final String consoleAppRoot, final String subContext, final String pid) {
+    String createUrl(final String consoleAppRoot, final String subContext, final String pid) {
         return createUrl(consoleAppRoot, subContext, pid, false);
     }
 
-    private static String createUrl(final String consoleAppRoot, final String subContext, final String pid, final boolean inlineEditable) {
+    String createUrl(final String consoleAppRoot, final String subContext, final String pid, final boolean inlineEditable) {
         // no recent web console, so just render the pid as the link
         if (consoleAppRoot == null) {
             return "<a href=\"" + subContext + "/" + XmlUtil.escapeXml(pid) + "\">" + XmlUtil.escapeXml(pid) + "</a>";
         }
 
         // recent web console has app root and hence we can use an image
-        String classAttr = "class=\"configureLink\"";
+        String classAttr = "class=\"configureLink\" ";
         if (!inlineEditable) {
-            classAttr = "";
+            classAttr = " ";
         }
 
-        return "<a " + classAttr + " href=\"" + subContext + "/" + XmlUtil.escapeXml(pid) + "\"><img src=\"" + consoleAppRoot
+        return "<a " + classAttr + "href=\"" + subContext + "/" + XmlUtil.escapeXml(pid) + "\"><img src=\"" + consoleAppRoot
                 + "/res/imgs/component_configure.png\" border=\"0\" /></a>";
     }
 
-    private static String getPath(String path, final String rootPath, final boolean shortenPaths) {
+    String getPath(String path, final String rootPath, final boolean shortenPaths) {
         if (shortenPaths && path != null) {
             // if the shortenPath parameter is set (all log files are in the same folder)
             // remove the root path (root log file folder) from the paths
@@ -796,19 +807,26 @@ public class SlingLogPanel implements LogPanel {
     // ~------------------------------------------------Status Manager
     // Based on ch.qos.logback.core.status.ViewStatusMessagesServletBase
 
-    private static String statusLevelAsString(Status s) {
+    String statusLevelAsString(Status s) {
+        String statusString;
         switch (s.getEffectiveLevel()) {
             case Status.INFO:
-                return "INFO";
+                statusString = "INFO";
+                break;
             case Status.WARN:
-                return "<span class=\"warn\">WARN</span>";
+                statusString = "<span class=\"warn\">WARN</span>";
+                break;
             case Status.ERROR:
-                return "<span class=\"error\">ERROR</span>";
+                statusString = "<span class=\"error\">ERROR</span>";
+                break;
+            default:
+                statusString = null;
+                break;
         }
-        return null;
+        return statusString;
     }
 
-    private static void printThrowable(PrintWriter pw, Throwable t) {
+    void printThrowable(PrintWriter pw, Throwable t) {
         pw.println("  <tr>");
         pw.println("    <td colspan=\"4\" class=\"exception\"><pre>");
         StringWriter sw = new StringWriter();

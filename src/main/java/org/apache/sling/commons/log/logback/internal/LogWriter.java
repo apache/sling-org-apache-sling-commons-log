@@ -21,6 +21,11 @@ package org.apache.sling.commons.log.logback.internal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
+import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
@@ -32,8 +37,6 @@ import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.util.FileSize;
-import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
-import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
 
 /**
  * The <code>LogWriter</code> class encapsulates the OSGi configuration for a
@@ -76,18 +79,19 @@ public class LogWriter {
 
     private final boolean bufferedLogging;
 
-    public LogWriter(String configurationPID, String appenderName, int logNumber, String logRotation, String fileName, boolean bufferedLogging) {
+    public LogWriter(@Nullable String configurationPID, @NotNull String appenderName, int logNumber,
+            @Nullable String logRotation, @Nullable String fileName, boolean bufferedLogging) {
         this.appenderName = appenderName;
         if (fileName == null || fileName.length() == 0) {
             fileName = FILE_NAME_CONSOLE;
         }
 
         if (logNumber < 0) {
-            logNumber = LogConfigManager.LOG_FILE_NUMBER_DEFAULT;
+            logNumber = LogConstants.LOG_FILE_NUMBER_DEFAULT;
         }
 
         if (logRotation == null || logRotation.length() == 0) {
-            logRotation = LogConfigManager.LOG_FILE_SIZE_DEFAULT;
+            logRotation = LogConstants.LOG_FILE_SIZE_DEFAULT;
         }
 
         this.configurationPID = configurationPID;
@@ -97,23 +101,24 @@ public class LogWriter {
         this.bufferedLogging = bufferedLogging;
     }
 
-    public LogWriter(String appenderName,String fileName, int logNumber, String logRotation) {
+    public LogWriter(@NotNull String appenderName, @Nullable String fileName, int logNumber,
+            @Nullable String logRotation) {
         this(null, appenderName, logNumber, logRotation, fileName, false);
     }
 
-    public String getConfigurationPID() {
+    public @Nullable String getConfigurationPID() {
         return configurationPID;
     }
 
-    public String getImplicitConfigPID(){
-        return LogConfigManager.PID;
+    public @NotNull String getImplicitConfigPID(){
+        return LogConstants.PID;
     }
 
-    public String getFileName() {
+    public @NotNull String getFileName() {
         return fileName;
     }
 
-    public String getAppenderName() {
+    public @NotNull String getAppenderName() {
         return appenderName;
     }
 
@@ -121,7 +126,7 @@ public class LogWriter {
         return logNumber;
     }
 
-    public String getLogRotation() {
+    public @NotNull String getLogRotation() {
         return logRotation;
     }
 
@@ -129,16 +134,17 @@ public class LogWriter {
         return configurationPID == null;
     }
 
-    public Appender<ILoggingEvent> createAppender(final Context context, final Encoder<ILoggingEvent> encoder) {
+    public @NotNull Appender<ILoggingEvent> createAppender(@NotNull final Context context,
+            @NotNull final Encoder<ILoggingEvent> encoder) {
         SlingContextUtil ctxUtil = new SlingContextUtil(context, this);
         OutputStreamAppender<ILoggingEvent> appender;
         if (FILE_NAME_CONSOLE.equals(fileName)) {
-            appender = new ConsoleAppender<ILoggingEvent>();
+            appender = new ConsoleAppender<>();
             appender.setName(FILE_NAME_CONSOLE);
         } else {
-            ctxUtil.addInfo("Configuring appender "+getFileName());
+            ctxUtil.addInfo("Configuring appender " + getFileName());
 
-            SlingRollingFileAppender<ILoggingEvent> rollingAppender = new SlingRollingFileAppender<ILoggingEvent>();
+            SlingRollingFileAppender<ILoggingEvent> rollingAppender = new SlingRollingFileAppender<>();
             rollingAppender.setAppend(true);
             rollingAppender.setFile(getFileName());
 
@@ -153,32 +159,30 @@ public class LogWriter {
                 // group 2 is optional and is the size spec. If not null it is
                 // at least one character long and the first character is enough
                 // for use to know (the second is of no use here)
-                final String factorString = sizeMatcher.group(2);
+                String factorString = sizeMatcher.group(2);
                 if (factorString == null) {
                     // no factor define, hence no multiplication
-                    maxSize = baseSize;
-                } else {
-                    switch (factorString.charAt(0)) {
-                        case 'k':
-                        case 'K':
-                            maxSize = baseSize * FACTOR_KB;
-                            break;
-                        case 'm':
-                        case 'M':
-                            maxSize = baseSize * FACTOR_MB;
-                            break;
-                        case 'g':
-                        case 'G':
-                            maxSize = baseSize * FACTOR_GB;
-                            break;
-                        default:
-                            // we don't really expect this according to the
-                            // pattern
-                            maxSize = baseSize;
-                    }
+                    factorString = "d"; // triggers the 'default' case
+                }
+                switch (factorString.charAt(0)) {
+                    case 'k':
+                    case 'K':
+                        maxSize = baseSize * FACTOR_KB;
+                        break;
+                    case 'm':
+                    case 'M':
+                        maxSize = baseSize * FACTOR_MB;
+                        break;
+                    case 'g':
+                    case 'G':
+                        maxSize = baseSize * FACTOR_GB;
+                        break;
+                    default:
+                        // no factor define, hence no multiplication
+                        maxSize = baseSize;
                 }
 
-                SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<ILoggingEvent>();
+                SizeBasedTriggeringPolicy<ILoggingEvent> triggeringPolicy = new SizeBasedTriggeringPolicy<>();
                 triggeringPolicy.setMaxFileSize(FileSize.valueOf(String.valueOf(maxSize)));
                 triggeringPolicy.setContext(context);
                 triggeringPolicy.start();
@@ -198,7 +202,7 @@ public class LogWriter {
                 pol.start();
                 rollingAppender.setRollingPolicy(pol);
             } else {
-                TimeBasedRollingPolicy<ILoggingEvent> policy = new TimeBasedRollingPolicy<ILoggingEvent>();
+                TimeBasedRollingPolicy<ILoggingEvent> policy = new TimeBasedRollingPolicy<>();
                 String fileNamePattern = createFileNamePattern(getFileName(), getLogRotation());
                 policy.setFileNamePattern(fileNamePattern);
                 policy.setMaxHistory(getLogNumber());
@@ -207,7 +211,7 @@ public class LogWriter {
                 policy.start();
                 rollingAppender.setTriggeringPolicy(policy);
 
-                ctxUtil.addInfo("Configured TimeBasedRollingPolicy with pattern "+ fileNamePattern);
+                ctxUtil.addInfo("Configured TimeBasedRollingPolicy with pattern " + fileNamePattern);
             }
 
             rollingAppender.setLogWriter(this);
@@ -216,8 +220,8 @@ public class LogWriter {
             appender = rollingAppender;
         }
 
-        if(bufferedLogging && encoder instanceof LayoutWrappingEncoder){
-            ((LayoutWrappingEncoder) encoder).setImmediateFlush(false);
+        if (bufferedLogging && encoder instanceof LayoutWrappingEncoder) {
+            ((LayoutWrappingEncoder<ILoggingEvent>)encoder).setImmediateFlush(false);
             ctxUtil.addInfo("Setting immediateFlush to false");
         } else{
             ctxUtil.addInfo("immediateFlush property not modified. Defaults to true");
@@ -227,12 +231,12 @@ public class LogWriter {
         appender.setEncoder(encoder);
         appender.start();
 
-        ctxUtil.addInfo("Completed configuring appender with name "+getFileName());
+        ctxUtil.addInfo("Completed configuring appender with name " + getFileName());
 
         return appender;
     }
 
-    public static String createFileNamePattern(String fileName, String pattern) {
+    public static @NotNull String createFileNamePattern(@NotNull String fileName, @NotNull String pattern) {
         // Default file name pattern "'.'yyyy-MM-dd"
         // http://sling.apache.org/site/logging.html#Logging-ScheduledRotation
         if (pattern.startsWith("'.'")) {
@@ -240,7 +244,7 @@ public class LogWriter {
             pattern = ".%d{" + pattern + "}";
         }
 
-        // Legacy pattern which does not start with '.' Just wrap them with %d{}
+        // Legacy pattern which does not start with '.' Just wrap them
         if (!pattern.contains("%d{")) {
             pattern = "%d{" + pattern + "}";
         }
@@ -249,7 +253,7 @@ public class LogWriter {
     }
 
     @Override
-    public String toString() {
+    public @NotNull String toString() {
         return "LogWriter{" + "configurationPID='" + configurationPID + '\'' + ", fileName='" + fileName + '\''
             + ", logNumber=" + logNumber + ", logRotation='" + logRotation + '\'' + '}';
     }

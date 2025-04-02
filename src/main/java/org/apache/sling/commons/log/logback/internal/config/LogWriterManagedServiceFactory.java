@@ -28,8 +28,7 @@ class LogWriterManagedServiceFactory extends LogConfigurator implements ManagedS
         return "LogWriter configurator";
     }
 
-    @SuppressWarnings("unchecked")
-    public void updated(String pid, Dictionary configuration) throws org.osgi.service.cm.ConfigurationException {
+    public void updated(String pid, Dictionary<String, ?> configuration) throws org.osgi.service.cm.ConfigurationException {
         try {
             getLogConfigManager().updateLogWriter(pid, configuration, true);
         } catch (ConfigurationException ce) {

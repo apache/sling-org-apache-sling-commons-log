@@ -23,10 +23,5 @@
   explicit config is provided. It provides global settings which are then merged with the
   OSGi config.
   -->
-  <jmxConfigurator />
-  <newRule pattern="*/configuration/osgi"
-           actionClass="org.apache.sling.commons.log.logback.OsgiAction"/>
-  <newRule pattern="*/configuration/appender-ref-osgi"
-           actionClass="org.apache.sling.commons.log.logback.OsgiAppenderRefAction"/>
   <osgi/>
 </configuration>

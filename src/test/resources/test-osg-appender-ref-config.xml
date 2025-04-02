@@ -18,10 +18,6 @@
   -->
 
 <configuration>
-  <newRule pattern="*/configuration/osgi"
-           actionClass="org.apache.sling.commons.log.logback.OsgiAction"/>
-  <newRule pattern="*/configuration/appender-ref-osgi"
-           actionClass="org.apache.sling.commons.log.logback.OsgiAppenderRefAction"/>
   <osgi/>
 
   <logger name="foo.ref.osgi" level="DEBUG">

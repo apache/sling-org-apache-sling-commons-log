@@ -44,23 +44,20 @@ import org.ops4j.pax.exam.options.DefaultCompositeOption;
 import org.osgi.framework.BundleContext;
 
 public abstract class LogTestBase {
+
     @Inject
     protected BundleContext bundleContext;
 
     // the name of the system property providing the bundle file to be installed
     // and tested
-    protected static final String BUNDLE_JAR_SYS_PROP = "project.bundle.file";
+    protected static final String BUNDLE_JAR_SYS_PROP = "bundle.filename";
 
     // the name of the system property which captures the jococo coverage agent
     // command
     // if specified then agent would be specified otherwise ignored
-    protected static final String COVERAGE_COMMAND = "coverage.command";
-
-    // the default bundle jar file name
-    protected static final String BUNDLE_JAR_DEFAULT = "target/slinglogback.jar";
+    protected static final String COVERAGE_COMMAND = "jacoco.it.command";
 
     // the JVM option to set to enable remote debugging
-    @SuppressWarnings("UnusedDeclaration")
     protected static final String DEBUG_VM_OPTION = "-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=31313";
 
     // the actual JVM option set, extensions may implement a static
@@ -68,14 +65,9 @@ public abstract class LogTestBase {
     // method include it when starting the OSGi framework JVM
     protected static String paxRunnerVmOption = null;
 
-    // Name of the property for port of server
-    public static final String HTTP_PORT_PROP = "http.port";
-
-    protected static String DEFAULT_PORT = "8080";
-
     @Configuration
     public Option[] config() throws IOException {
-        final String bundleFileName = System.getProperty(BUNDLE_JAR_SYS_PROP, BUNDLE_JAR_DEFAULT);
+        final String bundleFileName = System.getProperty(BUNDLE_JAR_SYS_PROP);
         final File bundleFile = new File(bundleFileName);
         if (!bundleFile.canRead()) {
             throw new IllegalArgumentException("Cannot read from bundle file " + bundleFileName + " specified in the "
@@ -83,10 +75,30 @@ public abstract class LogTestBase {
                     "with 'mvn clean install -Pide -DskipTests'");
         }
         return options(
+            addSpiflyOptions(),
+            configAdmin(),
+            mavenBundle("org.osgi", "org.osgi.util.converter").versionAsInProject(),
+            mavenBundle("org.osgi", "org.osgi.util.function").versionAsInProject(),
+            mavenBundle("org.apache.felix", "org.apache.felix.http.servlet-api").versionAsInProject(),
             // the current project (the bundle under test)
             CoreOptions.bundle(bundleFile.toURI().toString()).start(shouldStartLogBundle()),
-            mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(), addPaxExamSpecificOptions(),
-            addCodeCoverageOption(), addDebugOptions(), addExtraOptions(), addDefaultOptions());
+            mavenBundle("ch.qos.logback", "logback-core").versionAsInProject(),
+            mavenBundle("ch.qos.logback", "logback-classic").versionAsInProject(),
+            mavenBundle("org.slf4j", "slf4j-api").versionAsInProject(),
+            addPaxExamSpecificOptions(), addCodeCoverageOption(), addDebugOptions(),
+            addExtraOptions(), addDefaultOptions());
+    }
+
+    private static Option addSpiflyOptions() {
+        return composite(
+                mavenBundle().groupId("org.apache.aries").artifactId("org.apache.aries.util").version("1.1.3").startLevel(1),
+                mavenBundle().groupId("org.apache.aries.spifly").artifactId("org.apache.aries.spifly.dynamic.bundle").version("1.3.7").startLevel(1),
+                mavenBundle().groupId("org.ow2.asm").artifactId("asm").version("9.7").startLevel(1),
+                mavenBundle().groupId("org.ow2.asm").artifactId("asm-analysis").version("9.7").startLevel(1),
+                mavenBundle().groupId("org.ow2.asm").artifactId("asm-commons").version("9.7").startLevel(1),
+                mavenBundle().groupId("org.ow2.asm").artifactId("asm-util").version("9.7").startLevel(1),
+                mavenBundle().groupId("org.ow2.asm").artifactId("asm-tree").version("9.7").startLevel(1)
+            );
     }
 
     protected Option addPaxExamSpecificOptions() {
@@ -129,6 +141,10 @@ public abstract class LogTestBase {
 
     protected static Option configAdmin() {
         return mavenBundle("org.apache.felix", "org.apache.felix.configadmin").versionAsInProject();
+    }
+
+    protected static Option eventAdmin() {
+        return mavenBundle("org.apache.felix", "org.apache.felix.eventadmin").versionAsInProject();
     }
 
     protected Option addExtraOptions() {

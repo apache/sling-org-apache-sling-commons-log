@@ -19,9 +19,9 @@
 
 package org.apache.sling.commons.log.logback;
 
+import org.jetbrains.annotations.NotNull;
 import org.osgi.annotation.versioning.ConsumerType;
 import org.xml.sax.InputSource;
-
 
 /**
  * Provides source for Logback configuration fragment.
@@ -31,5 +31,10 @@ import org.xml.sax.InputSource;
 @ConsumerType
 public interface ConfigProvider {
 
-    InputSource getConfigSource();
+    /**
+     * Return the input source that supplies the logback configuration
+     * 
+     * @return the input source
+     */
+    @NotNull InputSource getConfigSource();
 }

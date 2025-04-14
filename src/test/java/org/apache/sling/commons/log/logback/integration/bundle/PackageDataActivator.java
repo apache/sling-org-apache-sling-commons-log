@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration.bundle;
 
 import java.util.Hashtable;
@@ -36,8 +35,5 @@ public class PackageDataActivator implements BundleActivator {
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
-
-    }
-
+    public void stop(BundleContext context) throws Exception {}
 }

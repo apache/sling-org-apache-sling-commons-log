@@ -21,13 +21,12 @@ package org.apache.sling.commons.log.logback.internal;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
-import org.jetbrains.annotations.NotNull;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.jul.LevelChangePropagator;
 import ch.qos.logback.classic.spi.LoggerContextListener;
 import ch.qos.logback.core.spi.ContextAware;
+import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * It checks if LevelChangePropagator is installed or not. If not then
@@ -52,18 +51,17 @@ class LevelChangePropagatorChecker implements LogbackResetListener {
 
     /**
      * Callback after the reset is completed
-     * 
+     *
      * @param context the logger context being reset
      */
     @Override
     public void onResetComplete(@NotNull LoggerContext context) {
         List<LoggerContextListener> listenerList = context.getCopyOfListenerList();
-        boolean levelChangePropagatorInstalled = listenerList.stream()
-            .anyMatch(LevelChangePropagator.class::isInstance);
+        boolean levelChangePropagatorInstalled =
+                listenerList.stream().anyMatch(LevelChangePropagator.class::isInstance);
 
-        //http://logback.qos.ch/manual/configuration.html#LevelChangePropagator
-        if (!levelChangePropagatorInstalled &&
-                Boolean.TRUE.equals(isBridgeInstalledSupplier.get())) {
+        // http://logback.qos.ch/manual/configuration.html#LevelChangePropagator
+        if (!levelChangePropagatorInstalled && Boolean.TRUE.equals(isBridgeInstalledSupplier.get())) {
             LevelChangePropagator levelChangePropagator = new LevelChangePropagator();
             levelChangePropagator.setContext(context);
             levelChangePropagator.start();
@@ -72,5 +70,4 @@ class LevelChangePropagatorChecker implements LogbackResetListener {
             c.addInfo("Slf4j bridge handler found to be enabled. Installing the LevelChangePropagator");
         }
     }
-
 }

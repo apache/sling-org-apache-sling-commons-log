@@ -16,10 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal.stacktrace;
-
-import org.apache.sling.commons.log.logback.internal.MaskingMessageUtil;
 
 import ch.qos.logback.classic.pattern.EnsureExceptionHandling;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -27,6 +24,7 @@ import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.pattern.Converter;
 import ch.qos.logback.core.pattern.ConverterUtil;
+import org.apache.sling.commons.log.logback.internal.MaskingMessageUtil;
 
 /**
  * Extend EnsureExceptionHandling to add extra OSGi bundle info to the lines
@@ -68,13 +66,12 @@ public class OSGiAwareExceptionHandling extends EnsureExceptionHandling {
         @Override
         protected void extraData(StringBuilder builder, StackTraceElementProxy step) {
             if (step != null) {
-                String bundleInfo = collector.getBundleInfo(step.getStackTraceElement().getClassName());
+                String bundleInfo =
+                        collector.getBundleInfo(step.getStackTraceElement().getClassName());
                 if (bundleInfo != null) {
                     builder.append(" [").append(bundleInfo).append(']');
                 }
             }
         }
-
     }
-
 }

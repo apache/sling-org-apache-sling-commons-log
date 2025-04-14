@@ -16,14 +16,13 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal;
 
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
 
 /**
- * Event handler for processing a logging configurion reset request 
+ * Event handler for processing a logging configurion reset request
  */
 public class ConfigResetRequestHandler implements EventHandler {
     private final LogConfigManager logConfigManager;
@@ -45,5 +44,4 @@ public class ConfigResetRequestHandler implements EventHandler {
     public void handleEvent(Event event) {
         logConfigManager.configChanged();
     }
-
 }

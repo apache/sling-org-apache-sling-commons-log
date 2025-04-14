@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal;
 
 import java.io.File;
@@ -66,7 +65,7 @@ class Tailer {
 
         if (pos < 0) {
             pos = 0;
-            buffLength = (int)length;
+            buffLength = (int) length;
         }
 
         while (true) {
@@ -89,7 +88,7 @@ class Tailer {
             }
 
             if (pos - BUFFER_SIZE < 0) {
-                buffLength = (int)pos;
+                buffLength = (int) pos;
                 pos = 0;
             } else {
                 pos -= BUFFER_SIZE;
@@ -137,7 +136,7 @@ class Tailer {
             }
         }
 
-        //Drain the left over part
+        // Drain the left over part
         if (sb.length() != 0) {
             listener.handle(sb.toString());
         }
@@ -155,5 +154,4 @@ class Tailer {
             pw.println(line);
         }
     }
-
 }

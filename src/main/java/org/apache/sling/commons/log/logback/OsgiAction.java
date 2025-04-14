@@ -18,13 +18,18 @@
  */
 package org.apache.sling.commons.log.logback;
 
-import static ch.qos.logback.core.joran.JoranConstants.CONFIGURATION_TAG;
-import static ch.qos.logback.core.joran.JoranConstants.INCLUDED_TAG;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import ch.qos.logback.classic.joran.JoranConfigurator;
+import ch.qos.logback.core.joran.action.BaseModelAction;
+import ch.qos.logback.core.joran.event.SaxEvent;
+import ch.qos.logback.core.joran.event.SaxEventRecorder;
+import ch.qos.logback.core.joran.spi.JoranException;
+import ch.qos.logback.core.joran.spi.SaxEventInterpretationContext;
+import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.spi.ErrorCodes;
 import org.apache.sling.commons.log.logback.internal.ConfigSourceTracker;
 import org.apache.sling.commons.log.logback.internal.ConfigSourceTracker.ConfigSourceInfo;
 import org.apache.sling.commons.log.logback.internal.LogConfigManager;
@@ -36,20 +41,13 @@ import org.osgi.annotation.versioning.ProviderType;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 
-import ch.qos.logback.classic.joran.JoranConfigurator;
-import ch.qos.logback.core.joran.action.BaseModelAction;
-import ch.qos.logback.core.joran.event.SaxEvent;
-import ch.qos.logback.core.joran.event.SaxEventRecorder;
-import ch.qos.logback.core.joran.spi.JoranException;
-import ch.qos.logback.core.joran.spi.SaxEventInterpretationContext;
-import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.spi.ErrorCodes;
-
+import static ch.qos.logback.core.joran.JoranConstants.CONFIGURATION_TAG;
+import static ch.qos.logback.core.joran.JoranConstants.INCLUDED_TAG;
 
 /**
  * Joran action enabling integration between OSGi and Logback. It supports including
  * config fragments provided through OSGi ServiceRegistry
- * 
+ *
  * The action class needs to be referred in external files hence adding a
  * class in public package.
  * <p>
@@ -65,10 +63,12 @@ public final class OsgiAction extends BaseModelAction {
      * @param interpretationContext the Sax event interpretation context
      * @param name the element name
      * @param attributes the attributes for the element
-     * @return the built model 
+     * @return the built model
      */
     @Override
-    protected Model buildCurrentModel(@NotNull SaxEventInterpretationContext interpretationContext, @NotNull String name,
+    protected Model buildCurrentModel(
+            @NotNull SaxEventInterpretationContext interpretationContext,
+            @NotNull String name,
             @NotNull Attributes attributes) {
         OsgiModel osgiModel = new OsgiModel();
 
@@ -85,12 +85,13 @@ public final class OsgiAction extends BaseModelAction {
                 if (saxEvents.isEmpty()) {
                     addWarn("Empty sax event list");
                 } else {
-                    LogConfigManager lcm = (LogConfigManager)getContext().getObject(LogConfigManager.class.getName());
+                    LogConfigManager lcm = (LogConfigManager) getContext().getObject(LogConfigManager.class.getName());
                     JoranConfigurator genericXMLConfigurator = new JoranConfiguratorWrapper(lcm);
                     genericXMLConfigurator.setContext(context);
                     genericXMLConfigurator.getRuleStore().addPathPathMapping(INCLUDED_TAG, CONFIGURATION_TAG);
 
-                    Model modelFromIncludedFile = genericXMLConfigurator.buildModelFromSaxEventList(recorder.getSaxEventList());
+                    Model modelFromIncludedFile =
+                            genericXMLConfigurator.buildModelFromSaxEventList(recorder.getSaxEventList());
                     if (modelFromIncludedFile == null) {
                         addError(ErrorCodes.EMPTY_MODEL_STACK);
                     } else {
@@ -110,7 +111,7 @@ public final class OsgiAction extends BaseModelAction {
 
     /**
      * Get the fragment providers attached to the context
-     * 
+     *
      * @return the found fragment providers or an empty list if not found
      */
     private @NotNull Collection<ConfigSourceInfo> getFragmentProviders() {
@@ -126,5 +127,4 @@ public final class OsgiAction extends BaseModelAction {
         recorder.recordEvents(inputSource);
         return recorder;
     }
-
 }

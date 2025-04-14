@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal;
 
 import java.io.PrintWriter;
@@ -47,7 +46,7 @@ class FilteringListener implements TailerListener {
      *              string also. In that case search would be done in a
      *              case insensitive way
      */
-    public FilteringListener(@NotNull PrintWriter pw, @Nullable String regex){
+    public FilteringListener(@NotNull PrintWriter pw, @Nullable String regex) {
         this.pw = pw;
         this.regex = regex != null ? regex.toLowerCase(Locale.ENGLISH) : null;
         this.pattern = createPattern(regex);
@@ -59,14 +58,14 @@ class FilteringListener implements TailerListener {
      */
     @Override
     public void handle(@NotNull String line) {
-        if (include(line)){
+        if (include(line)) {
             pw.println(line);
         }
     }
 
     /**
      * Checks if the line should be included in the output
-     * 
+     *
      * @param line the line to check
      * @return true to include the line, false otherwise
      */
@@ -76,7 +75,7 @@ class FilteringListener implements TailerListener {
         }
 
         String lc = line.toLowerCase(Locale.ENGLISH);
-        if (lc.contains(regex)){
+        if (lc.contains(regex)) {
             return true;
         }
         return pattern.matcher(line).matches();
@@ -89,7 +88,7 @@ class FilteringListener implements TailerListener {
      * @return
      */
     private static Pattern createPattern(@Nullable String regex) {
-        if (regex == null || MATCH_ALL.equals(regex)){
+        if (regex == null || MATCH_ALL.equals(regex)) {
             return null;
         }
         return Pattern.compile(regex);

@@ -18,22 +18,21 @@
  */
 package org.apache.sling.commons.log.logback;
 
-import org.apache.sling.commons.log.logback.internal.joran.OsgiAppenderRefModel;
-import org.jetbrains.annotations.NotNull;
-import org.osgi.annotation.versioning.ProviderType;
-import org.xml.sax.Attributes;
-
 import ch.qos.logback.core.joran.JoranConstants;
 import ch.qos.logback.core.joran.action.BaseModelAction;
 import ch.qos.logback.core.joran.action.PreconditionValidator;
 import ch.qos.logback.core.joran.spi.SaxEventInterpretationContext;
 import ch.qos.logback.core.model.Model;
+import org.apache.sling.commons.log.logback.internal.joran.OsgiAppenderRefModel;
+import org.jetbrains.annotations.NotNull;
+import org.osgi.annotation.versioning.ProviderType;
+import org.xml.sax.Attributes;
 
 /**
  * Joran action enabling integration between OSGi and Logback. It is based on
  * {@link ch.qos.logback.core.joran.action.IncludeAction}. It supports including
  * config fragments provided through OSGi ServiceRegistry
-
+ *
  * The action class needs to be referred in external files hence adding a
  * class in public package.
  * <p>
@@ -52,7 +51,9 @@ public final class OsgiAppenderRefAction extends BaseModelAction {
      * @return true if valid, false otherwise
      */
     @Override
-    protected boolean validPreconditions(@NotNull SaxEventInterpretationContext interpretationContext, @NotNull String name,
+    protected boolean validPreconditions(
+            @NotNull SaxEventInterpretationContext interpretationContext,
+            @NotNull String name,
             @NotNull Attributes attributes) {
         PreconditionValidator pv = new PreconditionValidator(this, interpretationContext, name, attributes);
         pv.validateRefAttribute();
@@ -65,15 +66,16 @@ public final class OsgiAppenderRefAction extends BaseModelAction {
      * @param interpretationContext the Sax event interpretation context
      * @param name the element name
      * @param attributes the attributes for the element
-     * @return the built model 
+     * @return the built model
      */
     @Override
-    protected Model buildCurrentModel(@NotNull SaxEventInterpretationContext interpretationContext, @NotNull String name,
+    protected Model buildCurrentModel(
+            @NotNull SaxEventInterpretationContext interpretationContext,
+            @NotNull String name,
             @NotNull Attributes attributes) {
         OsgiAppenderRefModel arm = new OsgiAppenderRefModel();
         String ref = attributes.getValue(JoranConstants.REF_ATTRIBUTE);
         arm.setRef(ref);
         return arm;
     }
-
 }

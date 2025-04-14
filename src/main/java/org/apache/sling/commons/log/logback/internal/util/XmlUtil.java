@@ -16,10 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal.util;
-
-import java.io.StringWriter;
 
 import javax.xml.XMLConstants;
 import javax.xml.transform.OutputKeys;
@@ -28,6 +25,8 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
+
+import java.io.StringWriter;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -50,10 +49,10 @@ public class XmlUtil {
      * Return a pretty string representation of the xml supplied
      *
      * @param is the source for the xml content
-     * @return the pretty formatted xml 
+     * @return the pretty formatted xml
      */
     public static @NotNull String prettyPrint(@NotNull InputSource is) {
-        try (StringWriter strWriter = new StringWriter()){
+        try (StringWriter strWriter = new StringWriter()) {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
             // to protect a javax.xml.transform.TransformerFactory from XXE
             transformerFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
@@ -71,8 +70,7 @@ public class XmlUtil {
             // Catch generic error as panel should still work if xml apis are
             // not
             // resolved
-            LoggerFactory.getLogger(XmlUtil.class)
-                .warn("Error occurred while transforming xml", e);
+            LoggerFactory.getLogger(XmlUtil.class).warn("Error occurred while transforming xml", e);
         } finally {
             Util.close(is);
         }
@@ -92,17 +90,17 @@ public class XmlUtil {
         }
 
         final StringBuilder b = new StringBuilder(input.length());
-        for(int i = 0;i  < input.length(); i++) {
+        for (int i = 0; i < input.length(); i++) {
             final char c = input.charAt(i);
             if (c == '&') {
                 b.append("&amp;");
-            } else if(c == '<') {
+            } else if (c == '<') {
                 b.append("&lt;");
-            } else if(c == '>') {
+            } else if (c == '>') {
                 b.append("&gt;");
-            } else if(c == '"') {
+            } else if (c == '"') {
                 b.append("&quot;");
-            } else if(c == '\'') {
+            } else if (c == '\'') {
                 b.append("&apos;");
             } else {
                 b.append(c);

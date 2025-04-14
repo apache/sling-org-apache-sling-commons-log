@@ -54,8 +54,8 @@ public class ConfigurationException extends Exception {
      * @param reason the reason that the property value was invalid
      * @param cause the exception that caused the failure
      */
-    public ConfigurationException(@NotNull final String property, @NotNull final String reason,
-            @Nullable final Throwable cause) {
+    public ConfigurationException(
+            @NotNull final String property, @NotNull final String reason, @Nullable final Throwable cause) {
         super(String.format("Property %s was invalid. Reason: %s", property, reason), cause);
         this.property = property;
         this.reason = reason;
@@ -78,5 +78,4 @@ public class ConfigurationException extends Exception {
     public @NotNull String getReason() {
         return reason;
     }
-
 }

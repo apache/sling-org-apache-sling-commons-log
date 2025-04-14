@@ -1,28 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -40,6 +34,14 @@ import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -174,9 +176,8 @@ class TailerTest {
         assertTrue(output.contains("log message 14"));
     }
 
-
     @Test
-    void testEmpty() throws Exception{
+    void testEmpty() throws Exception {
         File f1 = tempFile.toFile();
         LineCollector listener = new LineCollector();
         Tailer t = new Tailer(listener, 10);
@@ -185,7 +186,7 @@ class TailerTest {
     }
 
     @Test
-    void testLessAndMore() throws Exception{
+    void testLessAndMore() throws Exception {
         File f1 = tempFile.toFile();
         writeToFile(f1, asList("a", "b", "c", "d"));
         LineCollector listener = new LineCollector();
@@ -198,25 +199,24 @@ class TailerTest {
     }
 
     @Test
-    void randomTest() throws Exception{
+    void randomTest() throws Exception {
         File f1 = tempFile.toFile();
         List<String> lines = createRandomLines(Tailer.BUFFER_SIZE * 10);
         int numOfLines = lines.size();
         writeToFile(f1, lines);
         Random rnd = new Random();
-        int n = rnd.nextInt(numOfLines/2);
+        int n = rnd.nextInt(numOfLines / 2);
         LineCollector listener = new LineCollector();
         new Tailer(listener, n).tail(f1);
         assertEquals(listener.lines, lines.subList(numOfLines - n, numOfLines));
-
     }
 
-    private List<String> createRandomLines(int totalSize){
+    private List<String> createRandomLines(int totalSize) {
 
         List<String> result = new ArrayList<String>();
         int size = 0;
         Random rnd = new Random();
-        while(true){
+        while (true) {
             int l = rnd.nextInt(100);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < l; i++) {
@@ -225,7 +225,7 @@ class TailerTest {
             size += sb.length();
             result.add(sb.toString());
 
-            if (size > totalSize){
+            if (size > totalSize) {
                 break;
             }
         }
@@ -235,29 +235,27 @@ class TailerTest {
     private void writeToFile(File f, List<String> lines) throws IOException {
         StringBuilder sb = new StringBuilder();
         boolean firstLine = true;
-        for (String line : lines){
-            if (firstLine){
+        for (String line : lines) {
+            if (firstLine) {
                 firstLine = false;
             } else {
                 sb.append("\n");
             }
             sb.append(line);
-
         }
         FileUtils.write(f, sb, Charset.defaultCharset());
     }
 
     private static class LineCollector implements Tailer.TailerListener {
         final List<String> lines = new ArrayList<String>();
+
         @Override
         public void handle(String line) {
             lines.add(line);
         }
 
-        public void reset(){
+        public void reset() {
             lines.clear();
         }
     }
-
-
 }

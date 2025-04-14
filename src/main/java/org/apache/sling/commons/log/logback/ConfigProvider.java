@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback;
 
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +24,7 @@ import org.xml.sax.InputSource;
 
 /**
  * Provides source for Logback configuration fragment.
- * 
+ *
  * @see "http://logback.qos.ch/manual/configuration.html#fileInclusion"
  */
 @ConsumerType
@@ -33,8 +32,9 @@ public interface ConfigProvider {
 
     /**
      * Return the input source that supplies the logback configuration
-     * 
+     *
      * @return the input source
      */
-    @NotNull InputSource getConfigSource();
+    @NotNull
+    InputSource getConfigSource();
 }

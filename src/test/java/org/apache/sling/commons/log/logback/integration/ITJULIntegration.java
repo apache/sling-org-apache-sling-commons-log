@@ -16,15 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -32,6 +24,10 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AppenderBase;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,10 +37,12 @@ import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.AppenderBase;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.CoreOptions.systemProperty;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -59,10 +57,11 @@ public class ITJULIntegration extends LogTestBase {
     @Override
     protected Option addExtraOptions() {
         return composite(
-            mavenBundle("org.slf4j", "jul-to-slf4j").versionAsInProject(),
-            systemProperty("org.apache.sling.commons.log.julenabled").value("true"),
-            frameworkProperty("org.apache.sling.commons.log.configurationFile").value(
-                FilenameUtils.concat(new File(".").getAbsolutePath(), "src/test/resources/test-jul-config.xml")));
+                mavenBundle("org.slf4j", "jul-to-slf4j").versionAsInProject(),
+                systemProperty("org.apache.sling.commons.log.julenabled").value("true"),
+                frameworkProperty("org.apache.sling.commons.log.configurationFile")
+                        .value(FilenameUtils.concat(
+                                new File(".").getAbsolutePath(), "src/test/resources/test-jul-config.xml")));
     }
 
     /**
@@ -83,7 +82,7 @@ public class ITJULIntegration extends LogTestBase {
         String[] loggers = {
             "foo.jul.1",
         };
-        ch.qos.logback.classic.Logger bar = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(loggers[0]);
+        ch.qos.logback.classic.Logger bar = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(loggers[0]);
         bar.setLevel(Level.INFO);
 
         props.put("loggers", loggers);
@@ -98,7 +97,6 @@ public class ITJULIntegration extends LogTestBase {
         julLogger.fine("Fine message");
 
         assertEquals(1, ta.events.size());
-
     }
 
     private static class TestAppender extends AppenderBase<ILoggingEvent> {
@@ -109,5 +107,4 @@ public class ITJULIntegration extends LogTestBase {
             events.add(eventObject);
         }
     }
-
 }

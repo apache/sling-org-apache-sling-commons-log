@@ -23,8 +23,8 @@ package org.apache.sling.commons.log.logback.internal;
  * can originate.
  */
 public enum AppenderOrigin {
-    JORAN,         // appender-ref elemement in logback xml
-    JORAN_OSGI,    // osgi-appender-ref elemement in logback xml
-    TRACKER,       // AppenderTracker
-    CONFIGSERVICE  // log configuration services
+    JORAN, // appender-ref elemement in logback xml
+    JORAN_OSGI, // osgi-appender-ref elemement in logback xml
+    TRACKER, // AppenderTracker
+    CONFIGSERVICE // log configuration services
 }

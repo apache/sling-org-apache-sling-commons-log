@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal;
 
 import java.util.Collections;
@@ -25,6 +24,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.filter.Filter;
+import ch.qos.logback.core.util.ContextUtil;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
@@ -33,12 +37,6 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.converter.Converters;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.LoggerFactory;
-
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.filter.Filter;
-import ch.qos.logback.core.util.ContextUtil;
 
 /**
  * Service tracker that listens for Filter services and
@@ -59,7 +57,8 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
      * @param logConfigManager the LogConfigManager to configure
      * @throws InvalidSyntaxException if {@link #createFilter()} returns something invalid
      */
-    public FilterTracker(@NotNull BundleContext context, @NotNull LogConfigManager logConfigManager) throws InvalidSyntaxException {
+    public FilterTracker(@NotNull BundleContext context, @NotNull LogConfigManager logConfigManager)
+            throws InvalidSyntaxException {
         super(context, createFilter(), null);
         this.logConfigManager = logConfigManager;
     }
@@ -74,7 +73,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
     public @NotNull Filter<ILoggingEvent> addingService(@NotNull ServiceReference<Filter<ILoggingEvent>> reference) {
         Filter<ILoggingEvent> f = super.addingService(reference);
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         f.setContext(loggerContext);
         f.start();
 
@@ -87,13 +86,13 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
     /**
      * Callback when a Filter service has been modified
-     * 
+     *
      * @param reference the service reference that was modified
      * @param service the service object that was being tracked
      */
     @Override
-    public void modifiedService(@NotNull ServiceReference<Filter<ILoggingEvent>> reference,
-            @NotNull Filter<ILoggingEvent> service) {
+    public void modifiedService(
+            @NotNull ServiceReference<Filter<ILoggingEvent>> reference, @NotNull Filter<ILoggingEvent> service) {
         FilterInfo fi = filters.remove(reference);
         detachFilter(fi, getAppenderMap());
         filters.put(reference, new FilterInfo(reference, service));
@@ -102,13 +101,13 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
     /**
      * Callback when a Filter service has been removed
-     * 
+     *
      * @param reference the service reference that was removed
      * @param service the service object that was being tracked
      */
     @Override
-    public void removedService(@NotNull ServiceReference<Filter<ILoggingEvent>> reference,
-            @NotNull Filter<ILoggingEvent> service) {
+    public void removedService(
+            @NotNull ServiceReference<Filter<ILoggingEvent>> reference, @NotNull Filter<ILoggingEvent> service) {
         FilterInfo fi = filters.remove(reference);
         fi.stop();
 
@@ -119,7 +118,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
     /**
      * Callback with a new appender has been attached to a Logger
-     * 
+     *
      * @param appender the appender that was attached
      */
     public void attachedAppender(Appender<ILoggingEvent> appender) {
@@ -130,7 +129,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
     /**
      * Callback with an appender has been detached from a Logger
-     * 
+     *
      * @param appender the appender that was detatched
      */
     public void detachedAppender(Appender<ILoggingEvent> appender) {
@@ -150,7 +149,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
     /**
      * Return a view of the current filters that have been tracked
-     * 
+     *
      * @return unmodifiable map of filters where the key is the service reference
      *          and the value is the service object
      */
@@ -158,23 +157,23 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
         return Collections.unmodifiableMap(filters);
     }
 
-    //~-----------------------------------LogbackResetListener
+    // ~-----------------------------------LogbackResetListener
 
     /**
      * Callback after the reset is completed
-     * 
+     *
      * @param context the logger context being reset
      */
     @Override
     public void onResetComplete(@NotNull LoggerContext context) {
-        //The filters are attached at end when all appenders have been instantiated
-        Map<String,Appender<ILoggingEvent>> appenderMap = getAppenderMap();
+        // The filters are attached at end when all appenders have been instantiated
+        Map<String, Appender<ILoggingEvent>> appenderMap = getAppenderMap();
         for (FilterInfo fi : filters.values()) {
             attachFilter(fi, appenderMap);
         }
     }
 
-    //~-----------------------------------Internal Methods
+    // ~-----------------------------------Internal Methods
 
     /**
      * Attach the filter to the appropriate appenders
@@ -193,7 +192,8 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
      * @param appenderMap the map of the current appenders
      * @param warnOnNoMatch true to add a status warning when no filter is found that matches the appender
      */
-    private void attachFilter(@NotNull FilterInfo fi, @NotNull Map<String, Appender<ILoggingEvent>> appenderMap, boolean warnOnNoMatch) {
+    private void attachFilter(
+            @NotNull FilterInfo fi, @NotNull Map<String, Appender<ILoggingEvent>> appenderMap, boolean warnOnNoMatch) {
         if (fi.registerAgainstAllAppenders) {
             for (Appender<ILoggingEvent> appender : appenderMap.values()) {
                 attachFilter(appender, fi);
@@ -204,11 +204,11 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
             Appender<ILoggingEvent> appender = appenderMap.get(appenderName);
             if (appender != null) {
                 attachFilter(appender, fi);
-            } else if (warnOnNoMatch){
-                LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+            } else if (warnOnNoMatch) {
+                LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
                 new ContextUtil(loggerContext)
-                    .addWarn("No appender with name [" + appenderName + "] found " +
-                        "to which " + fi.filter + " can be attached");
+                        .addWarn("No appender with name [" + appenderName + "] found " + "to which " + fi.filter
+                                + " can be attached");
             }
         }
     }
@@ -243,7 +243,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
      * @param fi the info about the filter to attach
      */
     private void attachFilter(@NotNull Appender<ILoggingEvent> appender, @NotNull FilterInfo fi) {
-        //TOCHECK Should we add based on some ranking
+        // TOCHECK Should we add based on some ranking
         if (!appender.getCopyOfAttachedFiltersList().contains(fi.filter)) {
             appender.addFilter(fi.filter);
         }
@@ -256,15 +256,15 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
      * @param fi the info about the filter to attach
      */
     private void detachFilter(@NotNull Appender<ILoggingEvent> appender, @NotNull FilterInfo fi) {
-        //No method to directly remove filter. So clone -> remove -> add
+        // No method to directly remove filter. So clone -> remove -> add
         if (appender.getCopyOfAttachedFiltersList().contains(fi.filter)) {
-            //Clone
+            // Clone
             List<Filter<ILoggingEvent>> filtersCopy = appender.getCopyOfAttachedFiltersList();
 
-            //Clear
+            // Clear
             appender.clearAllFilters();
 
-            //Add
+            // Add
             for (Filter<ILoggingEvent> filter : filtersCopy) {
                 if (!fi.filter.equals(filter)) {
                     appender.addFilter(filter);
@@ -274,7 +274,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
     }
 
     /**
-     * Get a map of the current appenders that are managed by our LogConfigManager 
+     * Get a map of the current appenders that are managed by our LogConfigManager
      * @return map of the known appenders where the key is the name and the value is the appender
      */
     private @NotNull Map<String, Appender<ILoggingEvent>> getAppenderMap() {
@@ -283,7 +283,7 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
     /**
      * Creates the filter that this tracker will match against
-     * 
+     *
      * @return the filter
      */
     private static @NotNull org.osgi.framework.Filter createFilter() throws InvalidSyntaxException {
@@ -312,9 +312,9 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
 
             @SuppressWarnings("unchecked")
             Set<String> appenderSet = Converters.standardConverter()
-                .convert(reference.getProperty(PROP_APPENDER))
-                .defaultValue(Collections.emptySet())
-                .to(Set.class);
+                    .convert(reference.getProperty(PROP_APPENDER))
+                    .defaultValue(Collections.emptySet())
+                    .to(Set.class);
             this.appenderNames = Collections.unmodifiableSet(appenderSet);
             this.registerAgainstAllAppenders = appenderNames.contains(ALL_APPENDERS);
         }
@@ -322,11 +322,10 @@ public class FilterTracker extends ServiceTracker<Filter<ILoggingEvent>, Filter<
         /**
          * Stop the filter if it has been started
          */
-        public void stop(){
+        public void stop() {
             if (filter.isStarted()) {
                 filter.stop();
             }
         }
     }
-
 }

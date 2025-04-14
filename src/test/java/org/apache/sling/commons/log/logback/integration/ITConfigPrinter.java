@@ -16,17 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
-import static org.ops4j.pax.exam.util.PathUtils.getBaseDir;
+import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,8 +29,6 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Dictionary;
 import java.util.Hashtable;
-
-import javax.inject.Inject;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -55,6 +45,15 @@ import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.frameworkProperty;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import static org.ops4j.pax.exam.util.PathUtils.getBaseDir;
+
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
 public class ITConfigPrinter extends LogTestBase {
@@ -67,12 +66,11 @@ public class ITConfigPrinter extends LogTestBase {
     }
 
     @Override
-    protected Option addExtraOptions(){
+    protected Option addExtraOptions() {
         return composite(
                 frameworkProperty("sling.log.root").value(logDir),
                 configAdmin(),
-                mavenBundle("commons-io", "commons-io").versionAsInProject()
-        );
+                mavenBundle("commons-io", "commons-io").versionAsInProject());
     }
 
     @Inject
@@ -86,8 +84,8 @@ public class ITConfigPrinter extends LogTestBase {
     private Object configPrinter;
 
     @After
-    public void closeTracker(){
-        if (tracker != null){
+    public void closeTracker() {
+        if (tracker != null) {
             tracker.close();
         }
     }
@@ -114,7 +112,7 @@ public class ITConfigPrinter extends LogTestBase {
 
         createLogConfig("error.log", "includeOnlyLastNFiles", "includeOnlyLastNFiles.1");
 
-        //txt mode log should at least have mention of all files
+        // txt mode log should at least have mention of all files
         for (int i = 0; i < 10; i++) {
             FileUtils.touch(new File(logDir, "error.log." + i));
         }
@@ -126,7 +124,7 @@ public class ITConfigPrinter extends LogTestBase {
             assertThat(sw.toString(), containsString("error.log." + i));
         }
 
-        //Attachment should only be upto 3
+        // Attachment should only be upto 3
         assertTrue(((URL[]) invoke("getAttachments", "zip")).length > 3);
     }
 
@@ -141,9 +139,7 @@ public class ITConfigPrinter extends LogTestBase {
         delay();
     }
 
-
-    private Object invoke(String methodName, Object... args) throws
-            InvocationTargetException, IllegalAccessException {
+    private Object invoke(String methodName, Object... args) throws InvocationTargetException, IllegalAccessException {
         for (Method m : configPrinter.getClass().getMethods()) {
             if (m.getName().equals(methodName)) {
                 return m.invoke(configPrinter, args);
@@ -153,11 +149,11 @@ public class ITConfigPrinter extends LogTestBase {
         return null;
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     private void waitForPrinter() throws InterruptedException {
-        if (configPrinter == null){
-            tracker = new ServiceTracker(bundleContext,
-                    "org.apache.sling.commons.log.logback.internal.SlingConfigurationPrinter", null);
+        if (configPrinter == null) {
+            tracker = new ServiceTracker(
+                    bundleContext, "org.apache.sling.commons.log.logback.internal.SlingConfigurationPrinter", null);
             tracker.open();
             configPrinter = tracker.waitForService(0);
         }

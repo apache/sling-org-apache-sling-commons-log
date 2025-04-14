@@ -55,15 +55,16 @@ public class LoggerManagedServiceFactory extends LogConfigurator implements Mana
      * @param pid the service identifier for the service
      * @param configuration the configuration properties to apply
      */
-    public void updated(@NotNull String pid, @NotNull Dictionary<String, ?> configuration) throws org.osgi.service.cm.ConfigurationException {
+    public void updated(@NotNull String pid, @NotNull Dictionary<String, ?> configuration)
+            throws org.osgi.service.cm.ConfigurationException {
         try {
             Dictionary<String, ?> conf = configuration;
 
             // calculate a filename if one is not supplied
             if (configuration.get(LogConstants.LOG_FILE) == null) {
                 List<String> keys = Collections.list(configuration.keys());
-                Map<String, Object> confCopy = keys.stream()
-                           .collect(Collectors.toMap(Function.identity(), configuration::get)); 
+                Map<String, Object> confCopy =
+                        keys.stream().collect(Collectors.toMap(Function.identity(), configuration::get));
                 confCopy.put(LogConstants.LOG_FILE, LOG_FILE_DEFAULT);
                 conf = new Hashtable<>(confCopy);
             }
@@ -87,5 +88,4 @@ public class LoggerManagedServiceFactory extends LogConfigurator implements Mana
             getLogConfigManager().internalFailure("Unexpected Configuration Problem", ce);
         }
     }
-
 }

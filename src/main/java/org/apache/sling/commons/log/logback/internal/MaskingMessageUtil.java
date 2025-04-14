@@ -94,10 +94,10 @@ public class MaskingMessageUtil {
      * @return converted string
      */
     static String mask(final String msg) {
-         if ( msg == null ) {
-             return null;
-         }
-         return msg.replace('\n', '_').replace('\r', '_');
+        if (msg == null) {
+            return null;
+        }
+        return msg.replace('\n', '_').replace('\r', '_');
     }
 
     /**
@@ -126,7 +126,8 @@ public class MaskingMessageUtil {
      * Override the RootCauseFirstThrowableProxyConverter to provide masking of the output
      */
     @SuppressWarnings("java:S110")
-    public static final class MaskingRootCauseFirstThrowableProxyConverter extends RootCauseFirstThrowableProxyConverter {
+    public static final class MaskingRootCauseFirstThrowableProxyConverter
+            extends RootCauseFirstThrowableProxyConverter {
         @Override
         protected String throwableProxyToString(final IThrowableProxy tp) {
             return super.throwableProxyToString(new MaskingThrowableProxy(tp));
@@ -255,6 +256,4 @@ public class MaskingMessageUtil {
             super.start();
         }
     }
-
 }
-

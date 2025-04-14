@@ -16,17 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import javax.inject.Inject;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
-
-import javax.inject.Inject;
 
 import org.apache.sling.commons.log.logback.ConfigProvider;
 import org.junit.Test;
@@ -40,6 +35,10 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.InputSource;
+
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -64,20 +63,22 @@ public class ITConfigFragments extends LogTestBase {
 
     @Test
     public void testConfigFragment() throws Exception {
-        Dictionary<String,Object> props = new Hashtable<>();
+        Dictionary<String, Object> props = new Hashtable<>();
         props.put("logbackConfig", "true");
 
         String config = "<included>\n" + "  <appender name=\"FOOFILE\" class=\"ch.qos.logback.core.FileAppender\">\n"
-            + "    <file>${sling.home}/logs/foo.log</file>\n" + "    <encoder>\n"
-            + "      <pattern>%d %-5level %logger{35} - %msg %n</pattern>\n" + "    </encoder>\n" + "  </appender>\n"
-            + "\n" + "  <logger name=\"foo.bar.include\" level=\"DEBUG\">\n"
-            + "       <appender-ref ref=\"FOOFILE\" />\n" + "  </logger>\n" + "\n" + "</included>";
+                + "    <file>${sling.home}/logs/foo.log</file>\n" + "    <encoder>\n"
+                + "      <pattern>%d %-5level %logger{35} - %msg %n</pattern>\n" + "    </encoder>\n"
+                + "  </appender>\n"
+                + "\n" + "  <logger name=\"foo.bar.include\" level=\"DEBUG\">\n"
+                + "       <appender-ref ref=\"FOOFILE\" />\n" + "  </logger>\n" + "\n" + "</included>";
 
         bundleContext.registerService(String.class.getName(), config, props);
 
         delay();
 
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("foo.bar.include");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("foo.bar.include");
         assertTrue(logger.isDebugEnabled());
         assertNotNull("Appender FOOFILE must be attached", logger.getAppender("FOOFILE"));
     }
@@ -88,7 +89,8 @@ public class ITConfigFragments extends LogTestBase {
 
         delay();
 
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("foo2.bar.include");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("foo2.bar.include");
         assertTrue(logger.isDebugEnabled());
         assertNotNull("Appender FOO2FILE must be attached", logger.getAppender("FOO2FILE"));
     }
@@ -107,7 +109,7 @@ public class ITConfigFragments extends LogTestBase {
 
         fcp.fileName = "test-reset-config-2.xml";
 
-        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary<String, ?>)null));
+        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary<String, ?>) null));
 
         delay();
 

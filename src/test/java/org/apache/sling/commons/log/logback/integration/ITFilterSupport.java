@@ -18,24 +18,10 @@
  */
 package org.apache.sling.commons.log.logback.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.ops4j.pax.exam.junit.PaxExam;
-import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
-import org.ops4j.pax.exam.spi.reactors.PerClass;
-import org.osgi.framework.ServiceRegistration;
-import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -46,10 +32,23 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.filter.Filter;
 import ch.qos.logback.core.spi.FilterReply;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.ops4j.pax.exam.junit.PaxExam;
+import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
+import org.ops4j.pax.exam.spi.reactors.PerClass;
+import org.osgi.framework.ServiceRegistration;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class ITFilterSupport extends LogTestBase{
+public class ITFilterSupport extends LogTestBase {
 
     static {
         // uncomment to enable debugging of this test class
@@ -68,23 +67,23 @@ public class ITFilterSupport extends LogTestBase{
         assertEquals(1, ta.events.size());
 
         SimpleTurboFilter stf = new SimpleTurboFilter();
-        ServiceRegistration<TurboFilter> sr  = bundleContext.registerService(TurboFilter.class, stf, null);
+        ServiceRegistration<TurboFilter> sr = bundleContext.registerService(TurboFilter.class, stf, null);
 
         delay();
 
-        assertNotNull("Filter should have context set",stf.getContext());
+        assertNotNull("Filter should have context set", stf.getContext());
         assertTrue("Filter should be started", stf.isStarted());
 
         ta.events.clear();
 
-        //Filter would reject calls for this logger hence it should not be false
+        // Filter would reject calls for this logger hence it should not be false
         assertFalse(bar.isDebugEnabled());
 
-        //No events should be logged as filter would have rejected that
+        // No events should be logged as filter would have rejected that
         bar.debug("Test");
         assertTrue(ta.events.isEmpty());
 
-        //Now unregister and earlier asserts should work
+        // Now unregister and earlier asserts should work
         sr.unregister();
 
         delay();
@@ -110,23 +109,23 @@ public class ITFilterSupport extends LogTestBase{
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("appenders", "TestAppender");
         @SuppressWarnings("rawtypes")
-        ServiceRegistration<Filter> sr  = bundleContext.registerService(Filter.class, stf, props);
+        ServiceRegistration<Filter> sr = bundleContext.registerService(Filter.class, stf, props);
 
         delay();
 
-        assertNotNull("Filter should have context set",stf.getContext());
+        assertNotNull("Filter should have context set", stf.getContext());
         assertTrue("Filter should be started", stf.isStarted());
 
         ta.events.clear();
 
-        //A filter attached to an appender cannot influence isXXXEnabled call
+        // A filter attached to an appender cannot influence isXXXEnabled call
         assertTrue(bar.isDebugEnabled());
 
-        //No events should be logged as filter would have rejected that
+        // No events should be logged as filter would have rejected that
         bar.debug("Test");
         assertTrue(ta.events.isEmpty());
 
-        //Now unregister and earlier asserts should work
+        // Now unregister and earlier asserts should work
         sr.unregister();
 
         delay();
@@ -139,16 +138,16 @@ public class ITFilterSupport extends LogTestBase{
     }
 
     @Test
-    public void filterUsingWildcard() throws Exception{
-        /*TestAppender ta1 = */registerAppender("filterUsingWildcard1", "app1");
-        /*TestAppender ta2 = */registerAppender("filterUsingWildcard2", "app2");
+    public void filterUsingWildcard() throws Exception {
+        /*TestAppender ta1 = */ registerAppender("filterUsingWildcard1", "app1");
+        /*TestAppender ta2 = */ registerAppender("filterUsingWildcard2", "app2");
 
-        //Set additivity to false to prevent other appender like CONSOLE from
-        //interfering
+        // Set additivity to false to prevent other appender like CONSOLE from
+        // interfering
         org.slf4j.Logger baz1 = LoggerFactory.getLogger("filterUsingWildcard1.foo.baz");
-        ((ch.qos.logback.classic.Logger)baz1).setAdditive(false);
+        ((ch.qos.logback.classic.Logger) baz1).setAdditive(false);
         org.slf4j.Logger baz2 = LoggerFactory.getLogger("filterUsingWildcard2.foo.baz");
-        ((ch.qos.logback.classic.Logger)baz2).setAdditive(false);
+        ((ch.qos.logback.classic.Logger) baz2).setAdditive(false);
 
         final List<String> msgs = new ArrayList<>();
         Filter<ILoggingEvent> stf = new Filter<>() {
@@ -176,12 +175,11 @@ public class ITFilterSupport extends LogTestBase{
         Dictionary<String, Object> props = new Hashtable<String, Object>();
 
         String[] loggers = {
-                prefix + ".foo.bar",
-                prefix + ".foo.baz",
+            prefix + ".foo.bar", prefix + ".foo.baz",
         };
-        ch.qos.logback.classic.Logger bar = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(loggers[0]);
+        ch.qos.logback.classic.Logger bar = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(loggers[0]);
         bar.setLevel(Level.DEBUG);
-        ch.qos.logback.classic.Logger baz = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(loggers[1]);
+        ch.qos.logback.classic.Logger baz = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(loggers[1]);
         baz.setLevel(Level.INFO);
 
         props.put("loggers", loggers);
@@ -193,9 +191,10 @@ public class ITFilterSupport extends LogTestBase{
 
     private static class SimpleTurboFilter extends MatchingFilter {
         @Override
-        public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
-            if(logger.getName().equals("turbofilter.foo.bar")){
-                    return FilterReply.DENY;
+        public FilterReply decide(
+                Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
+            if (logger.getName().equals("turbofilter.foo.bar")) {
+                return FilterReply.DENY;
             }
             return FilterReply.NEUTRAL;
         }
@@ -205,7 +204,7 @@ public class ITFilterSupport extends LogTestBase{
 
         @Override
         public FilterReply decide(ILoggingEvent event) {
-            if(event.getLoggerName().equals("filter.foo.bar")){
+            if (event.getLoggerName().equals("filter.foo.bar")) {
                 return FilterReply.DENY;
             }
             return FilterReply.NEUTRAL;

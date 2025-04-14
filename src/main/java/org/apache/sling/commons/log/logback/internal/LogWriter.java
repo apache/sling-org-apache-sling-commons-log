@@ -21,11 +21,6 @@ package org.apache.sling.commons.log.logback.internal;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
-import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
@@ -37,6 +32,10 @@ import ch.qos.logback.core.rolling.FixedWindowRollingPolicy;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.util.FileSize;
+import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
+import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * The <code>LogWriter</code> class encapsulates the OSGi configuration for a
@@ -79,8 +78,13 @@ public class LogWriter {
 
     private final boolean bufferedLogging;
 
-    public LogWriter(@Nullable String configurationPID, @NotNull String appenderName, int logNumber,
-            @Nullable String logRotation, @Nullable String fileName, boolean bufferedLogging) {
+    public LogWriter(
+            @Nullable String configurationPID,
+            @NotNull String appenderName,
+            int logNumber,
+            @Nullable String logRotation,
+            @Nullable String fileName,
+            boolean bufferedLogging) {
         this.appenderName = appenderName;
         if (fileName == null || fileName.length() == 0) {
             fileName = FILE_NAME_CONSOLE;
@@ -101,8 +105,8 @@ public class LogWriter {
         this.bufferedLogging = bufferedLogging;
     }
 
-    public LogWriter(@NotNull String appenderName, @Nullable String fileName, int logNumber,
-            @Nullable String logRotation) {
+    public LogWriter(
+            @NotNull String appenderName, @Nullable String fileName, int logNumber, @Nullable String logRotation) {
         this(null, appenderName, logNumber, logRotation, fileName, false);
     }
 
@@ -110,7 +114,7 @@ public class LogWriter {
         return configurationPID;
     }
 
-    public @NotNull String getImplicitConfigPID(){
+    public @NotNull String getImplicitConfigPID() {
         return LogConstants.PID;
     }
 
@@ -134,8 +138,8 @@ public class LogWriter {
         return configurationPID == null;
     }
 
-    public @NotNull Appender<ILoggingEvent> createAppender(@NotNull final Context context,
-            @NotNull final Encoder<ILoggingEvent> encoder) {
+    public @NotNull Appender<ILoggingEvent> createAppender(
+            @NotNull final Context context, @NotNull final Encoder<ILoggingEvent> encoder) {
         SlingContextUtil ctxUtil = new SlingContextUtil(context, this);
         OutputStreamAppender<ILoggingEvent> appender;
         if (FILE_NAME_CONSOLE.equals(fileName)) {
@@ -221,9 +225,9 @@ public class LogWriter {
         }
 
         if (bufferedLogging && encoder instanceof LayoutWrappingEncoder) {
-            ((LayoutWrappingEncoder<ILoggingEvent>)encoder).setImmediateFlush(false);
+            ((LayoutWrappingEncoder<ILoggingEvent>) encoder).setImmediateFlush(false);
             ctxUtil.addInfo("Setting immediateFlush to false");
-        } else{
+        } else {
             ctxUtil.addInfo("immediateFlush property not modified. Defaults to true");
         }
 
@@ -249,12 +253,11 @@ public class LogWriter {
             pattern = "%d{" + pattern + "}";
         }
         return fileName + pattern;
-
     }
 
     @Override
     public @NotNull String toString() {
         return "LogWriter{" + "configurationPID='" + configurationPID + '\'' + ", fileName='" + fileName + '\''
-            + ", logNumber=" + logNumber + ", logRotation='" + logRotation + '\'' + '}';
+                + ", logNumber=" + logNumber + ", logRotation='" + logRotation + '\'' + '}';
     }
 }

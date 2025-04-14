@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal.util;
 
 import java.io.Closeable;
@@ -36,7 +35,7 @@ public class Util {
 
     /**
      * Close the stream for the input source
-     * 
+     *
      * @param is the input source to close
      */
     public static void close(@Nullable InputSource is) {
@@ -54,5 +53,4 @@ public class Util {
             }
         }
     }
-
 }

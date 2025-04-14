@@ -30,17 +30,16 @@ public class GlobalConfigurator extends LogConfigurator implements ManagedServic
 
     /**
      * Update the global configuration with the supplied configuration
-     * 
+     *
      * @param properties the configuration properties
      */
     public void updated(@NotNull Dictionary<String, ?> properties) throws org.osgi.service.cm.ConfigurationException {
         try {
             @SuppressWarnings("unchecked")
-            Dictionary<String, String> config = (Dictionary<String, String>)properties;
+            Dictionary<String, String> config = (Dictionary<String, String>) properties;
             getLogConfigManager().updateGlobalConfiguration(config);
         } catch (ConfigurationException ce) {
             throw new org.osgi.service.cm.ConfigurationException(ce.getProperty(), ce.getReason(), ce);
         }
     }
-
 }

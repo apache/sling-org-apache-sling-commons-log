@@ -16,23 +16,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
 
-import static org.apache.sling.commons.log.logback.integration.ITConfigFragments.RESET_EVENT_TOPIC;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import javax.inject.Inject;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
-import javax.inject.Inject;
-
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.AppenderBase;
 import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.After;
 import org.junit.Test;
@@ -49,11 +46,12 @@ import org.osgi.service.event.Event;
 import org.osgi.service.event.EventAdmin;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.AppenderBase;
+import static org.apache.sling.commons.log.logback.integration.ITConfigFragments.RESET_EVENT_TOPIC;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -79,10 +77,7 @@ public class ITAppenderServices extends LogTestBase {
 
     @Override
     protected Option addExtraOptions() {
-        return composite(
-                configAdmin(), mavenBundle("commons-io", "commons-io").versionAsInProject(),
-                eventAdmin()
-        );
+        return composite(configAdmin(), mavenBundle("commons-io", "commons-io").versionAsInProject(), eventAdmin());
     }
 
     @Test
@@ -90,9 +85,9 @@ public class ITAppenderServices extends LogTestBase {
         TestAppender ta = registerAppender("foo.bar", "foo.baz");
         delay();
 
-        Logger bar = (Logger)LoggerFactory.getLogger("foo.bar");
+        Logger bar = (Logger) LoggerFactory.getLogger("foo.bar");
         bar.setLevel(Level.DEBUG);
-        Logger baz = (Logger)LoggerFactory.getLogger("foo.baz");
+        Logger baz = (Logger) LoggerFactory.getLogger("foo.baz");
         baz.setLevel(Level.INFO);
 
         bar.debug("Test message");
@@ -107,9 +102,9 @@ public class ITAppenderServices extends LogTestBase {
         TestAppender ta = registerAppender("ROOT");
         delay();
 
-        Logger root = (Logger)LoggerFactory.getLogger("ROOT");
+        Logger root = (Logger) LoggerFactory.getLogger("ROOT");
         root.setLevel(Level.DEBUG);
-        Logger foobar = (Logger)LoggerFactory.getLogger("foo.bar");
+        Logger foobar = (Logger) LoggerFactory.getLogger("foo.bar");
         foobar.setLevel(Level.INFO);
 
         root.debug("one");
@@ -127,9 +122,9 @@ public class ITAppenderServices extends LogTestBase {
         TestAppender ta = registerAppender("foo.bar", "foo.baz");
         delay();
 
-        Logger bar = (Logger)LoggerFactory.getLogger("foo.bar");
+        Logger bar = (Logger) LoggerFactory.getLogger("foo.bar");
         bar.setLevel(Level.DEBUG);
-        Logger baz = (Logger)LoggerFactory.getLogger("foo.baz");
+        Logger baz = (Logger) LoggerFactory.getLogger("foo.baz");
         baz.setLevel(Level.INFO);
 
         bar.debug("Test message");
@@ -141,7 +136,7 @@ public class ITAppenderServices extends LogTestBase {
         ta.reset();
 
         Dictionary<String, Object> props = new Hashtable<String, Object>();
-        props.put("loggers", new String[]{"foo.bar2"});
+        props.put("loggers", new String[] {"foo.bar2"});
         sr.setProperties(props);
 
         delay();
@@ -163,15 +158,15 @@ public class ITAppenderServices extends LogTestBase {
 
         delay();
 
-        Logger ref = (Logger)LoggerFactory.getLogger("foo.ref.osgi");
+        Logger ref = (Logger) LoggerFactory.getLogger("foo.ref.osgi");
         assertTrue(ref.isDebugEnabled());
 
         TestAppender ta = registerAppender("foo.bar", "foo.baz");
         delay();
 
-        Logger bar = (Logger)LoggerFactory.getLogger("foo.bar");
+        Logger bar = (Logger) LoggerFactory.getLogger("foo.bar");
         bar.setLevel(Level.DEBUG);
-        Logger baz = (Logger)LoggerFactory.getLogger("foo.baz");
+        Logger baz = (Logger) LoggerFactory.getLogger("foo.baz");
         baz.setLevel(Level.INFO);
 
         bar.debug("Test message");
@@ -184,7 +179,7 @@ public class ITAppenderServices extends LogTestBase {
     }
 
     @Test
-    public void appenderRestartPostReset() throws Exception{
+    public void appenderRestartPostReset() throws Exception {
         final TestAppender ta = registerAppender("ROOT");
         delay();
 
@@ -192,30 +187,32 @@ public class ITAppenderServices extends LogTestBase {
         final int stopCount = ta.stopCount;
         final int startCount = ta.startCount;
 
-        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary<String, ?>)null));
+        eventAdmin.sendEvent(new Event(RESET_EVENT_TOPIC, (Dictionary<String, ?>) null));
 
-        new RetryLoop(new RetryLoop.Condition() {
-            @Override
-            public String getDescription() {
-                return "Stopcount not increased";
-            }
+        new RetryLoop(
+                new RetryLoop.Condition() {
+                    @Override
+                    public String getDescription() {
+                        return "Stopcount not increased";
+                    }
 
-            @Override
-            public boolean isTrue() throws Exception {
-                return ta.stopCount > stopCount && ta.startCount > startCount;
-            }
-        }, 10, 100);
+                    @Override
+                    public boolean isTrue() throws Exception {
+                        return ta.stopCount > stopCount && ta.startCount > startCount;
+                    }
+                },
+                10,
+                100);
 
         assertTrue(ta.isStarted());
     }
 
     @After
-    public void unregisterAppender(){
+    public void unregisterAppender() {
         sr.unregister();
     }
 
-
-    private TestAppender registerAppender(String... loggers){
+    private TestAppender registerAppender(String... loggers) {
         TestAppender ta = new TestAppender();
         Dictionary<String, Object> props = new Hashtable<String, Object>();
         props.put("loggers", loggers);
@@ -223,7 +220,6 @@ public class ITAppenderServices extends LogTestBase {
         delay();
         return ta;
     }
-
 
     private static class TestAppender extends AppenderBase<ILoggingEvent> {
         final List<ILoggingEvent> events = new ArrayList<ILoggingEvent>();
@@ -242,7 +238,7 @@ public class ITAppenderServices extends LogTestBase {
             return "TestAppender";
         }
 
-        public void reset(){
+        public void reset() {
             events.clear();
             msgs.clear();
         }
@@ -259,5 +255,4 @@ public class ITAppenderServices extends LogTestBase {
             startCount++;
         }
     }
-
 }

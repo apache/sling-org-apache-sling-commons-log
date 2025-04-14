@@ -1,28 +1,33 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.LogbackServiceProvider;
+import ch.qos.logback.core.status.Status;
+import ch.qos.logback.core.status.StatusManager;
 import org.apache.sling.commons.log.helpers.LogCapture;
 import org.apache.sling.commons.log.logback.internal.mock.MockLoggerFactory;
 import org.apache.sling.commons.log.logback.internal.mock.MockSLF4JServiceProvider;
@@ -40,11 +45,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactoryFriend;
 import org.slf4j.spi.SLF4JServiceProvider;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.LogbackServiceProvider;
-import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.status.StatusManager;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -62,7 +63,8 @@ class SLF4JServiceProviderTrackerTest {
         System.setProperty(LogConstants.SLING_HOME, new File("target").getPath());
 
         tracker = new SLF4JServiceProviderTracker(context.bundleContext());
-        ServiceRegistration<SLF4JServiceProvider> serviceReg = context.bundleContext().registerService(SLF4JServiceProvider.class, new LogbackServiceProvider(), new Hashtable<>());
+        ServiceRegistration<SLF4JServiceProvider> serviceReg = context.bundleContext()
+                .registerService(SLF4JServiceProvider.class, new LogbackServiceProvider(), new Hashtable<>());
         serviceRef = serviceReg.getReference();
     }
 
@@ -81,9 +83,11 @@ class SLF4JServiceProviderTrackerTest {
     protected ServiceReference<SLF4JServiceProvider> mockSLF4JServiceProvider() {
         return mockSLF4JServiceProvider(new Hashtable<>());
     }
+
     protected ServiceReference<SLF4JServiceProvider> mockSLF4JServiceProvider(Dictionary<String, ?> properties) {
         SLF4JServiceProvider mockServiceProvider = new MockSLF4JServiceProvider();
-        ServiceRegistration<SLF4JServiceProvider> serviceReg = context.bundleContext().registerService(SLF4JServiceProvider.class, mockServiceProvider, properties);
+        ServiceRegistration<SLF4JServiceProvider> serviceReg =
+                context.bundleContext().registerService(SLF4JServiceProvider.class, mockServiceProvider, properties);
         return serviceReg.getReference();
     }
 
@@ -113,7 +117,8 @@ class SLF4JServiceProviderTrackerTest {
             tracker.addingService(serviceRef2);
 
             // verify the msg was logged
-            capture.assertContains(Level.DEBUG,
+            capture.assertContains(
+                    Level.DEBUG,
                     "addingService is not the LogbackServiceProvider: org.apache.sling.commons.log.logback.internal.mock.MockSLF4JServiceProvider");
         }
     }
@@ -159,23 +164,25 @@ class SLF4JServiceProviderTrackerTest {
             tracker.removedService(serviceRef2, service);
 
             // verify the msg was logged
-            capture.assertContains(Level.DEBUG,
+            capture.assertContains(
+                    Level.DEBUG,
                     "removedService is not the LogbackServiceProvider: org.apache.sling.commons.log.logback.internal.mock.MockSLF4JServiceProvider");
         }
     }
+
     @Test
     void testRemovedService() throws Exception {
         tracker.addingService(serviceRef);
         SLF4JServiceProvider service = context.bundleContext().getService(serviceRef);
 
         // verify that the old console appender was detached
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         StatusManager statusManager = loggerContext.getStatusManager();
         statusManager.clear();
         tracker.removedService(serviceRef, service);
         List<Status> copyOfStatusList = statusManager.getCopyOfStatusList();
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("detaching appender CONSOLE for ROOT")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("detaching appender CONSOLE for ROOT")),
                 "Expected detaching appender message");
 
         // call again should do nothing
@@ -184,5 +191,4 @@ class SLF4JServiceProviderTrackerTest {
         copyOfStatusList = statusManager.getCopyOfStatusList();
         assertTrue(copyOfStatusList.isEmpty());
     }
-
 }

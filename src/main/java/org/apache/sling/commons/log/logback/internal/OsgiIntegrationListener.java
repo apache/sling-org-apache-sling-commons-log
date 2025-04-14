@@ -1,23 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -25,6 +24,8 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.LoggerContextListener;
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.util.ContextUtil;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 /**
  * Apply the OSGi configuration when the logback context is reset
@@ -47,7 +48,7 @@ class OsgiIntegrationListener implements LoggerContextListener {
      */
     OsgiIntegrationListener(@NotNull LogConfigManager logConfigManager) {
         this.logConfigManager = logConfigManager;
-        this.contextUtil = new ContextUtil((Context)LoggerFactory.getILoggerFactory());
+        this.contextUtil = new ContextUtil((Context) LoggerFactory.getILoggerFactory());
     }
 
     @Override
@@ -65,8 +66,9 @@ class OsgiIntegrationListener implements LoggerContextListener {
 
     @Override
     public void onReset(@NotNull LoggerContext context) {
-        contextUtil.addInfo("OsgiIntegrationListener : context reset detected. Adding LogManager to context map and firing"
-                + " listeners");
+        contextUtil.addInfo(
+                "OsgiIntegrationListener : context reset detected. Adding LogManager to context map and firing"
+                        + " listeners");
 
         context.setPackagingDataEnabled(false);
         context.setMaxCallerDataDepth(logConfigManager.getMaxCallerDataDepth());
@@ -97,5 +99,4 @@ class OsgiIntegrationListener implements LoggerContextListener {
     public void onLevelChange(@NotNull Logger logger, @NotNull Level level) {
         // no-op
     }
-
 }

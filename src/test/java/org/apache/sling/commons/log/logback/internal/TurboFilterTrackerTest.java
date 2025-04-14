@@ -1,28 +1,31 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
 
 import java.util.Hashtable;
 import java.util.Map;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.turbo.TurboFilter;
+import ch.qos.logback.core.spi.FilterReply;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextBuilder;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextExtension;
@@ -37,11 +40,9 @@ import org.osgi.framework.ServiceRegistration;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.turbo.TurboFilter;
-import ch.qos.logback.core.spi.FilterReply;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.times;
 
 /**
  *
@@ -62,12 +63,13 @@ class TurboFilterTrackerTest {
 
         turboFilter = Mockito.spy(new TurboFilter() {
             @Override
-            public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params,
-                    Throwable t) {
+            public FilterReply decide(
+                    Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
                 return FilterReply.NEUTRAL;
             }
         });
-        ServiceRegistration<TurboFilter> serviceReg = bundleContext.registerService(TurboFilter.class, turboFilter, new Hashtable<>());
+        ServiceRegistration<TurboFilter> serviceReg =
+                bundleContext.registerService(TurboFilter.class, turboFilter, new Hashtable<>());
         serviceRef = serviceReg.getReference();
     }
 
@@ -99,13 +101,13 @@ class TurboFilterTrackerTest {
     void testAddingService() {
         tracker.addingService(serviceRef);
         Mockito.verify(turboFilter, times(1)).start();
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         assertTrue(loggerContext.getTurboFilterList().contains(turboFilter));
     }
 
     @Test
     void testAddingServiceForAlreadyExistingFilter() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         try {
             loggerContext.getTurboFilterList().add(turboFilter);
 
@@ -124,7 +126,7 @@ class TurboFilterTrackerTest {
     @Test
     void testRemovedService() {
         tracker.addingService(serviceRef);
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         assertTrue(loggerContext.getTurboFilterList().contains(turboFilter));
 
         tracker.removedService(serviceRef, turboFilter);
@@ -146,7 +148,7 @@ class TurboFilterTrackerTest {
      */
     @Test
     void testOnResetStart() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         // first add a turbo filter
         tracker.addingService(serviceRef);
@@ -160,5 +162,4 @@ class TurboFilterTrackerTest {
         tracker.onResetStart(loggerContext);
         assertTrue(loggerContext.getTurboFilterList().contains(turboFilter));
     }
-
 }

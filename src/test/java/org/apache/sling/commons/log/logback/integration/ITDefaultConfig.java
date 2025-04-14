@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
 
 import java.util.Iterator;
@@ -71,8 +70,7 @@ public class ITDefaultConfig extends LogTestBase {
 
     @Test
     public void supportNestedClassesWithNestedDot() throws Exception {
-        //SLING-3037 - No illegalArgumentException thrown
+        // SLING-3037 - No illegalArgumentException thrown
         assertNotNull(LoggerFactory.getLogger("com.foo.Bar$Nested.dot"));
     }
-
 }

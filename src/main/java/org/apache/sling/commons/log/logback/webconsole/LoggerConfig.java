@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.webconsole;
 
 import java.util.Arrays;
@@ -41,7 +40,12 @@ public final class LoggerConfig {
      * @param logFile the target file for the logging output
      * @param additive true if root should log too, false otherwise
      */
-    public LoggerConfig(@Nullable String pid, @Nullable String logLevel, @Nullable String[] loggers, @Nullable String logFile, boolean additive) {
+    public LoggerConfig(
+            @Nullable String pid,
+            @Nullable String logLevel,
+            @Nullable String[] loggers,
+            @Nullable String logFile,
+            boolean additive) {
         this.pid = pid;
         this.logLevel = logLevel;
         this.loggers = loggers == null ? null : Arrays.copyOf(loggers, loggers.length);
@@ -93,5 +97,4 @@ public final class LoggerConfig {
     public boolean isAdditive() {
         return additive;
     }
-
 }

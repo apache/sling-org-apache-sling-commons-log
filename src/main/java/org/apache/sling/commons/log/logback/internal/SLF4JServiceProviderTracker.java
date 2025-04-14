@@ -18,6 +18,8 @@
  */
 package org.apache.sling.commons.log.logback.internal;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.LogbackServiceProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
@@ -28,11 +30,8 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.LoggerFactoryFriend;
 import org.slf4j.spi.SLF4JServiceProvider;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.LogbackServiceProvider;
-
 /**
- * Track the arrival of new SLF4JServiceProvider components to know when to retry 
+ * Track the arrival of new SLF4JServiceProvider components to know when to retry
  * the LogConfigManager initialization
  */
 final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvider, SLF4JServiceProvider> {
@@ -62,7 +61,7 @@ final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvi
         SLF4JServiceProvider service = super.addingService(reference);
         if (service instanceof LogbackServiceProvider) {
             if (!isSlf4jInitialized()) {
-                // WARNING - This "friend" class is declared as reserved for internal use, but 
+                // WARNING - This "friend" class is declared as reserved for internal use, but
                 //   there doesn't appear to be any better alternative to re-calculate the factory
                 LoggerFactoryFriend.reset();
 
@@ -71,17 +70,17 @@ final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvi
                 if (iLoggerFactory instanceof LoggerContext) {
                     // got the Logback impl after the reset, so we should be good to go
                     LoggerFactory.getLogger(getClass())
-                        .info("Slf4j is initialized with the logback impl after the reset");
+                            .info("Slf4j is initialized with the logback impl after the reset");
                 } else {
                     // still no good
                     LoggerFactory.getLogger(getClass())
-                        .error("Slf4j is not initialized with the logback impl after the reset");
+                            .error("Slf4j is not initialized with the logback impl after the reset");
                 }
             }
 
             if (!isSlf4jInitialized()) {
                 LoggerFactory.getLogger(getClass())
-                    .info("Slf4j is not initialized with the logback impl so skipping customization");
+                        .info("Slf4j is not initialized with the logback impl so skipping customization");
             } else {
                 // looks like we have the right impl now, so start our custom LogConfigManager
                 logConfigManager = new LogConfigManager(context);
@@ -89,7 +88,9 @@ final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvi
             }
         } else {
             LoggerFactory.getLogger(getClass())
-                .debug("addingService is not the LogbackServiceProvider: {}", service.getClass().getName());
+                    .debug(
+                            "addingService is not the LogbackServiceProvider: {}",
+                            service.getClass().getName());
         }
 
         return service;
@@ -102,8 +103,8 @@ final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvi
      * @param the service instance being removed
      */
     @Override
-    public void removedService(@NotNull ServiceReference<SLF4JServiceProvider> reference,
-            @NotNull SLF4JServiceProvider service) {
+    public void removedService(
+            @NotNull ServiceReference<SLF4JServiceProvider> reference, @NotNull SLF4JServiceProvider service) {
         if (service instanceof LogbackServiceProvider) {
             if (logConfigManager != null) {
                 logConfigManager.stop();
@@ -111,7 +112,9 @@ final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvi
             }
         } else {
             LoggerFactory.getLogger(getClass())
-                .debug("removedService is not the LogbackServiceProvider: {}", service.getClass().getName());
+                    .debug(
+                            "removedService is not the LogbackServiceProvider: {}",
+                            service.getClass().getName());
         }
     }
 
@@ -120,8 +123,7 @@ final class SLF4JServiceProviderTracker extends ServiceTracker<SLF4JServiceProvi
      *
      * @return true if the SFL4J LoggerFactory is the logback implementation
      */
-    private boolean isSlf4jInitialized(){
+    private boolean isSlf4jInitialized() {
         return LoggerFactory.getILoggerFactory() instanceof LoggerContext;
     }
-
 }

@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
@@ -36,16 +40,11 @@ import org.osgi.util.converter.Converters;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-
 /**
  * Service tracker that listens for Appender services and
  * applies them to the logging configuration
  */
-public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, Appender<ILoggingEvent>> 
+public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, Appender<ILoggingEvent>>
         implements LogbackResetListener {
 
     static final String PROP_LOGGER = "loggers";
@@ -61,8 +60,8 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
      * @param logConfigManager the LogConfigManger to apply the configuration to
      * @throws InvalidSyntaxException if {@link #createFilter()} returns something invalid
      */
-    public AppenderTracker(@NotNull final BundleContext context,
-            @NotNull final LogConfigManager logConfigManager) throws InvalidSyntaxException {
+    public AppenderTracker(@NotNull final BundleContext context, @NotNull final LogConfigManager logConfigManager)
+            throws InvalidSyntaxException {
         super(context, createFilter(), null);
         this.logConfigManager = logConfigManager;
     }
@@ -74,7 +73,8 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
      * @return the Appender service object
      */
     @Override
-    public @NotNull Appender<ILoggingEvent> addingService(@NotNull ServiceReference<Appender<ILoggingEvent>> reference) {
+    public @NotNull Appender<ILoggingEvent> addingService(
+            @NotNull ServiceReference<Appender<ILoggingEvent>> reference) {
         final Appender<ILoggingEvent> appender = super.addingService(reference);
 
         final AppenderInfo ai = new AppenderInfo(reference, appender);
@@ -86,13 +86,13 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
 
     /**
      * Callback when an Appender service has been modified
-     * 
+     *
      * @param reference the service reference that was modified
      * @param service the service object that was being tracked
      */
     @Override
-    public void modifiedService(@NotNull ServiceReference<Appender<ILoggingEvent>> reference,
-            @NotNull Appender<ILoggingEvent> service) {
+    public void modifiedService(
+            @NotNull ServiceReference<Appender<ILoggingEvent>> reference, @NotNull Appender<ILoggingEvent> service) {
         detachAppender(appenders.remove(reference));
         final AppenderInfo nai = new AppenderInfo(reference, service);
         appenders.put(reference, nai);
@@ -101,13 +101,13 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
 
     /**
      * Callback when an Appender service has been removed
-     * 
+     *
      * @param reference the service reference that was removed
      * @param service the service object that was being tracked
      */
     @Override
-    public void removedService(@NotNull ServiceReference<Appender<ILoggingEvent>> reference,
-            @NotNull Appender<ILoggingEvent> service) {
+    public void removedService(
+            @NotNull ServiceReference<Appender<ILoggingEvent>> reference, @NotNull Appender<ILoggingEvent> service) {
         final AppenderInfo ai = appenders.remove(reference);
         this.detachAppender(ai);
         super.removedService(reference, service);
@@ -115,7 +115,7 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
 
     /**
      * Return the current set of appender information
-     * 
+     *
      * @return collection of appender information
      */
     public @NotNull Collection<AppenderInfo> getAppenderInfos() {
@@ -124,7 +124,7 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
 
     /**
      * Creates the filter that this tracker will match against
-     * 
+     *
      * @return the filter
      */
     static @NotNull Filter createFilter() throws InvalidSyntaxException {
@@ -132,11 +132,11 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
         return FrameworkUtil.createFilter(filter);
     }
 
-    //~-----------------------------------LogbackResetListener
+    // ~-----------------------------------LogbackResetListener
 
     /**
      * Callback after the reset is completed
-     * 
+     *
      * @param context the logger context being reset
      */
     @Override
@@ -147,7 +147,7 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
         }
     }
 
-    //~-----------------------------------Internal Methods
+    // ~-----------------------------------Internal Methods
 
     /**
      * Detach the appender from the loggers
@@ -155,7 +155,7 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
      * @param ai the appender information
      */
     private void detachAppender(@NotNull final AppenderInfo ai) {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         for (final String name : ai.getLoggers()) {
             final Logger logger = loggerContext.getLogger(name);
             logConfigManager.maybeDetachAppender(AppenderOrigin.TRACKER, ai.name, logger);
@@ -165,11 +165,11 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
 
     /**
      * Attach the appender to the expected loggers
-     * 
+     *
      * @param ai the appender information
      */
     private void attachAppender(@NotNull final AppenderInfo ai) {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         ai.appender.setContext(loggerContext);
         ai.appender.start();
 
@@ -191,16 +191,17 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
          * @param ref the service reference
          * @param appender the appender that was added
          */
-        public AppenderInfo(@NotNull final ServiceReference<Appender<ILoggingEvent>> ref,
-                    @NotNull Appender<ILoggingEvent> appender) {
+        public AppenderInfo(
+                @NotNull final ServiceReference<Appender<ILoggingEvent>> ref,
+                @NotNull Appender<ILoggingEvent> appender) {
             this.appender = appender;
             this.pid = ref.getProperty(Constants.SERVICE_ID).toString();
 
             @SuppressWarnings("unchecked")
             Set<String> loggerNames = Converters.standardConverter()
-                .convert(ref.getProperty(PROP_LOGGER))
-                .defaultValue(Collections.emptySet())
-                .to(Set.class);
+                    .convert(ref.getProperty(PROP_LOGGER))
+                    .defaultValue(Collections.emptySet())
+                    .to(Set.class);
             this.name = appender.getName();
             this.loggers = loggerNames;
 
@@ -212,14 +213,14 @@ public class AppenderTracker extends ServiceTracker<Appender<ILoggingEvent>, App
          *
          * @return set of logger names
          */
-        public @NotNull Set<String> getLoggers(){
+        public @NotNull Set<String> getLoggers() {
             Set<String> result = new HashSet<>(loggers);
 
-            Set<String> loggersFromConfig = logConfigManager.getLoggerNamesForKnownAppender(AppenderOrigin.JORAN_OSGI, name);
+            Set<String> loggersFromConfig =
+                    logConfigManager.getLoggerNamesForKnownAppender(AppenderOrigin.JORAN_OSGI, name);
             result.addAll(loggersFromConfig);
 
             return Collections.unmodifiableSet(result);
         }
     }
-
 }

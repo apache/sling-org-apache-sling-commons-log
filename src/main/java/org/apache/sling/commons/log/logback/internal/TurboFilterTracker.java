@@ -22,23 +22,21 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.turbo.TurboFilter;
 import org.jetbrains.annotations.NotNull;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.turbo.TurboFilter;
-
 /**
  * Service tracker that listens for TurboFilter services and
  * applies them to the logging configuration
  */
-public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
-        implements LogbackResetListener {
+public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter> implements LogbackResetListener {
 
-    private final Map<ServiceReference<TurboFilter>,TurboFilter> filters = new ConcurrentHashMap<>();
+    private final Map<ServiceReference<TurboFilter>, TurboFilter> filters = new ConcurrentHashMap<>();
 
     /**
      * Constructor
@@ -67,14 +65,14 @@ public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
 
     /**
      * Callback when a TurboFilter service has been removed
-     * 
+     *
      * @param reference the service reference that was removed
      * @param service the service object that was being tracked
      */
     @Override
     public void removedService(@NotNull ServiceReference<TurboFilter> reference, @NotNull TurboFilter service) {
         filters.remove(reference);
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getTurboFilterList().remove(service);
         service.stop();
 
@@ -92,7 +90,7 @@ public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
 
     /**
      * Return a view of the current turbo filters that have been tracked
-     * 
+     *
      * @return unmodifiable map of filters where the key is the service reference
      *          and the value is the service object
      */
@@ -100,7 +98,7 @@ public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
         return Collections.unmodifiableMap(filters);
     }
 
-    //~-----------------------------------LogbackResetListener
+    // ~-----------------------------------LogbackResetListener
 
     /**
      * Callback before the reset is started
@@ -114,7 +112,7 @@ public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
         }
     }
 
-    //~-----------------------------------Internal Methods
+    // ~-----------------------------------Internal Methods
 
     /**
      * Attach the turbo filter to the logger context if it is not already there
@@ -123,7 +121,7 @@ public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
      * @param tf the turbo filter to attach
      */
     private void attachFilter(@NotNull TurboFilter tf) {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         if (!loggerContext.getTurboFilterList().contains(tf)) {
             tf.setContext(loggerContext);
             tf.start();
@@ -131,5 +129,4 @@ public class TurboFilterTracker extends ServiceTracker<TurboFilter, TurboFilter>
             loggerContext.addTurboFilter(tf);
         }
     }
-
 }

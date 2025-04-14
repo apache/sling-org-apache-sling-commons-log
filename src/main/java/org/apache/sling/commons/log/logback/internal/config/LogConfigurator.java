@@ -42,8 +42,8 @@ public class LogConfigurator {
      *
      * @return the manger currently being used
      */
-    @NotNull LogConfigManager getLogConfigManager() {
+    @NotNull
+    LogConfigManager getLogConfigManager() {
         return logConfigManager;
     }
-
 }

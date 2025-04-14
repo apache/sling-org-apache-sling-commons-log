@@ -1,25 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal.stacktrace;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,6 +33,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 import org.osgi.framework.hooks.weaving.WovenClass;
 import org.osgi.framework.wiring.BundleWiring;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  *
@@ -120,8 +122,11 @@ class PackageInfoCollectorTest {
     void testGetBundleInfoForEmptyPkgInfoSet() {
         // mock the set being empty
         @SuppressWarnings("unchecked")
-        ConcurrentMap<String, Set<String>> pkgInfoMapping = ReflectionTools.getFieldWithReflection(collector, "pkgInfoMapping", ConcurrentMap.class);
-        pkgInfoMapping.put("org.apache.sling.commons.log.logback.internal.stacktrace", Collections.synchronizedSet(new HashSet<>()));
+        ConcurrentMap<String, Set<String>> pkgInfoMapping =
+                ReflectionTools.getFieldWithReflection(collector, "pkgInfoMapping", ConcurrentMap.class);
+        pkgInfoMapping.put(
+                "org.apache.sling.commons.log.logback.internal.stacktrace",
+                Collections.synchronizedSet(new HashSet<>()));
 
         String className = getClass().getName();
         assertNull(collector.getBundleInfo(className));
@@ -131,19 +136,19 @@ class PackageInfoCollectorTest {
      * Test method for {@link org.apache.sling.commons.log.logback.internal.stacktrace.PackageInfoCollector#getPackageName(java.lang.String)}.
      */
     @Test
-    void testPackageName() throws Exception{
+    void testPackageName() throws Exception {
         assertEquals("com.foo", PackageInfoCollector.getPackageName("com.foo.TestClass"));
         assertEquals("", PackageInfoCollector.getPackageName("packageInDefaultClass"));
     }
 
-    private Bundle newBundle(String name, String version){
+    private Bundle newBundle(String name, String version) {
         Bundle b = mock(Bundle.class);
         when(b.getSymbolicName()).thenReturn(name);
         when(b.getVersion()).thenReturn(Version.parseVersion(version));
         return b;
     }
 
-    private WovenClass newWovenClass(Bundle bundle, String className){
+    private WovenClass newWovenClass(Bundle bundle, String className) {
         WovenClass woven = mock(WovenClass.class);
         BundleWiring wiring = mock(BundleWiring.class);
         when(woven.getBundleWiring()).thenReturn(wiring);
@@ -152,5 +157,4 @@ class PackageInfoCollectorTest {
         when(woven.getClassName()).thenReturn(className);
         return woven;
     }
-
 }

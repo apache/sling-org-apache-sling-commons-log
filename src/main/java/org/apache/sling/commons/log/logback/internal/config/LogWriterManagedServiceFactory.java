@@ -28,13 +28,13 @@ class LogWriterManagedServiceFactory extends LogConfigurator implements ManagedS
         return "LogWriter configurator";
     }
 
-    public void updated(String pid, Dictionary<String, ?> configuration) throws org.osgi.service.cm.ConfigurationException {
+    public void updated(String pid, Dictionary<String, ?> configuration)
+            throws org.osgi.service.cm.ConfigurationException {
         try {
             getLogConfigManager().updateLogWriter(pid, configuration, true);
         } catch (ConfigurationException ce) {
             throw new org.osgi.service.cm.ConfigurationException(ce.getProperty(), ce.getReason(), ce);
         }
-
     }
 
     public void deleted(String pid) {

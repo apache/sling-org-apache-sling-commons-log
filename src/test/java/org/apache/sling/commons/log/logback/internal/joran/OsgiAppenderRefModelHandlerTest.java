@@ -1,29 +1,35 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal.joran;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.Context;
+import ch.qos.logback.core.ContextBase;
+import ch.qos.logback.core.joran.JoranConstants;
+import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.core.spi.AppenderAttachable;
 import org.apache.sling.commons.log.logback.internal.AppenderOrigin;
 import org.apache.sling.commons.log.logback.internal.LogConfigManager;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
@@ -37,14 +43,9 @@ import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.Context;
-import ch.qos.logback.core.ContextBase;
-import ch.qos.logback.core.joran.JoranConstants;
-import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.read.ListAppender;
-import ch.qos.logback.core.spi.AppenderAttachable;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -91,14 +92,16 @@ class OsgiAppenderRefModelHandlerTest {
         ModelInterpretationContext mic = new ModelInterpretationContext(logbackContext);
 
         @SuppressWarnings("unchecked")
-        AppenderAttachable<ILoggingEvent> logger = (AppenderAttachable<ILoggingEvent>)LoggerFactory.getLogger(getClass());
+        AppenderAttachable<ILoggingEvent> logger =
+                (AppenderAttachable<ILoggingEvent>) LoggerFactory.getLogger(getClass());
         mic.pushObject(logger);
 
         OsgiAppenderRefModel model = new OsgiAppenderRefModel();
         model.setTag("appender-ref-osgi");
         model.setRef("appender1");
         assertDoesNotThrow(() -> handler.handle(mic, model));
-        Set<String> loggerNames = logConfigManager.getLoggerNamesForKnownAppender(AppenderOrigin.JORAN_OSGI, "appender1");
+        Set<String> loggerNames =
+                logConfigManager.getLoggerNamesForKnownAppender(AppenderOrigin.JORAN_OSGI, "appender1");
         assertTrue(loggerNames.contains(getClass().getName()));
     }
 
@@ -118,11 +121,12 @@ class OsgiAppenderRefModelHandlerTest {
         model.setRef("appender1");
         assertDoesNotThrow(() -> handler.handle(mic, model));
         // verify the error status was reported
-        assertTrue(logbackContext.getStatusManager()
-                .getCopyOfStatusList()
-                .stream()
-                .anyMatch(s -> "Could not find an AppenderAttachable at the top of execution stack. Near <appender-ref-osgi> at line 0".equals(s.getMessage())),
-        "Expected error status msg");
+        assertTrue(
+                logbackContext.getStatusManager().getCopyOfStatusList().stream()
+                        .anyMatch(s ->
+                                "Could not find an AppenderAttachable at the top of execution stack. Near <appender-ref-osgi> at line 0"
+                                        .equals(s.getMessage())),
+                "Expected error status msg");
     }
 
     /**
@@ -133,7 +137,8 @@ class OsgiAppenderRefModelHandlerTest {
         ModelInterpretationContext mic = new ModelInterpretationContext(logbackContext);
 
         @SuppressWarnings("unchecked")
-        AppenderAttachable<ILoggingEvent> logger = (AppenderAttachable<ILoggingEvent>)LoggerFactory.getLogger(getClass());
+        AppenderAttachable<ILoggingEvent> logger =
+                (AppenderAttachable<ILoggingEvent>) LoggerFactory.getLogger(getClass());
         mic.pushObject(logger);
 
         OsgiAppenderRefModel model = new OsgiAppenderRefModel();
@@ -141,7 +146,8 @@ class OsgiAppenderRefModelHandlerTest {
         model.setRef("appender1");
 
         handler.attachOsgiReferencedAppenders(mic, model, logger);
-        Set<String> loggerNames = logConfigManager.getLoggerNamesForKnownAppender(AppenderOrigin.JORAN_OSGI, "appender1");
+        Set<String> loggerNames =
+                logConfigManager.getLoggerNamesForKnownAppender(AppenderOrigin.JORAN_OSGI, "appender1");
         assertTrue(loggerNames.contains(getClass().getName()));
     }
 
@@ -159,11 +165,11 @@ class OsgiAppenderRefModelHandlerTest {
 
         handler.attachOsgiReferencedAppenders(mic, model, logger);
         // verify the error status was reported
-        assertTrue(logbackContext.getStatusManager()
-                .getCopyOfStatusList()
-                .stream()
-                .anyMatch(s -> "Failed to add osgi appender named [appender1] as the attachable is not a Logger.".equals(s.getMessage())),
-        "Expected error status msg");
+        assertTrue(
+                logbackContext.getStatusManager().getCopyOfStatusList().stream()
+                        .anyMatch(
+                                s -> "Failed to add osgi appender named [appender1] as the attachable is not a Logger."
+                                        .equals(s.getMessage())),
+                "Expected error status msg");
     }
-
 }

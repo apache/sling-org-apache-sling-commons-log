@@ -18,9 +18,8 @@
  */
 package org.apache.sling.commons.log.logback.internal;
 
-import org.jetbrains.annotations.NotNull;
-
 import ch.qos.logback.classic.LoggerContext;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Implement for doing work when the logback configuration is reset
@@ -38,11 +37,10 @@ public interface LogbackResetListener {
 
     /**
      * Callback after the reset is completed
-     * 
+     *
      * @param context the logger context being reset
      */
     default void onResetComplete(@NotNull LoggerContext context) {
         // do nothing by default
     }
-
 }

@@ -1,22 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal.util;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -32,16 +32,17 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.stream.Stream;
 
-import org.awaitility.Awaitility;
-import org.slf4j.LoggerFactory;
-import org.xml.sax.InputSource;
-
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.status.Status;
+import org.awaitility.Awaitility;
+import org.slf4j.LoggerFactory;
+import org.xml.sax.InputSource;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Utilities to assist in testing
@@ -50,7 +51,7 @@ public class TestUtils {
 
     /**
      * Checks if the text is present in the file
-     * 
+     *
      * @param file the file to check
      * @param expected the text to look for
      * @return true if the text was found, false otherwise
@@ -63,7 +64,7 @@ public class TestUtils {
 
     /**
      * Returns the contents of the input source as a string
-     * 
+     *
      * @param inputSource the input source to read
      * @return the contents as a string
      */
@@ -84,25 +85,22 @@ public class TestUtils {
         waitForAsyncReset(loggerContext);
         return value;
     }
+
     public static void waitForAsyncReset(LoggerContext loggerContext) {
         // wait for the async reset to complete
         Awaitility.await("wait for async reset")
-            .atMost(Duration.ofSeconds(5))
-            .pollInterval(Duration.ofMillis(100))
-            .until(() -> {
-                return loggerContext
-                        .getStatusManager()
-                        .getCopyOfStatusList()
-                        .stream()
-                        .anyMatch(s -> s.getMessage().equals("Re configuration done"));
-            });
+                .atMost(Duration.ofSeconds(5))
+                .pollInterval(Duration.ofMillis(100))
+                .until(() -> {
+                    return loggerContext.getStatusManager().getCopyOfStatusList().stream()
+                            .anyMatch(s -> s.getMessage().equals("Re configuration done"));
+                });
 
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         // the last status should be the re-configuration done mst
-        assertEquals("Re configuration done", 
+        assertEquals(
+                "Re configuration done",
                 copyOfStatusList.get(copyOfStatusList.size() - 1).getMessage());
     }
 
@@ -123,6 +121,7 @@ public class TestUtils {
             System.setErr(old);
         }
     }
+
     public static String doWorkWithCapturedStdOut(Runnable work) {
         // Save the old System.out
         PrintStream old = System.out;
@@ -145,13 +144,13 @@ public class TestUtils {
      * Do some work where the console output should be ignored, usually
      * because of an expected exception that you don't need cluttering the output of
      * a test run
-     * 
+     *
      * @param <T> the return type of the worker
      * @param work the worker to do the work
      * @return the value returned by the worker
      */
     public static <T> T doWorkWithoutRootConsoleAppender(Callable<T> work) throws Exception {
-        Logger rootLogger = ((Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME));
+        Logger rootLogger = ((Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME));
         Iterator<Appender<ILoggingEvent>> iteratorForAppenders = rootLogger.iteratorForAppenders();
         List<Appender<ILoggingEvent>> consoleAppenders = new ArrayList<>();
         try {
@@ -170,5 +169,4 @@ public class TestUtils {
             }
         }
     }
-
 }

@@ -1,36 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.NullAndEmptySource;
-import org.junit.jupiter.params.provider.ValueSource;
-import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
@@ -46,6 +32,21 @@ import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy;
 import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import ch.qos.logback.core.rolling.TriggeringPolicy;
+import org.apache.commons.io.FileUtils;
+import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -58,7 +59,8 @@ class LogWriterTest {
     @BeforeEach
     protected void beforeEach() {
         logWriter1 = new LogWriter("appenderName1", "target/logs/fileName1.log", 1, LogConstants.LOG_FILE_SIZE_DEFAULT);
-        logWriter2 = new LogWriter("pid2", "appenderName2", 2, LogConstants.LOG_FILE_SIZE_DEFAULT, "target/logs/fileName2.log", true);
+        logWriter2 = new LogWriter(
+                "pid2", "appenderName2", 2, LogConstants.LOG_FILE_SIZE_DEFAULT, "target/logs/fileName2.log", true);
     }
 
     @ParameterizedTest
@@ -67,11 +69,14 @@ class LogWriterTest {
         LogWriter logWriter3 = new LogWriter("appenderName1", fileName, 1, LogConstants.LOG_FILE_SIZE_DEFAULT);
         assertEquals(LogConstants.FILE_NAME_CONSOLE, logWriter3.getFileName());
     }
+
     @Test
     void testConstructorWithNegativeLogNumber() {
-        LogWriter logWriter3 = new LogWriter("appenderName1", "target/logs/fileName3.log", -1, LogConstants.LOG_FILE_SIZE_DEFAULT);
+        LogWriter logWriter3 =
+                new LogWriter("appenderName1", "target/logs/fileName3.log", -1, LogConstants.LOG_FILE_SIZE_DEFAULT);
         assertEquals(LogConstants.LOG_FILE_NUMBER_DEFAULT, logWriter3.getLogNumber());
     }
+
     @ParameterizedTest
     @NullAndEmptySource
     void testConstructorWithNullLogRotation(String logRotation) {
@@ -156,58 +161,58 @@ class LogWriterTest {
     void testCreateAppenderForConsole() {
         LogWriter logWriter3 = new LogWriter("appenderName1", null, 1, LogConstants.LOG_FILE_SIZE_DEFAULT);
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Encoder<ILoggingEvent> encoder = new LayoutWrappingEncoder<>();
         Appender<ILoggingEvent> appender1 = logWriter3.createAppender(loggerContext, encoder);
         assertTrue(appender1 instanceof ConsoleAppender);
     }
+
     @Test
     void testCreateAppenderForTimeBasedRolling() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Encoder<ILoggingEvent> encoder = new LayoutWrappingEncoder<>();
 
         Appender<ILoggingEvent> appender1 = logWriter1.createAppender(loggerContext, encoder);
         assertTrue(appender1 instanceof RollingFileAppender);
-        RollingFileAppender<ILoggingEvent> rollingAppender1 = (RollingFileAppender<ILoggingEvent>)appender1;
+        RollingFileAppender<ILoggingEvent> rollingAppender1 = (RollingFileAppender<ILoggingEvent>) appender1;
         TriggeringPolicy<ILoggingEvent> triggeringPolicy1 = rollingAppender1.getTriggeringPolicy();
         assertTrue(triggeringPolicy1 instanceof TimeBasedRollingPolicy);
 
         Appender<ILoggingEvent> appender2 = logWriter2.createAppender(loggerContext, encoder);
         assertTrue(appender2 instanceof RollingFileAppender);
-        RollingFileAppender<ILoggingEvent> rollingAppender2 = (RollingFileAppender<ILoggingEvent>)appender2;
+        RollingFileAppender<ILoggingEvent> rollingAppender2 = (RollingFileAppender<ILoggingEvent>) appender2;
         TriggeringPolicy<ILoggingEvent> triggeringPolicy2 = rollingAppender2.getTriggeringPolicy();
         assertTrue(triggeringPolicy2 instanceof TimeBasedRollingPolicy);
     }
+
     @Test
     void testCreateAppenderForTimeBasedRollingWithNotLayoutWrappingEncoder() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Encoder<ILoggingEvent> encoder = new EchoEncoder<>();
 
         Appender<ILoggingEvent> appender1 = logWriter1.createAppender(loggerContext, encoder);
         assertTrue(appender1 instanceof RollingFileAppender);
-        RollingFileAppender<ILoggingEvent> rollingAppender1 = (RollingFileAppender<ILoggingEvent>)appender1;
+        RollingFileAppender<ILoggingEvent> rollingAppender1 = (RollingFileAppender<ILoggingEvent>) appender1;
         TriggeringPolicy<ILoggingEvent> triggeringPolicy1 = rollingAppender1.getTriggeringPolicy();
         assertTrue(triggeringPolicy1 instanceof TimeBasedRollingPolicy);
 
         Appender<ILoggingEvent> appender2 = logWriter2.createAppender(loggerContext, encoder);
         assertTrue(appender2 instanceof RollingFileAppender);
-        RollingFileAppender<ILoggingEvent> rollingAppender2 = (RollingFileAppender<ILoggingEvent>)appender2;
+        RollingFileAppender<ILoggingEvent> rollingAppender2 = (RollingFileAppender<ILoggingEvent>) appender2;
         TriggeringPolicy<ILoggingEvent> triggeringPolicy2 = rollingAppender2.getTriggeringPolicy();
         assertTrue(triggeringPolicy2 instanceof TimeBasedRollingPolicy);
     }
+
     @ParameterizedTest
-    @ValueSource(strings={"100",
-            "1GB", "1G", "1g",
-            "1MB", "1M", "1m",
-            "1500KB", "1500K", "1500k"})
+    @ValueSource(strings = {"100", "1GB", "1G", "1g", "1MB", "1M", "1m", "1500KB", "1500K", "1500k"})
     void testCreateAppenderForSizeBasedRolling(String size) {
         logWriter1 = new LogWriter("appenderName1", "target/logs/fileName1.log", 1, size);
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Encoder<ILoggingEvent> encoder = new LayoutWrappingEncoder<>();
         Appender<ILoggingEvent> appender1 = logWriter1.createAppender(loggerContext, encoder);
         assertTrue(appender1 instanceof RollingFileAppender);
-        RollingFileAppender<ILoggingEvent> rollingAppender1 = (RollingFileAppender<ILoggingEvent>)appender1;
+        RollingFileAppender<ILoggingEvent> rollingAppender1 = (RollingFileAppender<ILoggingEvent>) appender1;
         TriggeringPolicy<ILoggingEvent> triggeringPolicy = rollingAppender1.getTriggeringPolicy();
         assertTrue(triggeringPolicy instanceof SizeBasedTriggeringPolicy);
     }
@@ -217,14 +222,15 @@ class LogWriterTest {
      */
     @Test
     void testCreateFileNamePattern() {
-        assertEquals("logs/test.log.%d{yyyy-MM-dd}", LogWriter.createFileNamePattern("logs/test.log", 
-                LogConstants.LOG_FILE_SIZE_DEFAULT));
+        assertEquals(
+                "logs/test.log.%d{yyyy-MM-dd}",
+                LogWriter.createFileNamePattern("logs/test.log", LogConstants.LOG_FILE_SIZE_DEFAULT));
 
-        assertEquals("logs/test.log%d{yyyy-MM-dd}", LogWriter.createFileNamePattern("logs/test.log", 
-                "yyyy-MM-dd"));
+        assertEquals("logs/test.log%d{yyyy-MM-dd}", LogWriter.createFileNamePattern("logs/test.log", "yyyy-MM-dd"));
 
-        assertEquals("logs/test.logtest1.%d{yyyy-MM-dd}", LogWriter.createFileNamePattern("logs/test.log", 
-                "test1.%d{yyyy-MM-dd}"));
+        assertEquals(
+                "logs/test.logtest1.%d{yyyy-MM-dd}",
+                LogWriter.createFileNamePattern("logs/test.log", "test1.%d{yyyy-MM-dd}"));
     }
 
     /**
@@ -237,19 +243,18 @@ class LogWriterTest {
         assertNotNull(logWriter2.toString());
     }
 
-
     @Test
     void specialHandlingForConsole() {
-        LogWriter lw = new LogWriter(null,null, 5, null);
+        LogWriter lw = new LogWriter(null, null, 5, null);
         assertTrue(createappender(lw) instanceof ConsoleAppender);
 
-        lw = new LogWriter(LogWriter.FILE_NAME_CONSOLE,LogWriter.FILE_NAME_CONSOLE, 5, null);
+        lw = new LogWriter(LogWriter.FILE_NAME_CONSOLE, LogWriter.FILE_NAME_CONSOLE, 5, null);
         assertTrue(createappender(lw) instanceof ConsoleAppender);
     }
 
     @Test
     void testSizeBasedLegacyPattern() {
-        LogWriter lw = new LogWriter("foo","target/foo", 5, "4k");
+        LogWriter lw = new LogWriter("foo", "target/foo", 5, "4k");
         Appender<ILoggingEvent> a = createappender(lw);
 
         assertInstanceOf(a, SlingRollingFileAppender.class);
@@ -258,7 +263,8 @@ class LogWriterTest {
         assertInstanceOf(sr.getTriggeringPolicy(), SizeBasedTriggeringPolicy.class);
         assertInstanceOf(sr.getRollingPolicy(), FixedWindowRollingPolicy.class);
 
-        SizeBasedTriggeringPolicy<ILoggingEvent> sbtp = (SizeBasedTriggeringPolicy<ILoggingEvent>) sr.getTriggeringPolicy();
+        SizeBasedTriggeringPolicy<ILoggingEvent> sbtp =
+                (SizeBasedTriggeringPolicy<ILoggingEvent>) sr.getTriggeringPolicy();
         FixedWindowRollingPolicy fwRp = (FixedWindowRollingPolicy) sr.getRollingPolicy();
         assertEquals(5, fwRp.getMaxIndex());
         assertEquals(4 * FileUtils.ONE_KB, sbtp.getMaxFileSize().getSize());
@@ -266,7 +272,7 @@ class LogWriterTest {
 
     @Test
     void testRotationBasedLegacyPattern() {
-        LogWriter lw = new LogWriter("foo","target/foo", 5, "'.'yyyy-MM");
+        LogWriter lw = new LogWriter("foo", "target/foo", 5, "'.'yyyy-MM");
         Appender<ILoggingEvent> a = createappender(lw);
 
         assertInstanceOf(a, SlingRollingFileAppender.class);

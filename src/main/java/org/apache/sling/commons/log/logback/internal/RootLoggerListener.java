@@ -18,17 +18,16 @@
  */
 package org.apache.sling.commons.log.logback.internal;
 
-import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
-import org.jetbrains.annotations.NotNull;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.core.spi.ContextAware;
+import org.apache.sling.commons.log.logback.internal.util.SlingContextUtil;
+import org.jetbrains.annotations.NotNull;
 
 class RootLoggerListener implements LogbackResetListener {
 
     /**
      * Callback after the reset is completed
-     * 
+     *
      * @param context the logger context being reset
      */
     @Override
@@ -42,5 +41,4 @@ class RootLoggerListener implements LogbackResetListener {
             c.addInfo("No default console appender was attached to the root logger");
         }
     }
-
 }

@@ -48,7 +48,7 @@ public class PackageInfoCollector implements WeavingHook {
 
     /**
      * Returns the number of packages that have been encountered
-     * 
+     *
      * @return the number of packages
      */
     public int size() {
@@ -64,7 +64,8 @@ public class PackageInfoCollector implements WeavingHook {
     void add(@NotNull Bundle bundle, @NotNull String className) {
         String packageName = getPackageName(className);
 
-        Set<String> infos = pkgInfoMapping.computeIfAbsent(packageName, k -> Collections.synchronizedSet(new HashSet<>()));
+        Set<String> infos =
+                pkgInfoMapping.computeIfAbsent(packageName, k -> Collections.synchronizedSet(new HashSet<>()));
         infos.add(getInfo(bundle));
     }
 
@@ -74,15 +75,16 @@ public class PackageInfoCollector implements WeavingHook {
      * @param className the class name to lookup
      * @return the bundle info string or null if not found or ambiguous
      */
-    @Nullable String getBundleInfo(@Nullable String className) {
+    @Nullable
+    String getBundleInfo(@Nullable String className) {
         if (className == null) {
             return null;
         }
         String packageName = getPackageName(className);
         Set<String> infos = pkgInfoMapping.get(packageName);
 
-        //If multiple infos are found then we cannot determine the exact version
-        //so better not to provide any info
+        // If multiple infos are found then we cannot determine the exact version
+        // so better not to provide any info
         if (infos == null || infos.size() > 1 || infos.isEmpty()) {
             return null;
         }
@@ -113,5 +115,4 @@ public class PackageInfoCollector implements WeavingHook {
         }
         return result;
     }
-
 }

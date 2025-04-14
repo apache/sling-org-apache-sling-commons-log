@@ -16,8 +16,9 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
+
+import javax.inject.Inject;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +26,6 @@ import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
-
-import javax.inject.Inject;
 
 import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.Rule;
@@ -79,15 +78,14 @@ public class ITConfigRaceCondition_SLING_7239 extends LogTestBase {
     public void multipleLogConfigs() throws Exception {
         int configCount = 200 + rnd.nextInt(100);
 
-        //1. Create lots of log configs. This would create a situation where
-        //only few of the config get picked up at time of activation
+        // 1. Create lots of log configs. This would create a situation where
+        // only few of the config get picked up at time of activation
         createLogConfigs(configCount);
 
-        //2. Register listener to get notified when the activator is done
+        // 2. Register listener to get notified when the activator is done
         CountDownLatch startLatch = new CountDownLatch(1);
         BundleListener listener = e -> {
-            if (e.getBundle().getSymbolicName().equals(LOG_BUNDLE_NAME)
-                    && e.getType() == BundleEvent.STARTED) {
+            if (e.getBundle().getSymbolicName().equals(LOG_BUNDLE_NAME) && e.getType() == BundleEvent.STARTED) {
                 startLatch.countDown();
             }
         };
@@ -97,23 +95,25 @@ public class ITConfigRaceCondition_SLING_7239 extends LogTestBase {
         Bundle logb = getBundle(LOG_BUNDLE_NAME);
         logb.start();
 
-        //3. Wait for activator to complete
+        // 3. Wait for activator to complete
         startLatch.await();
 
-        //Now check by polling that number of log file created in log dir match the
-        //actual number of configs created
-        new RetryLoop(new RetryLoop.Condition() {
-            @Override
-            public String getDescription() {
-                return format("Expected log file count [%d], Found [%d]", configCount, getLogFileCount());
-            }
+        // Now check by polling that number of log file created in log dir match the
+        // actual number of configs created
+        new RetryLoop(
+                new RetryLoop.Condition() {
+                    @Override
+                    public String getDescription() {
+                        return format("Expected log file count [%d], Found [%d]", configCount, getLogFileCount());
+                    }
 
-            @Override
-            public boolean isTrue() throws Exception {
-                return configCount == getLogFileCount();
-            }
-        }, 15, 100);
-
+                    @Override
+                    public boolean isTrue() throws Exception {
+                        return configCount == getLogFileCount();
+                    }
+                },
+                15,
+                100);
     }
 
     private int getLogFileCount() {
@@ -139,9 +139,7 @@ public class ITConfigRaceCondition_SLING_7239 extends LogTestBase {
     private void createLogConfig(int index) throws IOException {
         Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LogConstants.LOG_LOGGERS, new String[]{
-                "foo.bar." + index
-        });
+        p.put(LogConstants.LOG_LOGGERS, new String[] {"foo.bar." + index});
         p.put(LogConstants.LOG_LEVEL, "DEBUG");
 
         File logFile = new File(tmpFolder.getRoot(), "error-" + index + ".log");

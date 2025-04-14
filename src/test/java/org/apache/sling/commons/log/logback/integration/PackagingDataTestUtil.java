@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
 
 import java.io.InputStream;
@@ -38,11 +37,13 @@ public class PackagingDataTestUtil {
     public static final String TEST_BUNDLE_NAME = "packagedatatest";
 
     public static InputStream createTestBundle() {
-        //Avoid referring to test bundle classes otherwise they get loaded in 2 bundles i.e.
-        //pax exam probe bundle and our packagedatatest. So we refer only by class name strings
+        // Avoid referring to test bundle classes otherwise they get loaded in 2 bundles i.e.
+        // pax exam probe bundle and our packagedatatest. So we refer only by class name strings
         String activatorClassName = "org.apache.sling.commons.log.logback.integration.bundle.PackageDataActivator";
-        TinyBundle tb = bundle()
-                .set(aQute.bnd.osgi.Constants.NOEE, "true") // disable the EE Reqiure-Capability since the old bndlib version only supports java <= 8
+        TinyBundle tb = bundle().set(
+                        aQute.bnd.osgi.Constants.NOEE,
+                        "true") // disable the EE Reqiure-Capability since the old bndlib version only supports java <=
+                // 8
                 .set(Constants.BUNDLE_ACTIVATOR, activatorClassName)
                 .set(Constants.BUNDLE_SYMBOLICNAME, TEST_BUNDLE_NAME)
                 .set(Constants.BUNDLE_VERSION, TEST_BUNDLE_VERSION);
@@ -56,14 +57,14 @@ public class PackagingDataTestUtil {
         tb.add(name, asResourceURL(name));
     }
 
-    private static String asResource( String klass ) {
-        return klass.replace( '.', '/' ) + ".class";
+    private static String asResource(String klass) {
+        return klass.replace('.', '/') + ".class";
     }
 
-    private static URL asResourceURL(String klass ) {
+    private static URL asResourceURL(String klass) {
         URL u = PackagingDataTestUtil.class.getResource("/" + klass);
         if (u == null) {
-            throw new RuntimeException("No resource found for "+klass);
+            throw new RuntimeException("No resource found for " + klass);
         }
         return u;
     }

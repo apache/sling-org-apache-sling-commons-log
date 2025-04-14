@@ -52,7 +52,7 @@ public class ConfigurationServiceFactory<S extends LogConfigurator> implements S
     /**
      * Get or create the service for the supplied registration. The useCount is
      * incremented for each call.
-     * 
+     *
      * @return the service for the registration
      */
     @Override
@@ -68,7 +68,7 @@ public class ConfigurationServiceFactory<S extends LogConfigurator> implements S
     }
 
     /**
-     * Unget the service for the supplied registration. This decrements the useCount 
+     * Unget the service for the supplied registration. This decrements the useCount
      * and if that reaches zero then the service object is disposed
      */
     @Override
@@ -80,5 +80,4 @@ public class ConfigurationServiceFactory<S extends LogConfigurator> implements S
             useCount = 0;
         }
     }
-
 }

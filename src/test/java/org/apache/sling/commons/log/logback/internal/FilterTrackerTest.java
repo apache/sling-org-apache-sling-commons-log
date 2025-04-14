@@ -1,30 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.times;
 
 import java.io.File;
 import java.util.Dictionary;
@@ -32,6 +24,13 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.filter.Filter;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.core.spi.FilterReply;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextBuilder;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextExtension;
@@ -48,13 +47,15 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.filter.Filter;
-import ch.qos.logback.core.read.ListAppender;
-import ch.qos.logback.core.spi.FilterReply;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.times;
 
 /**
  *
@@ -88,9 +89,10 @@ class FilterTrackerTest {
             }
         });
 
-        ServiceRegistration<?> serviceReg1 = bundleContext.registerService(Filter.class, filter1, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName, "invalid" }
-                )));
+        ServiceRegistration<?> serviceReg1 = bundleContext.registerService(
+                Filter.class,
+                filter1,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName, "invalid"})));
         serviceRef1 = serviceReg1.getReference();
     }
 
@@ -112,12 +114,9 @@ class FilterTrackerTest {
     protected void mockAddedAppender(String name) {
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testAddOrUpdateAppender"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testAddOrUpdateAppender"},
                 LogConstants.LOG_LEVEL, "debug",
-                LogConstants.LOG_FILE, "logs/testAddOrUpdateAppender.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testAddOrUpdateAppender.log"));
         manager.addOrUpdateAppender(AppenderOrigin.JORAN, name, config);
     }
 
@@ -127,7 +126,7 @@ class FilterTrackerTest {
     @SuppressWarnings("unchecked")
     @Test
     void testClose() {
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         assertFalse(tracker.getFilters().isEmpty());
 
         tracker.close();
@@ -141,7 +140,7 @@ class FilterTrackerTest {
     @SuppressWarnings("unchecked")
     @Test
     void testAddingService() {
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         Mockito.verify(filter1, times(1)).start();
 
         Map<String, Appender<ILoggingEvent>> knownAppenders = manager.getKnownAppenders(AppenderOrigin.JORAN);
@@ -154,12 +153,13 @@ class FilterTrackerTest {
     @Test
     void testAddingServiceWithAllAppenders() {
         BundleContext bundleContext = context.bundleContext();
-        ServiceRegistration<?> serviceReg = bundleContext.registerService(Filter.class, filter1, new Hashtable<>(Map.of(
-                FilterTracker.PROP_APPENDER, new String[] { FilterTracker.ALL_APPENDERS }
-            )));
+        ServiceRegistration<?> serviceReg = bundleContext.registerService(
+                Filter.class,
+                filter1,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {FilterTracker.ALL_APPENDERS})));
         serviceRef1 = serviceReg.getReference();
 
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         Mockito.verify(filter1, times(1)).start();
 
         Map<String, Appender<ILoggingEvent>> knownAppenders = manager.getKnownAppenders(AppenderOrigin.JORAN);
@@ -172,13 +172,14 @@ class FilterTrackerTest {
     @Test
     void testAddingServiceWithFilterThatIsAlreadyAttached() {
         // pre-add so the filter already exists on the appender
-        Appender<ILoggingEvent> appender = manager.getKnownAppenders(AppenderOrigin.JORAN).get(appenderName);
+        Appender<ILoggingEvent> appender =
+                manager.getKnownAppenders(AppenderOrigin.JORAN).get(appenderName);
         assertNotNull(appender);
         appender.addFilter(filter1);
         List<Filter<ILoggingEvent>> beforeFilters = appender.getCopyOfAttachedFiltersList();
         assertTrue(beforeFilters.contains(filter1));
 
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         appender = manager.getKnownAppenders(AppenderOrigin.JORAN).get(appenderName);
         // should be the same
         assertEquals(beforeFilters, appender.getCopyOfAttachedFiltersList());
@@ -190,7 +191,7 @@ class FilterTrackerTest {
     @SuppressWarnings("unchecked")
     @Test
     void testModifiedService() {
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         Mockito.verify(filter1, times(1)).start();
 
         Map<String, Appender<ILoggingEvent>> knownAppenders = manager.getKnownAppenders(AppenderOrigin.JORAN);
@@ -198,7 +199,7 @@ class FilterTrackerTest {
         assertNotNull(appender);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter1));
 
-        tracker.modifiedService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1, filter1);
+        tracker.modifiedService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1, filter1);
         appender = knownAppenders.get(appenderName);
         assertNotNull(appender);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter1));
@@ -217,13 +218,14 @@ class FilterTrackerTest {
             }
         });
         BundleContext bundleContext = context.bundleContext();
-        ServiceRegistration<?> serviceReg2 = bundleContext.registerService(Filter.class, filter2, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName, "invalid" }
-                )));
+        ServiceRegistration<?> serviceReg2 = bundleContext.registerService(
+                Filter.class,
+                filter2,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName, "invalid"})));
         ServiceReference<?> serviceRef2 = serviceReg2.getReference();
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef2);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef2);
 
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         Map<String, Appender<ILoggingEvent>> knownAppenders = manager.getKnownAppenders(AppenderOrigin.JORAN);
         Appender<ILoggingEvent> appender = knownAppenders.get(appenderName);
         assertNotNull(appender);
@@ -261,12 +263,13 @@ class FilterTrackerTest {
     @Test
     void testRemovedServiceWithAllAppenders() {
         BundleContext bundleContext = context.bundleContext();
-        ServiceRegistration<?> serviceReg = bundleContext.registerService(Filter.class, filter1, new Hashtable<>(Map.of(
-                FilterTracker.PROP_APPENDER, new String[] { FilterTracker.ALL_APPENDERS }
-            )));
+        ServiceRegistration<?> serviceReg = bundleContext.registerService(
+                Filter.class,
+                filter1,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {FilterTracker.ALL_APPENDERS})));
         serviceRef1 = serviceReg.getReference();
 
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         Mockito.verify(filter1, times(1)).start();
         Map<String, Appender<ILoggingEvent>> knownAppenders = manager.getKnownAppenders(AppenderOrigin.JORAN);
         Appender<ILoggingEvent> appender = knownAppenders.get(appenderName);
@@ -288,12 +291,12 @@ class FilterTrackerTest {
         assertNotNull(appender);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter1));
 
-        //No method to directly remove filter. So clone -> remove -> add
-        //Clone
+        // No method to directly remove filter. So clone -> remove -> add
+        // Clone
         List<Filter<ILoggingEvent>> copyOfFilters = appender.getCopyOfAttachedFiltersList();
-        //Clear
+        // Clear
         appender.clearAllFilters();
-        //Add
+        // Add
         for (Filter<ILoggingEvent> filter : copyOfFilters) {
             if (!filter.equals(filter)) {
                 appender.addFilter(filter);
@@ -311,9 +314,9 @@ class FilterTrackerTest {
     @Test
     void testCreateFilterWithCaughtException() throws Exception {
         // verify the exception handling
-        try (MockedStatic<FrameworkUtil> frameworkUtil = Mockito.mockStatic(FrameworkUtil.class, CALLS_REAL_METHODS);) {
-            frameworkUtil.when(() -> FrameworkUtil.createFilter(anyString()))
-                .thenThrow(InvalidSyntaxException.class);
+        try (MockedStatic<FrameworkUtil> frameworkUtil =
+                Mockito.mockStatic(FrameworkUtil.class, CALLS_REAL_METHODS); ) {
+            frameworkUtil.when(() -> FrameworkUtil.createFilter(anyString())).thenThrow(InvalidSyntaxException.class);
 
             BundleContext bundleContext = context.bundleContext();
             assertThrows(InvalidSyntaxException.class, () -> new FilterTracker(bundleContext, manager));
@@ -335,9 +338,9 @@ class FilterTrackerTest {
         BundleContext bundleContext = context.bundleContext();
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         @SuppressWarnings("rawtypes")
-        ServiceRegistration registerService = bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName }
-                )));
+        ServiceRegistration registerService = bundleContext.registerService(
+                Filter.class, filter, new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName
+                })));
         @SuppressWarnings("unchecked")
         ServiceReference<Filter<ILoggingEvent>> reference = registerService.getReference();
         tracker.addingService(reference);
@@ -364,9 +367,9 @@ class FilterTrackerTest {
         BundleContext bundleContext = context.bundleContext();
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         @SuppressWarnings("rawtypes")
-        ServiceRegistration registerService = bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName }
-                )));
+        ServiceRegistration registerService = bundleContext.registerService(
+                Filter.class, filter, new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName
+                })));
         @SuppressWarnings("unchecked")
         ServiceReference<Filter<ILoggingEvent>> reference = registerService.getReference();
         tracker.addingService(reference);
@@ -386,11 +389,11 @@ class FilterTrackerTest {
     @SuppressWarnings("unchecked")
     @Test
     void testOnResetComplete() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-        Logger logger = (Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppender");
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        Logger logger = (Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppender");
 
         // first add a filter
-        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>)serviceRef1);
+        tracker.addingService((ServiceReference<Filter<ILoggingEvent>>) serviceRef1);
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         assertNotNull(appender);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter1));
@@ -409,5 +412,4 @@ class FilterTrackerTest {
         tracker.onResetComplete(loggerContext);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter1));
     }
-
 }

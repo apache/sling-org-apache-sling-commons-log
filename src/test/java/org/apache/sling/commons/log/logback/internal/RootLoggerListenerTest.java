@@ -1,27 +1,24 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.List;
-
-import org.junit.jupiter.api.Test;
-import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -30,6 +27,10 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.OutputStreamAppender;
 import ch.qos.logback.core.status.Status;
+import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -41,23 +42,22 @@ class RootLoggerListenerTest {
      */
     @Test
     void testOnResetCompleteWhenNoConsoleAppenderIsAttached() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         RootLoggerListener listener = new RootLoggerListener();
 
         loggerContext.getStatusManager().clear();
         listener.onResetComplete(loggerContext);
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         // verify the error status was reported
-        assertTrue(copyOfStatusList.stream()
-                .anyMatch(s -> "No default console appender was attached to the root logger".equals(s.getMessage())),
-            "Expected error status msg");
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> "No default console appender was attached to the root logger"
+                        .equals(s.getMessage())),
+                "Expected error status msg");
     }
 
     @Test
     void testOnResetCompleteWhenConsoleAppenderIsAttached() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         // simulate the appender already attached
         OutputStreamAppender<ILoggingEvent> appender = new ConsoleAppender<>();
@@ -73,13 +73,12 @@ class RootLoggerListenerTest {
 
         loggerContext.getStatusManager().clear();
         listener.onResetComplete(loggerContext);
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         // verify the error status was reported
-        assertTrue(copyOfStatusList.stream()
-                .anyMatch(s -> "Detaching the default console appender that is attached to the root logger".equals(s.getMessage())),
-            "Expected error status msg");
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(s -> "Detaching the default console appender that is attached to the root logger"
+                                .equals(s.getMessage())),
+                "Expected error status msg");
     }
-
 }

@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal;
 
 import java.util.Collection;
@@ -24,6 +23,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.sling.commons.log.logback.ConfigProvider;
 import org.apache.sling.commons.log.logback.internal.util.XmlUtil;
 import org.jetbrains.annotations.NotNull;
@@ -35,14 +35,11 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 
-import ch.qos.logback.classic.LoggerContext;
-
 /**
  * Service tracker that listens for ConfigProvider services and
  * applies them to the logging configuration
  */
-public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
-        implements LogbackResetListener {
+public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider> implements LogbackResetListener {
 
     /**
      * Service property name indicating that String object is a Logback config
@@ -53,8 +50,8 @@ public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
     /**
      * Reverse sorted map of ConfigSource based on ranking of ServiceReferences
      */
-    private final Map<ServiceReference<Object>, ConfigSourceInfo> inputSources = new ConcurrentSkipListMap<>(
-        Collections.reverseOrder());
+    private final Map<ServiceReference<Object>, ConfigSourceInfo> inputSources =
+            new ConcurrentSkipListMap<>(Collections.reverseOrder());
 
     private final LogConfigManager logConfigManager;
 
@@ -65,14 +62,15 @@ public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
      * @param logConfigManager the LogConfigManger to apply the configuration to
      * @throws InvalidSyntaxException if {@link #createFilter()} returns something invalid
      */
-    public ConfigSourceTracker(@NotNull BundleContext context, @NotNull LogConfigManager logConfigManager) throws InvalidSyntaxException {
+    public ConfigSourceTracker(@NotNull BundleContext context, @NotNull LogConfigManager logConfigManager)
+            throws InvalidSyntaxException {
         super(context, createFilter(), null);
         this.logConfigManager = logConfigManager;
     }
 
     /**
      * Return the current set of config source information
-     * 
+     *
      * @return collection of config source information
      */
     public @NotNull Collection<ConfigSourceInfo> getSources() {
@@ -107,7 +105,7 @@ public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
 
     /**
      * Callback when an Appender service has been modified
-     * 
+     *
      * @param reference the service reference that was modified
      * @param service the service object that was being tracked
      */
@@ -121,7 +119,7 @@ public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
 
     /**
      * Callback when an Appender service has been removed
-     * 
+     *
      * @param reference the service reference that was removed
      * @param service the service object that was being tracked
      */
@@ -131,7 +129,7 @@ public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
         logConfigManager.configChanged();
     }
 
-    //~-----------------------------------LogbackResetListener
+    // ~-----------------------------------LogbackResetListener
 
     /**
      * Callback before the reset is started
@@ -191,15 +189,15 @@ public class ConfigSourceTracker extends ServiceTracker<Object, ConfigProvider>
 
     /**
      * Creates the filter that this tracker will match against
-     * 
+     *
      * @return the filter
      */
     private static @NotNull Filter createFilter() throws InvalidSyntaxException {
         // Look for either ConfigProvider or String's with property
         // logbackConfig set
-        String filter = String.format("(|(objectClass=%s)(&(objectClass=java.lang.String)(%s=*)))",
-            ConfigProvider.class.getName(), PROP_LOGBACK_CONFIG);
+        String filter = String.format(
+                "(|(objectClass=%s)(&(objectClass=java.lang.String)(%s=*)))",
+                ConfigProvider.class.getName(), PROP_LOGBACK_CONFIG);
         return FrameworkUtil.createFilter(filter);
     }
-
 }

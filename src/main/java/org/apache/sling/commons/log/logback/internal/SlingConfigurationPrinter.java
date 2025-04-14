@@ -31,10 +31,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Appender;
@@ -43,6 +39,9 @@ import ch.qos.logback.core.FileAppender;
 import ch.qos.logback.core.rolling.RollingFileAppender;
 import ch.qos.logback.core.status.Status;
 import ch.qos.logback.core.util.CachingDateFormatter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 /**
  * The <code>SlingConfigurationPrinter</code> is an Apache Felix Web Console
@@ -61,7 +60,8 @@ public class SlingConfigurationPrinter {
      * org.apache.felix.webconsole.ConfigurationPrinter#printConfiguration(java.io.PrintWriter)
      */
     public void printConfiguration(PrintWriter printWriter, String mode) {
-        Collection<Appender<ILoggingEvent>> allAppenders = logConfigManager.getAllKnownAppenders().values();
+        Collection<Appender<ILoggingEvent>> allAppenders =
+                logConfigManager.getAllKnownAppenders().values();
         dumpLogFileSummary(printWriter, allAppenders);
 
         if (!MODE_ZIP.equals(mode)) {
@@ -81,8 +81,8 @@ public class SlingConfigurationPrinter {
                             try {
                                 tailer.tail(file);
                             } catch (IOException e) {
-                                logConfigManager.internalFailure("Error occurred " +
-                                        "while processing log file " + file, e);
+                                logConfigManager.internalFailure(
+                                        "Error occurred " + "while processing log file " + file, e);
                             }
                         }
                         printWriter.println();
@@ -114,16 +114,16 @@ public class SlingConfigurationPrinter {
         final String rootDir = logConfigManager.getRootDir();
         for (Appender<ILoggingEvent> appender : appenders) {
             if (appender instanceof FileAppender) {
-                File file = new File(((FileAppender<ILoggingEvent>)appender).getFile());
+                File file = new File(((FileAppender<ILoggingEvent>) appender).getFile());
                 final File dir = file.getParentFile();
                 final String baseName = file.getName();
                 String absolutePath = dir.getAbsolutePath();
-                String displayName = ((FileAppender<ILoggingEvent>)appender).getFile();
+                String displayName = ((FileAppender<ILoggingEvent>) appender).getFile();
                 if (absolutePath.startsWith(rootDir)) {
                     displayName = baseName;
                 }
                 pw.printf("%d. %s %n", ++counter, displayName);
-                final File[] files = getRotatedFiles((FileAppender<ILoggingEvent>)appender, -1);
+                final File[] files = getRotatedFiles((FileAppender<ILoggingEvent>) appender, -1);
                 for (File f : files) {
                     pw.printf("  - %s, %s, %s %n", f.getName(), humanReadableByteCount(f.length()), getModifiedDate(f));
                 }
@@ -144,9 +144,10 @@ public class SlingConfigurationPrinter {
         // we only provide urls for mode zip
         if (MODE_ZIP.equals(mode)) {
             final List<URL> urls = new ArrayList<>();
-            for (Appender<ILoggingEvent> appender : logConfigManager.getAllKnownAppenders().values()) {
+            for (Appender<ILoggingEvent> appender :
+                    logConfigManager.getAllKnownAppenders().values()) {
                 if (appender instanceof FileAppender) {
-                    final File[] files = getRotatedFiles((FileAppender<ILoggingEvent>)appender, getMaxOldFileCount());
+                    final File[] files = getRotatedFiles((FileAppender<ILoggingEvent>) appender, getMaxOldFileCount());
                     for (File f : files) {
                         maybeAddToUrlsList(urls, f);
                     }
@@ -160,7 +161,7 @@ public class SlingConfigurationPrinter {
     }
 
     /**
-     * add the URL of the file to the list if it is not 
+     * add the URL of the file to the list if it is not
      * a malformed url
      *
      * @param urls the list to add to
@@ -183,15 +184,15 @@ public class SlingConfigurationPrinter {
     protected File[] getRotatedFiles(FileAppender<ILoggingEvent> app, int maxOldFileCount) {
         final File file = new File(app.getFile());
 
-        //If RollingFileAppender then make an attempt to list files
-        //This might not work in all cases if complex rolling patterns
-        //are used in Logback
+        // If RollingFileAppender then make an attempt to list files
+        // This might not work in all cases if complex rolling patterns
+        // are used in Logback
         if (app instanceof RollingFileAppender) {
             final File dir = file.getParentFile();
             final String baseName = file.getName();
-            File[] result = dir.listFiles((d, name)-> name.startsWith(baseName));
+            File[] result = dir.listFiles((d, name) -> name.startsWith(baseName));
 
-            //Sort the files in reverse
+            // Sort the files in reverse
             Arrays.sort(result, Collections.reverseOrder(Comparator.comparing(File::lastModified)));
 
             if (maxOldFileCount > 0) {
@@ -205,25 +206,26 @@ public class SlingConfigurationPrinter {
             return result;
         }
 
-        //Not a RollingFileAppender then just return the actual file
-        return new File[]{file};
+        // Not a RollingFileAppender then just return the actual file
+        return new File[] {file};
     }
 
-    private int getNumOfLines(){
+    private int getNumOfLines() {
         return logConfigManager.getNumOfLines();
     }
 
-    private int getMaxOldFileCount(){
+    private int getMaxOldFileCount() {
         return logConfigManager.getMaxOldFileCount();
     }
 
     private void dumpLogbackStatus(PrintWriter pw) {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         List<Status> statusList = loggerContext.getStatusManager().getCopyOfStatusList();
         pw.println("Logback Status");
         pw.println("--------------------------------------------------");
         for (Status s : statusList) {
-            pw.printf("%s *%s* %s - %s %n",
+            pw.printf(
+                    "%s *%s* %s - %s %n",
                     dateFormatter.format(s.getTimestamp()),
                     statusLevelAsString(s),
                     abbreviatedOrigin(s),
@@ -263,9 +265,9 @@ public class SlingConfigurationPrinter {
             case Status.ERROR:
                 statusLevel = "ERROR";
                 break;
-             default:
-                 statusLevel = null;
-                 break;
+            default:
+                statusLevel = null;
+                break;
         }
         return statusLevel;
     }

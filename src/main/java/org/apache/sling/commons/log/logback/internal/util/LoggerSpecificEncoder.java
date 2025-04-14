@@ -16,21 +16,19 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal.util;
 
 import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.sling.commons.log.logback.internal.LogConfig;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.LoggerFactory;
-
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.pattern.PatternLayoutEncoderBase;
+import org.apache.sling.commons.log.logback.internal.LogConfig;
+import org.jetbrains.annotations.NotNull;
+import org.slf4j.LoggerFactory;
 
 /**
  * Pattern layout encoder for specific loggers
@@ -84,7 +82,9 @@ public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEven
         String bestMatch = loggerName;
         int bestMatchLength = 0;
         for (String layoutKey : layoutByCategory.keySet()) {
-            if (loggerName.startsWith(layoutKey) && loggerName.charAt(layoutKey.length()) == '.' && layoutKey.length() > bestMatchLength) {
+            if (loggerName.startsWith(layoutKey)
+                    && loggerName.charAt(layoutKey.length()) == '.'
+                    && layoutKey.length() > bestMatchLength) {
                 bestMatch = layoutKey;
                 bestMatchLength = layoutKey.length();
             }
@@ -114,11 +114,10 @@ public class LoggerSpecificEncoder extends PatternLayoutEncoderBase<ILoggingEven
      * @param config the config to process
      */
     public void addLogConfig(LogConfig config) {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Layout<ILoggingEvent> layout = config.createLayout(loggerContext);
         for (String category : config.getCategories()) {
             layoutByCategory.put(category, layout);
         }
     }
-
 }

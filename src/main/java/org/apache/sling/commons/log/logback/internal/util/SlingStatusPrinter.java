@@ -16,16 +16,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal.util;
 
 import java.io.PrintStream;
 import java.util.List;
-
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.CoreConstants;
@@ -33,6 +27,10 @@ import ch.qos.logback.core.status.Status;
 import ch.qos.logback.core.status.StatusManager;
 import ch.qos.logback.core.status.StatusUtil;
 import ch.qos.logback.core.util.StatusPrinter2;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Custom StatusPrinter similar to Logback StatusPrinter to account for changes required
@@ -54,16 +52,15 @@ public class SlingStatusPrinter {
      * @param msgSince    time from which we are interested in the message logs
      * @param initSuccess flag indicating if Logback configuration failed or not
      */
-    public static void printInCaseOfErrorsOrWarnings(@Nullable Context context, long threshold,
-                                                     long msgSince, boolean initSuccess) {
+    public static void printInCaseOfErrorsOrWarnings(
+            @Nullable Context context, long threshold, long msgSince, boolean initSuccess) {
         if (context == null) {
             throw new IllegalArgumentException("Context argument cannot be null");
         }
         PrintStream ps = System.out; // NOSONAR
         StatusManager sm = context.getStatusManager();
         if (sm == null) {
-            ps.println("WARN: Context named \"" + context.getName()
-                    + "\" has no status manager");
+            ps.println("WARN: Context named \"" + context.getName() + "\" has no status manager");
         } else {
             StatusUtil statusUtil = new StatusUtil(context);
             if (statusUtil.getHighestLevel(threshold) >= Status.WARN) {
@@ -78,8 +75,8 @@ public class SlingStatusPrinter {
         StringBuilder sb = new StringBuilder();
 
         if (initSuccess) {
-            sb.append("While (re)configuring Logback transient issues were observed. " +
-                    "More details are provided below.");
+            sb.append("While (re)configuring Logback transient issues were observed. "
+                    + "More details are provided below.");
             sb.append(CoreConstants.LINE_SEPARATOR);
         }
 
@@ -93,8 +90,8 @@ public class SlingStatusPrinter {
             statusPrinter2.buildStr(sb, prefix, s);
         }
 
-        //In case logging system completely fails then log the message in System out
-        //otherwise make it part of 'normal' logs
+        // In case logging system completely fails then log the message in System out
+        // otherwise make it part of 'normal' logs
         String output = sb.toString();
         if (!initSuccess) {
             System.out.println(output); // NOSONAR
@@ -103,5 +100,4 @@ public class SlingStatusPrinter {
             logger.info(output);
         }
     }
-
 }

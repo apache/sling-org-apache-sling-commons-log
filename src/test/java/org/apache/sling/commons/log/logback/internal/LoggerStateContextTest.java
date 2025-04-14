@@ -1,31 +1,36 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.classic.turbo.TurboFilter;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.core.spi.FilterReply;
 import org.apache.sling.commons.log.logback.internal.LogConfigManager.LoggerStateContext;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextBuilder;
@@ -41,14 +46,10 @@ import org.osgi.framework.ServiceRegistration;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.classic.turbo.TurboFilter;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.read.ListAppender;
-import ch.qos.logback.core.spi.FilterReply;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -78,18 +79,18 @@ class LoggerStateContextTest {
 
         ListAppender<ILoggingEvent> dynappender1 = new ListAppender<>();
         dynappender1.setName("dynappender1");
-        context.registerService(Appender.class, dynappender1, Map.of(
-                    AppenderTracker.PROP_LOGGER, new String[] {"log.logger1"}
-                ));
+        context.registerService(
+                Appender.class, dynappender1, Map.of(AppenderTracker.PROP_LOGGER, new String[] {"log.logger1"}));
 
         turboFilter = Mockito.spy(new TurboFilter() {
             @Override
-            public FilterReply decide(Marker marker, Logger logger, Level level, String format, Object[] params,
-                    Throwable t) {
+            public FilterReply decide(
+                    Marker marker, Logger logger, Level level, String format, Object[] params, Throwable t) {
                 return FilterReply.NEUTRAL;
             }
         });
-        ServiceRegistration<TurboFilter> serviceReg = bundleContext.registerService(TurboFilter.class, turboFilter, new Hashtable<>());
+        ServiceRegistration<TurboFilter> serviceReg =
+                bundleContext.registerService(TurboFilter.class, turboFilter, new Hashtable<>());
         turboFilterRef = serviceReg.getReference();
 
         loggerState = logConfigManager.determineLoggerState();
@@ -105,9 +106,8 @@ class LoggerStateContextTest {
      */
     @Test
     void testGetNumberOfLoggers() {
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
-        assertEquals(loggerContext.getLoggerList().size(),
-                loggerState.getNumberOfLoggers());
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+        assertEquals(loggerContext.getLoggerList().size(), loggerState.getNumberOfLoggers());
     }
 
     /**
@@ -165,5 +165,4 @@ class LoggerStateContextTest {
         Map<String, Appender<ILoggingEvent>> appenderMap = loggerState.getAppenderMap();
         assertNotNull(appenderMap);
     }
-
 }

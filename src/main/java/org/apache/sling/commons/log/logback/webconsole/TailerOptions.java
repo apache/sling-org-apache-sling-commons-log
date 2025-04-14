@@ -16,7 +16,6 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.webconsole;
 
 /**
@@ -69,5 +68,4 @@ public final class TailerOptions {
     public String getRegex() {
         return regex;
     }
-
 }

@@ -16,14 +16,12 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.webconsole;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
 import org.osgi.annotation.versioning.ProviderType;
-
 
 /**
  * Interface for the Felix Web Console plugin that displays the

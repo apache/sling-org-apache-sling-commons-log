@@ -1,33 +1,29 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.sling.commons.log.logback.ConfigProvider;
 import org.apache.sling.commons.log.logback.internal.ConfigSourceTracker.ConfigSourceInfo;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
@@ -45,7 +41,12 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.xml.sax.InputSource;
 
-import ch.qos.logback.classic.LoggerContext;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -75,14 +76,13 @@ class ConfigSourceTrackerTest {
                 return new InputSource(new StringReader("<include></include>"));
             }
         });
-        ServiceRegistration<?> serviceReg = bundleContext.registerService(ConfigProvider.class, configProvider, new Hashtable<>(Map.of(
-                )));
+        ServiceRegistration<?> serviceReg =
+                bundleContext.registerService(ConfigProvider.class, configProvider, new Hashtable<>(Map.of()));
         serviceRef = serviceReg.getReference();
 
         configProvider2 = "<include></include>";
-        ServiceRegistration<?> serviceReg2 = bundleContext.registerService(String.class, configProvider2, new Hashtable<>(Map.of(
-                ConfigSourceTracker.PROP_LOGBACK_CONFIG, true
-                )));
+        ServiceRegistration<?> serviceReg2 = bundleContext.registerService(
+                String.class, configProvider2, new Hashtable<>(Map.of(ConfigSourceTracker.PROP_LOGBACK_CONFIG, true)));
         serviceRef2 = serviceReg2.getReference();
     }
 
@@ -175,5 +175,4 @@ class ConfigSourceTrackerTest {
         tracker.onResetStart(logbackContext);
         assertEquals(tracker, logbackContext.getObject(ConfigSourceTracker.class.getName()));
     }
-
 }

@@ -25,5 +25,4 @@
 @Version("1.0.2")
 package org.apache.sling.commons.log.logback.webconsole;
 
-
 import org.osgi.annotation.versioning.Version;

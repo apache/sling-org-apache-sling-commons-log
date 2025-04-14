@@ -1,31 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +32,23 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Semaphore;
 
+import ch.qos.logback.classic.ClassicConstants;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.Appender;
+import ch.qos.logback.core.ConsoleAppender;
+import ch.qos.logback.core.CoreConstants;
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.filter.Filter;
+import ch.qos.logback.core.model.Model;
+import ch.qos.logback.core.model.processor.ModelInterpretationContext;
+import ch.qos.logback.core.read.ListAppender;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.spi.FilterReply;
+import ch.qos.logback.core.status.Status;
+import ch.qos.logback.core.status.StatusManager;
 import org.apache.sling.commons.log.helpers.LogCapture;
 import org.apache.sling.commons.log.helpers.ReflectionTools;
 import org.apache.sling.commons.log.logback.internal.LogConfigManager.LoggerStateContext;
@@ -67,23 +75,16 @@ import org.osgi.service.event.EventHandler;
 import org.slf4j.LoggerFactory;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 
-import ch.qos.logback.classic.ClassicConstants;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.Appender;
-import ch.qos.logback.core.ConsoleAppender;
-import ch.qos.logback.core.CoreConstants;
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.filter.Filter;
-import ch.qos.logback.core.model.Model;
-import ch.qos.logback.core.model.processor.ModelInterpretationContext;
-import ch.qos.logback.core.read.ListAppender;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.spi.FilterReply;
-import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.status.StatusManager;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.CALLS_REAL_METHODS;
 
 /**
  *
@@ -98,7 +99,7 @@ class LogConfigManagerTest {
     protected void beforeEach() {
         System.setProperty(LogConstants.SLING_HOME, new File("target").getAbsolutePath());
 
-        loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         manager = new LogConfigManager(context.bundleContext());
     }
@@ -125,34 +126,32 @@ class LogConfigManagerTest {
         assertTrue(output.contains("something happened"));
 
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         assertFalse(copyOfStatusList.isEmpty());
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("something happened")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("something happened")),
                 "Expected internal failure message");
     }
+
     @Test
     void testInternalFailureWithThrowable() {
         loggerContext.getStatusManager().clear();
 
         Throwable throwable = new Exception("throwable here");
-        String output = TestUtils.doWorkWithCapturedStdErr(() -> manager.internalFailure("something happened", throwable));
+        String output =
+                TestUtils.doWorkWithCapturedStdErr(() -> manager.internalFailure("something happened", throwable));
         assertTrue(output.contains("something happened"));
         assertTrue(output.contains("java.lang.Exception: throwable here"));
 
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         assertFalse(copyOfStatusList.isEmpty());
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("something happened")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("something happened")),
                 "Expected internal failure message");
-        assertTrue(copyOfStatusList.stream()
-                .anyMatch(s -> s.getThrowable().equals(throwable)),
-            "Expected internal failure throwable");
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getThrowable().equals(throwable)),
+                "Expected internal failure throwable");
     }
 
     /**
@@ -162,6 +161,7 @@ class LogConfigManagerTest {
     void testStart() {
         assertDoesNotThrow(() -> manager.start());
     }
+
     @Test
     void testStartWithJulSupport() throws Exception {
         try {
@@ -177,17 +177,19 @@ class LogConfigManagerTest {
             }
 
             // confirm JUL calls get routed through logback
-            java.util.logging.Logger logger = java.util.logging.Logger.getLogger(getClass().getName());
+            java.util.logging.Logger logger =
+                    java.util.logging.Logger.getLogger(getClass().getName());
             assertNull(logger.getLevel());
             logger.warning("Log Message from JUL");
 
-            assertTrue(TestUtils.containsString(new File("target", "logs/testStartWithJulSupport.log"),
-                    "Log Message from JUL"));
+            assertTrue(TestUtils.containsString(
+                    new File("target", "logs/testStartWithJulSupport.log"), "Log Message from JUL"));
         } finally {
             System.clearProperty(LogConstants.LOG_FILE);
             System.clearProperty(LogConstants.JUL_SUPPORT);
         }
     }
+
     @Test
     void testStartWithJulSupportWithEventAdminClassNotFound() throws Exception {
         // mock the class not being visible
@@ -202,8 +204,10 @@ class LogConfigManagerTest {
                 assertDoesNotThrow(() -> manager.start());
 
                 // verify the msg was logged
-                capture.assertContains(Level.WARN, "Failed to register the config reset event handler since the event handler class was not found. "
-                        + "Check if the eventadmin bundle is deployed.");
+                capture.assertContains(
+                        Level.WARN,
+                        "Failed to register the config reset event handler since the event handler class was not found. "
+                                + "Check if the eventadmin bundle is deployed.");
             }
         } finally {
             System.clearProperty(LogConstants.LOG_FILE);
@@ -225,8 +229,10 @@ class LogConfigManagerTest {
                 assertDoesNotThrow(() -> manager.start());
 
                 // verify the msg was logged
-                capture.assertContains(Level.WARN, "Failed to re-configure the SLF4JBridgeHandler since that class was not found. "
-                        + "Check if the jul-to-slf4j bundle is deployed.");
+                capture.assertContains(
+                        Level.WARN,
+                        "Failed to re-configure the SLF4JBridgeHandler since that class was not found. "
+                                + "Check if the jul-to-slf4j bundle is deployed.");
             }
         } finally {
             System.clearProperty(LogConstants.LOG_FILE);
@@ -242,22 +248,23 @@ class LogConfigManagerTest {
             System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupportButBridgeAlreadyStarted.log");
 
             // verify the bridge handler install doesn't get called again
-            try (MockedStatic<SLF4JBridgeHandler> bridgeMock = Mockito.mockStatic(SLF4JBridgeHandler.class, CALLS_REAL_METHODS);) {
+            try (MockedStatic<SLF4JBridgeHandler> bridgeMock =
+                    Mockito.mockStatic(SLF4JBridgeHandler.class, CALLS_REAL_METHODS); ) {
                 // if install() gets called it would throw the exception
-                bridgeMock.when(() -> SLF4JBridgeHandler.install())
-                    .thenThrow(UnsupportedOperationException.class);
+                bridgeMock.when(() -> SLF4JBridgeHandler.install()).thenThrow(UnsupportedOperationException.class);
 
                 // verify no execption was thrown
                 assertDoesNotThrow(() -> manager.start());
-
             }
 
             // confirm JUL calls get routed through logback
-            java.util.logging.Logger logger = java.util.logging.Logger.getLogger(getClass().getName());
+            java.util.logging.Logger logger =
+                    java.util.logging.Logger.getLogger(getClass().getName());
             assertNull(logger.getLevel());
             logger.warning("Log Message from JUL");
 
-            assertTrue(TestUtils.containsString(new File("target", "logs/testStartWithJulSupportButBridgeAlreadyStarted.log"),
+            assertTrue(TestUtils.containsString(
+                    new File("target", "logs/testStartWithJulSupportButBridgeAlreadyStarted.log"),
                     "Log Message from JUL"));
         } finally {
             System.clearProperty(LogConstants.LOG_FILE);
@@ -265,11 +272,17 @@ class LogConfigManagerTest {
             SLF4JBridgeHandler.uninstall();
         }
     }
+
     @ParameterizedTest
-    @ValueSource(strings = {LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_FILE, LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_CLASS})
+    @ValueSource(
+            strings = {
+                LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_FILE,
+                LogConstants.SYSPROP_JAVA_UTIL_LOGGING_CONFIG_CLASS
+            })
     void testStartWithJulSupportWithJULConfigFileSystemPropDefined(String sysProp) throws Exception {
         try {
-            System.setProperty(LogConstants.LOG_FILE, "logs/testStartWithJulSupportWithJULConfigFileSystemPropDefined.log");
+            System.setProperty(
+                    LogConstants.LOG_FILE, "logs/testStartWithJulSupportWithJULConfigFileSystemPropDefined.log");
             System.setProperty(LogConstants.JUL_SUPPORT, "true");
             System.setProperty(sysProp, "somevalue");
 
@@ -278,15 +291,19 @@ class LogConfigManagerTest {
                 assertDoesNotThrow(() -> manager.start());
 
                 // verify the msg was logged
-                capture.assertContains(Level.DEBUG, "The JUL logging configuration was not reset to empty as JUL config system properties were set");
+                capture.assertContains(
+                        Level.DEBUG,
+                        "The JUL logging configuration was not reset to empty as JUL config system properties were set");
             }
 
             // confirm JUL calls get routed through logback
-            java.util.logging.Logger logger = java.util.logging.Logger.getLogger(getClass().getName());
+            java.util.logging.Logger logger =
+                    java.util.logging.Logger.getLogger(getClass().getName());
             assertNull(logger.getLevel());
             logger.warning("Log Message from JUL");
 
-            assertTrue(TestUtils.containsString(new File("target", "logs/testStartWithJulSupportWithJULConfigFileSystemPropDefined.log"),
+            assertTrue(TestUtils.containsString(
+                    new File("target", "logs/testStartWithJulSupportWithJULConfigFileSystemPropDefined.log"),
                     "Log Message from JUL"));
         } finally {
             System.clearProperty(sysProp);
@@ -298,9 +315,9 @@ class LogConfigManagerTest {
     @Test
     void testStartWithCaughtException() throws Exception {
         // verify the exception handling
-        try (MockedStatic<FrameworkUtil> frameworkUtil = Mockito.mockStatic(FrameworkUtil.class, CALLS_REAL_METHODS);) {
-            frameworkUtil.when(() -> FrameworkUtil.createFilter(anyString()))
-                .thenThrow(InvalidSyntaxException.class);
+        try (MockedStatic<FrameworkUtil> frameworkUtil =
+                Mockito.mockStatic(FrameworkUtil.class, CALLS_REAL_METHODS); ) {
+            frameworkUtil.when(() -> FrameworkUtil.createFilter(anyString())).thenThrow(InvalidSyntaxException.class);
 
             // verify that the msg was logged
             try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
@@ -312,7 +329,6 @@ class LogConfigManagerTest {
                 capture.assertContains(Level.ERROR, "Failed to open the config source tracker");
             }
         }
-
     }
 
     /**
@@ -322,15 +338,14 @@ class LogConfigManagerTest {
     void testStopWithoutPreviousStart() {
         assertDoesNotThrow(() -> manager.stop());
     }
+
     @Test
     void testStop() throws Exception {
         manager.start();
 
         // attach a console appender to detach during stop
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOG_LEVEL, "info",
-                LogConstants.LOG_FILE, LogConstants.FILE_NAME_CONSOLE
-                ));
+        Dictionary<String, String> config = new Hashtable<>(
+                Map.of(LogConstants.LOG_LEVEL, "info", LogConstants.LOG_FILE, LogConstants.FILE_NAME_CONSOLE));
         doWaitForAsyncResetAfterWork(() -> {
             manager.updateGlobalConfiguration(config);
             return null;
@@ -341,13 +356,12 @@ class LogConfigManagerTest {
         statusManager.clear();
         manager.stop();
         List<Status> copyOfStatusList = statusManager.getCopyOfStatusList();
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("detaching appender CONSOLE for ROOT")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("detaching appender CONSOLE for ROOT")),
                 "Expected detaching appender message");
 
         String output = TestUtils.doWorkWithCapturedStdOut(() -> {
-            LoggerFactory.getLogger(getClass())
-                .info("Logging should go to the CONSOLE after the manager is stopped");
+            LoggerFactory.getLogger(getClass()).info("Logging should go to the CONSOLE after the manager is stopped");
         });
         assertTrue(output.contains("Logging should go to the CONSOLE after the manager is stopped"));
     }
@@ -362,10 +376,11 @@ class LogConfigManagerTest {
         manager.checkForNewConfigsWhileStarting(loggerContext);
 
         List<Status> copyOfStatusList = statusManager.getCopyOfStatusList();
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Did not find any configPid set")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("Did not find any configPid set")),
                 "Expected no configPid warning");
     }
+
     @Test
     void testCheckForNewConfigsWhileStartingWithSameConfigPidSet() {
         manager.start();
@@ -375,10 +390,11 @@ class LogConfigManagerTest {
         manager.checkForNewConfigsWhileStarting(loggerContext);
 
         List<Status> copyOfStatusList = statusManager.getCopyOfStatusList();
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Configured the Logback with 1 configs")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("Configured the Logback with 1 configs")),
                 "Expected configured with configs message");
     }
+
     @Test
     void testCheckForNewConfigsWhileStartingWithDifferentConfigPidSet() throws Exception {
         manager.start();
@@ -387,12 +403,9 @@ class LogConfigManagerTest {
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender2";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testUpdateLoggerConfiguration"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testUpdateLoggerConfiguration"},
                 LogConstants.LOG_LEVEL, "warn",
-                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfiguration.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfiguration.log"));
         manager.updateLoggerConfiguration(pid, config, false);
 
         StatusManager statusManager = loggerContext.getStatusManager();
@@ -400,11 +413,12 @@ class LogConfigManagerTest {
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
             manager.checkForNewConfigsWhileStarting(loggerContext);
             return null;
-            });
+        });
 
         List<Status> copyOfStatusList = statusManager.getCopyOfStatusList();
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Config change detected post start. Scheduling config reload")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage()
+                        .equals("Config change detected post start. Scheduling config reload")),
                 "Expected config change detected message");
     }
 
@@ -425,8 +439,7 @@ class LogConfigManagerTest {
 
         manager.start();
 
-        assertEquals(ClassicConstants.DEFAULT_MAX_CALLEDER_DATA_DEPTH,
-                manager.getMaxCallerDataDepth());
+        assertEquals(ClassicConstants.DEFAULT_MAX_CALLEDER_DATA_DEPTH, manager.getMaxCallerDataDepth());
     }
 
     /**
@@ -438,8 +451,7 @@ class LogConfigManagerTest {
 
         manager.start();
 
-        assertEquals(LogConstants.PRINTER_MAX_INCLUDED_FILES_DEFAULT,
-                manager.getMaxOldFileCount());
+        assertEquals(LogConstants.PRINTER_MAX_INCLUDED_FILES_DEFAULT, manager.getMaxOldFileCount());
     }
 
     /**
@@ -451,8 +463,7 @@ class LogConfigManagerTest {
 
         manager.start();
 
-        assertEquals(LogConstants.PRINTER_NUM_OF_LINES_DEFAULT,
-                manager.getNumOfLines());
+        assertEquals(LogConstants.PRINTER_NUM_OF_LINES_DEFAULT, manager.getNumOfLines());
     }
 
     /**
@@ -471,7 +482,7 @@ class LogConfigManagerTest {
      */
     @Test
     void testOnResetStart() {
-        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("logger1");
+        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("logger1");
         Appender<ILoggingEvent> appender1 = new ListAppender<>();
         appender1.setName("appender1");
         logger1.addAppender(appender1);
@@ -496,6 +507,7 @@ class LogConfigManagerTest {
         assertDoesNotThrow(() -> manager.onResetComplete(loggerContext));
         assertNotNull(loggerContext.getObject(LogConstants.CONFIG_PID_SET));
     }
+
     @Test
     void testOnResetCompleteWithLogConfigWithAppenderDefined() throws ConfigurationException {
         manager.start();
@@ -503,49 +515,50 @@ class LogConfigManagerTest {
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testOnResetCompleteWithLogConfigWithAppenderDefined"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testOnResetCompleteWithLogConfigWithAppenderDefined"},
                 LogConstants.LOG_LEVEL, "error",
-                LogConstants.LOG_FILE, "logs/testOnResetCompleteWithLogConfigWithAppenderDefined.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testOnResetCompleteWithLogConfigWithAppenderDefined.log"));
         manager.updateLoggerConfiguration(pid, config, false);
 
         assertDoesNotThrow(() -> manager.onResetComplete(loggerContext));
 
         @SuppressWarnings("unchecked")
-        Set<String> configPidSet = ((Set<String>)loggerContext.getObject(LogConstants.CONFIG_PID_SET));
+        Set<String> configPidSet = ((Set<String>) loggerContext.getObject(LogConstants.CONFIG_PID_SET));
         assertNotNull(configPidSet);
         assertEquals(2, configPidSet.size());
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testOnResetCompleteWithLogConfigWithAppenderDefined");
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)
+                LoggerFactory.getLogger("log.testOnResetCompleteWithLogConfigWithAppenderDefined");
         assertEquals(Level.ERROR, logger.getLevel());
     }
+
     @Test
     void testOnResetCompleteWithLogConfigWithAppenderNotDefined() throws ConfigurationException {
         manager.start();
 
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testOnResetCompleteWithLogConfigWithAppenderNotDefined"
-                },
-                LogConstants.LOG_LEVEL, "warn"
-                ));
+                LogConstants.LOG_LOGGERS,
+                new String[] {"log.testOnResetCompleteWithLogConfigWithAppenderNotDefined"},
+                LogConstants.LOG_LEVEL,
+                "warn"));
         manager.updateLoggerConfiguration(pid, config, false);
 
         assertDoesNotThrow(() -> manager.onResetComplete(loggerContext));
 
         @SuppressWarnings("unchecked")
-        Set<String> configPidSet = ((Set<String>)loggerContext.getObject(LogConstants.CONFIG_PID_SET));
+        Set<String> configPidSet = ((Set<String>) loggerContext.getObject(LogConstants.CONFIG_PID_SET));
         assertNotNull(configPidSet);
         assertEquals(2, configPidSet.size());
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testOnResetCompleteWithLogConfigWithAppenderNotDefined");
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)
+                LoggerFactory.getLogger("log.testOnResetCompleteWithLogConfigWithAppenderNotDefined");
         assertEquals(Level.WARN, logger.getLevel());
     }
+
     @Test
     void testOnResetCompleteWithBlockedOverrideOfAppenderFromLogbackFile() throws ConfigurationException {
         try {
-            System.setProperty(LogConstants.LOGBACK_FILE, new File("src/test/resources/logback-test2.xml").getAbsolutePath());
+            System.setProperty(
+                    LogConstants.LOGBACK_FILE, new File("src/test/resources/logback-test2.xml").getAbsolutePath());
 
             manager.start();
         } finally {
@@ -556,22 +569,21 @@ class LogConfigManagerTest {
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testOnResetCompleteWithLogConfigWithAppenderDefined"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testOnResetCompleteWithLogConfigWithAppenderDefined"},
                 LogConstants.LOG_LEVEL, "error",
-                LogConstants.LOG_FILE, "target/logs/testing2.log"
-                ));
+                LogConstants.LOG_FILE, "target/logs/testing2.log"));
         manager.updateLoggerConfiguration(pid, config, false);
 
         loggerContext.getStatusManager().clear();
         assertDoesNotThrow(() -> manager.onResetComplete(loggerContext));
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Found overriding configuration for appender /target/logs/testing2.log in Logback config. OSGi config would be ignored")),
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Found overriding configuration for appender /target/logs/testing2.log in Logback config. OSGi config would be ignored")),
                 "Expected overriding configurtion message");
     }
 
@@ -583,10 +595,9 @@ class LogConfigManagerTest {
         // bundle is stopping so skipping the unregister of services
         try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
             manager.configChanged();
-    
+
             // verify the msg was logged
-            capture.assertContains(Level.DEBUG,
-                    "LoggerContext is not started so skipping reset handling");
+            capture.assertContains(Level.DEBUG, "LoggerContext is not started so skipping reset handling");
         }
     }
 
@@ -600,6 +611,7 @@ class LogConfigManagerTest {
             return null;
         });
     }
+
     @Test
     void testConfigChangedWhenFailToAquireLock() throws Exception {
         manager.start();
@@ -610,11 +622,10 @@ class LogConfigManagerTest {
         manager.configChanged();
 
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         // the last status should be the re-configuration done mst
-        assertEquals("LoggerContext reset in progress. Marking config changed to true", 
+        assertEquals(
+                "LoggerContext reset in progress. Marking config changed to true",
                 copyOfStatusList.get(copyOfStatusList.size() - 1).getMessage());
     }
 
@@ -632,6 +643,7 @@ class LogConfigManagerTest {
         // config not changed
         assertFalse(manager.rescheduleIfConfigChanged());
     }
+
     @Test
     void testRescheduleIfConfigChangedWhenConfigChanged() throws Exception {
         manager.start();
@@ -643,6 +655,7 @@ class LogConfigManagerTest {
             return null;
         });
     }
+
     @Test
     void testRescheduleIfConfigChangedWhenConfigChangedAndFailToAquireLock() {
         manager.start();
@@ -681,21 +694,35 @@ class LogConfigManagerTest {
 
         manager.fireResetStartListeners();
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         assertFalse(copyOfStatusList.isEmpty());
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.AppenderTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.AppenderTracker")),
                 "Expected onResetStart status for AppenderTracker");
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.ConfigSourceTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.ConfigSourceTracker")),
                 "Expected onResetStart status for ConfigSourceTracker");
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.FilterTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.FilterTracker")),
                 "Expected onResetStart status for FilterTracker");
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.TurboFilterTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetStart class org.apache.sling.commons.log.logback.internal.TurboFilterTracker")),
                 "Expected onResetStart status for TurboFilterTracker");
     }
 
@@ -710,21 +737,35 @@ class LogConfigManagerTest {
 
         manager.fireResetCompleteListeners();
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         assertFalse(copyOfStatusList.isEmpty());
-        assertTrue(copyOfStatusList.stream()
-                .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.AppenderTracker")),
-            "Expected onRestComplete status for AppenderTracker");
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.ConfigSourceTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.AppenderTracker")),
+                "Expected onRestComplete status for AppenderTracker");
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.ConfigSourceTracker")),
                 "Expected onRestComplete status for ConfigSourceTracker");
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.FilterTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.FilterTracker")),
                 "Expected onRestComplete status for FilterTracker");
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.TurboFilterTracker")),
+        assertTrue(
+                copyOfStatusList.stream()
+                        .anyMatch(
+                                s -> s.getMessage()
+                                        .equals(
+                                                "Firing reset listener - onResetComplete class org.apache.sling.commons.log.logback.internal.TurboFilterTracker")),
                 "Expected onRestComplete status for TurboFilterTracker");
     }
 
@@ -771,26 +812,22 @@ class LogConfigManagerTest {
         String output = TestUtils.doWorkWithCapturedStdErr(() -> manager.setDefaultConfiguration(bundleConfiguration));
         assertTrue(output.isEmpty());
     }
+
     @Test
     void testSetDefaultConfigurationWithCaughtException() {
         loggerContext.getStatusManager().clear();
 
-        String output = TestUtils.doWorkWithCapturedStdErr(() -> manager.setDefaultConfiguration(
-                        new Hashtable<>(Map.of(
-                            LogConstants.LOG_LEVEL, "invalid"
-                        ))));
+        String output = TestUtils.doWorkWithCapturedStdErr(
+                () -> manager.setDefaultConfiguration(new Hashtable<>(Map.of(LogConstants.LOG_LEVEL, "invalid"))));
         assertTrue(output.contains("Unexpected Configuration Problem"));
 
         // verify the error status was reported
-        List<Status> copyOfStatusList = loggerContext
-                .getStatusManager()
-                .getCopyOfStatusList();
+        List<Status> copyOfStatusList = loggerContext.getStatusManager().getCopyOfStatusList();
         assertFalse(copyOfStatusList.isEmpty());
-        assertTrue(copyOfStatusList.stream()
-                    .anyMatch(s -> s.getMessage().equals("Unexpected Configuration Problem")),
+        assertTrue(
+                copyOfStatusList.stream().anyMatch(s -> s.getMessage().equals("Unexpected Configuration Problem")),
                 "Expected internal failure message");
     }
-
 
     /**
      * Test method for {@link org.apache.sling.commons.log.logback.internal.LogConfigManager#getAbsoluteFilePath(java.lang.String)}.
@@ -798,21 +835,21 @@ class LogConfigManagerTest {
     @Test
     void testGetAbsoluteFilePath() throws IOException {
         // absolute path
-        assertEquals(Paths.get("/tmp/path1").toAbsolutePath().toString(),
-                manager.getAbsoluteFilePath("/tmp/path1"));
+        assertEquals(Paths.get("/tmp/path1").toAbsolutePath().toString(), manager.getAbsoluteFilePath("/tmp/path1"));
 
         // relative path
         String slingHome = new File(System.getProperty(LogConstants.SLING_HOME)).getAbsolutePath();
-        assertEquals(new File(slingHome, "log/error.log").getAbsolutePath(),
-                manager.getAbsoluteFilePath("log/error.log"));
+        assertEquals(
+                new File(slingHome, "log/error.log").getAbsolutePath(), manager.getAbsoluteFilePath("log/error.log"));
 
         // relative path with no sling.home value
         System.clearProperty(LogConstants.SLING_HOME);
         manager.stop();
         manager = new LogConfigManager(context.bundleContext());
-        assertEquals(Paths.get("log/error.log").toFile().getAbsolutePath(),
-                manager.getAbsoluteFilePath("log/error.log"));
+        assertEquals(
+                Paths.get("log/error.log").toFile().getAbsolutePath(), manager.getAbsoluteFilePath("log/error.log"));
     }
+
     @Test
     void testGetAbsoluteFilePathWithRootPath() throws IOException {
         try {
@@ -822,7 +859,8 @@ class LogConfigManagerTest {
 
             // relative path
             String slingHome = new File(System.getProperty(LogConstants.SLING_LOG_ROOT)).getAbsolutePath();
-            assertEquals(new File(slingHome, "log/error.log").getAbsolutePath(),
+            assertEquals(
+                    new File(slingHome, "log/error.log").getAbsolutePath(),
                     manager.getAbsoluteFilePath("log/error.log"));
         } finally {
             System.clearProperty(LogConstants.SLING_LOG_ROOT);
@@ -845,9 +883,8 @@ class LogConfigManagerTest {
                 LogConstants.LOG_LEVEL, "warn",
                 LogConstants.LOG_FILE, "target/logs/error2.log",
                 LogConstants.LOG_FILE_NUMBER, "6",
-                LogConstants.LOG_FILE_SIZE, "logs/error2.%d{yyyy-MM-dd}.log.gz"
-                ));
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+                LogConstants.LOG_FILE_SIZE, "logs/error2.%d{yyyy-MM-dd}.log.gz"));
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
             manager.updateGlobalConfiguration(config);
             return null;
@@ -856,12 +893,14 @@ class LogConfigManagerTest {
         // verify the updated changes were applied
         assertFalse(loggerContext.isPackagingDataEnabled());
         assertTrue(manager.isPackagingDataEnabled());
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger rootLogger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         assertEquals(Level.WARN, rootLogger.getLevel());
         Appender<ILoggingEvent> appender = rootLogger.getAppender("/target/logs/error2.log");
         assertTrue(appender instanceof RollingFileAppender);
-        String expectedPath = Paths.get("target/logs/error2.log").toAbsolutePath().toString();
-        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>)appender).getFile());
+        String expectedPath =
+                Paths.get("target/logs/error2.log").toAbsolutePath().toString();
+        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>) appender).getFile());
     }
 
     @ParameterizedTest
@@ -873,18 +912,18 @@ class LogConfigManagerTest {
                 LogConstants.LOG_PACKAGING_DATA, "true",
                 LogConstants.LOG_PATTERN, "Custom %msg%n",
                 LogConstants.LOG_LEVEL, "warn",
-                LogConstants.LOG_FILE, file
-                ));
+                LogConstants.LOG_FILE, file));
         doWaitForAsyncResetAfterWork(() -> {
             manager.updateGlobalConfiguration(config);
             return null;
         });
 
         // verify the updated changes were applied
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         assertFalse(loggerContext.isPackagingDataEnabled());
         assertTrue(manager.isPackagingDataEnabled());
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger rootLogger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         assertEquals(Level.WARN, rootLogger.getLevel());
         Appender<ILoggingEvent> appender = rootLogger.getAppender(LogConstants.FILE_NAME_CONSOLE);
         assertTrue(appender instanceof ConsoleAppender);
@@ -895,14 +934,15 @@ class LogConfigManagerTest {
         manager.start();
 
         Dictionary<String, String> config = null;
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
             manager.updateGlobalConfiguration(config);
             return null;
         });
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger rootLogger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         Appender<ILoggingEvent> appender = rootLogger.getAppender(LogConstants.FILE_NAME_CONSOLE);
         assertTrue(appender instanceof ConsoleAppender);
     }
@@ -918,17 +958,13 @@ class LogConfigManagerTest {
         if (withRefresh) {
             manager.start();
 
-            LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
             TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
-                manager.updateLogWriter(pid, new Hashtable<>(Map.of(
-                        LogConstants.LOG_FILE, filename1
-                    )), withRefresh);
+                manager.updateLogWriter(pid, new Hashtable<>(Map.of(LogConstants.LOG_FILE, filename1)), withRefresh);
                 return null;
             });
         } else {
-            manager.updateLogWriter(pid, new Hashtable<>(Map.of(
-                    LogConstants.LOG_FILE, filename1
-                )), withRefresh);
+            manager.updateLogWriter(pid, new Hashtable<>(Map.of(LogConstants.LOG_FILE, filename1)), withRefresh);
         }
         assertTrue(manager.hasWriterByPid(pid));
         assertTrue(manager.hasWriterByName(filename1));
@@ -952,13 +988,15 @@ class LogConfigManagerTest {
     void testUpdateLogWriterWithInvalidLogFileNumber() throws ConfigurationException {
         String pid = String.format("%s~logwriter1", LogConstants.FACTORY_PID_CONFIGS);
         String filename1 = manager.getAbsoluteFilePath("logs/logwriter1.log");
-        manager.updateLogWriter(pid, new Hashtable<>(Map.of(
-                LogConstants.LOG_FILE, filename1,
-                LogConstants.LOG_FILE_NUMBER, "invalid"
-            )), false);
+        manager.updateLogWriter(
+                pid,
+                new Hashtable<>(Map.of(LogConstants.LOG_FILE, filename1, LogConstants.LOG_FILE_NUMBER, "invalid")),
+                false);
         assertTrue(manager.hasWriterByPid(pid));
         assertTrue(manager.hasWriterByName(filename1));
-        assertEquals(LogConstants.LOG_FILE_NUMBER_DEFAULT, manager.getLogWriter(filename1).getLogNumber());
+        assertEquals(
+                LogConstants.LOG_FILE_NUMBER_DEFAULT,
+                manager.getLogWriter(filename1).getLogNumber());
     }
 
     @ParameterizedTest
@@ -999,9 +1037,9 @@ class LogConfigManagerTest {
 
         String pid = String.format("%s~logwriter2", LogConstants.FACTORY_PID_CONFIGS);
         String filename1 = manager.getAbsoluteFilePath("logs/logwriter1.log");
-        assertThrows(ConfigurationException.class, () -> manager.updateLogWriter(pid, new Hashtable<>(Map.of(
-                LogConstants.LOG_FILE, filename1
-            )), false));
+        assertThrows(
+                ConfigurationException.class,
+                () -> manager.updateLogWriter(pid, new Hashtable<>(Map.of(LogConstants.LOG_FILE, filename1)), false));
     }
 
     @Test
@@ -1013,7 +1051,8 @@ class LogConfigManagerTest {
             assertFalse(manager.isLogbackFileValid(file));
 
             // verify the msg was logged
-            capture.assertContains(Level.WARN, String.format("Logback configuration file [%s] does not exist", logbackPath));
+            capture.assertContains(
+                    Level.WARN, String.format("Logback configuration file [%s] does not exist", logbackPath));
         }
     }
 
@@ -1026,7 +1065,8 @@ class LogConfigManagerTest {
             assertFalse(manager.isLogbackFileValid(file));
 
             // verify the msg was logged
-            capture.assertContains(Level.WARN, String.format("Logback configuration file [%s] is not a file", logbackPath));
+            capture.assertContains(
+                    Level.WARN, String.format("Logback configuration file [%s] is not a file", logbackPath));
         }
     }
 
@@ -1041,22 +1081,22 @@ class LogConfigManagerTest {
             assertFalse(manager.isLogbackFileValid(file));
 
             // verify the msg was logged
-            capture.assertContains(Level.WARN, String.format("Logback configuration file [%s] cannot be read", logbackPath));
+            capture.assertContains(
+                    Level.WARN, String.format("Logback configuration file [%s] cannot be read", logbackPath));
         }
     }
 
     @Test
     void testUpdateGlobalConfigurationFromNotExistingLogbackXmlFile() throws Exception {
         String logbackPath = new File("src/test/resources/logback-notexisting.xml").getAbsolutePath();
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOGBACK_FILE, logbackPath
-                ));
+        Dictionary<String, String> config = new Hashtable<>(Map.of(LogConstants.LOGBACK_FILE, logbackPath));
         // verify that the msg was logged
         try (LogCapture capture = new LogCapture(manager.getClass().getName(), true)) {
             manager.updateGlobalConfiguration(config);
 
             // verify the msg was logged
-            capture.assertContains(Level.WARN, String.format("Logback configuration file [%s] does not exist", logbackPath));
+            capture.assertContains(
+                    Level.WARN, String.format("Logback configuration file [%s] does not exist", logbackPath));
         }
     }
 
@@ -1066,11 +1106,9 @@ class LogConfigManagerTest {
         manager.start();
 
         String logbackPath = new File("src/test/resources/" + file).getAbsolutePath();
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOGBACK_FILE, logbackPath
-                ));
+        Dictionary<String, String> config = new Hashtable<>(Map.of(LogConstants.LOGBACK_FILE, logbackPath));
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getStatusManager().clear();
 
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
@@ -1079,11 +1117,12 @@ class LogConfigManagerTest {
         });
 
         // verify the error status was reported
-        assertTrue(loggerContext.getStatusManager()
-                .getCopyOfStatusList()
-                .stream()
-                .anyMatch(s -> "Given previous errors, falling back to previously registered safe configuration.".equals(s.getMessage())),
-        "Expected error status msg");
+        assertTrue(
+                loggerContext.getStatusManager().getCopyOfStatusList().stream()
+                        .anyMatch(
+                                s -> "Given previous errors, falling back to previously registered safe configuration."
+                                        .equals(s.getMessage())),
+                "Expected error status msg");
     }
 
     @Test
@@ -1097,11 +1136,9 @@ class LogConfigManagerTest {
         manager.start();
 
         String logbackPath = new File("src/test/resources/logback-invalid.txt").getAbsolutePath();
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOGBACK_FILE, logbackPath
-                ));
+        Dictionary<String, String> config = new Hashtable<>(Map.of(LogConstants.LOGBACK_FILE, logbackPath));
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         loggerContext.getStatusManager().clear();
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
             manager.updateGlobalConfiguration(config);
@@ -1109,11 +1146,12 @@ class LogConfigManagerTest {
         });
 
         // verify the error status was reported
-        assertTrue(loggerContext.getStatusManager()
-                .getCopyOfStatusList()
-                .stream()
-                .anyMatch(s -> "Given previous errors, falling back to previously registered safe configuration.".equals(s.getMessage())),
-        "Expected error status msg");
+        assertTrue(
+                loggerContext.getStatusManager().getCopyOfStatusList().stream()
+                        .anyMatch(
+                                s -> "Given previous errors, falling back to previously registered safe configuration."
+                                        .equals(s.getMessage())),
+                "Expected error status msg");
     }
 
     @Test
@@ -1121,11 +1159,9 @@ class LogConfigManagerTest {
         manager.start();
 
         String logbackPath = new File("src/test/resources/logback-invalid.txt").getAbsolutePath();
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOGBACK_FILE, logbackPath
-                ));
+        Dictionary<String, String> config = new Hashtable<>(Map.of(LogConstants.LOGBACK_FILE, logbackPath));
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Object originalSafeConfig = loggerContext.getObject(CoreConstants.SAFE_JORAN_CONFIGURATION);
         try {
             // set the safe configuration to null
@@ -1141,11 +1177,10 @@ class LogConfigManagerTest {
         }
 
         // verify the error status was reported
-        assertTrue(loggerContext.getStatusManager()
-                .getCopyOfStatusList()
-                .stream()
-                .anyMatch(s -> "No previous configuration to fall back on.".equals(s.getMessage())),
-        "Expected error status msg");
+        assertTrue(
+                loggerContext.getStatusManager().getCopyOfStatusList().stream()
+                        .anyMatch(s -> "No previous configuration to fall back on.".equals(s.getMessage())),
+                "Expected error status msg");
     }
 
     @Test
@@ -1153,17 +1188,16 @@ class LogConfigManagerTest {
         manager.start();
 
         String logbackPath = new File("src/test/resources/logback-invalid.txt").getAbsolutePath();
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOGBACK_FILE, logbackPath
-                ));
+        Dictionary<String, String> config = new Hashtable<>(Map.of(LogConstants.LOGBACK_FILE, logbackPath));
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         Object originalSafeConfig = loggerContext.getObject(CoreConstants.SAFE_JORAN_CONFIGURATION);
         try {
-            // set the safe configuration to something that will throw an 
+            // set the safe configuration to something that will throw an
             //  unexpected exception during processing
             Model model = new Model() {
                 private static final long serialVersionUID = 1724281914903815476L;
+
                 @Override
                 public List<Model> getSubModels() {
                     throw new IllegalStateException("Something is wrong");
@@ -1181,21 +1215,20 @@ class LogConfigManagerTest {
         }
 
         // verify the error status was reported
-        assertTrue(loggerContext.getStatusManager()
-                .getCopyOfStatusList()
-                .stream()
-                .anyMatch(s -> "Unexpected exception thrown by a configuration considered safe.".equals(s.getMessage())),
-        "Expected error status msg");
+        assertTrue(
+                loggerContext.getStatusManager().getCopyOfStatusList().stream()
+                        .anyMatch(s -> "Unexpected exception thrown by a configuration considered safe."
+                                .equals(s.getMessage())),
+                "Expected error status msg");
     }
 
     @Test
     void testUpdateGlobalConfigurationFromLogbackXmlFile() throws Exception {
         manager.start();
 
-        Dictionary<String, String> config = new Hashtable<>(Map.of(
-                LogConstants.LOGBACK_FILE, new File("src/test/resources/logback-test2.xml").getAbsolutePath()
-                ));
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        Dictionary<String, String> config = new Hashtable<>(
+                Map.of(LogConstants.LOGBACK_FILE, new File("src/test/resources/logback-test2.xml").getAbsolutePath()));
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
             manager.updateGlobalConfiguration(config);
             return null;
@@ -1203,12 +1236,14 @@ class LogConfigManagerTest {
 
         // verify the updated changes were applied
         assertTrue(loggerContext.isPackagingDataEnabled());
-        ch.qos.logback.classic.Logger auditLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.audit");
+        ch.qos.logback.classic.Logger auditLogger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.audit");
         assertEquals(Level.WARN, auditLogger.getLevel());
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger rootLogger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
         Appender<ILoggingEvent> appender = rootLogger.getAppender("/target/logs/testing2.log");
         assertTrue(appender instanceof FileAppender);
-        assertEquals("target/logs/testing2.log", ((FileAppender<ILoggingEvent>)appender).getFile());
+        assertEquals("target/logs/testing2.log", ((FileAppender<ILoggingEvent>) appender).getFile());
     }
 
     /**
@@ -1218,22 +1253,22 @@ class LogConfigManagerTest {
     void testAddOrUpdateAppenderFromConfiguration() {
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testAddOrUpdateAppender"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testAddOrUpdateAppender"},
                 LogConstants.LOG_LEVEL, "debug",
-                LogConstants.LOG_FILE, "logs/testAddOrUpdateAppender.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testAddOrUpdateAppender.log"));
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         manager.addOrUpdateAppender(AppenderOrigin.CONFIGSERVICE, appenderName, config);
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppender");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppender");
         assertEquals(Level.DEBUG, logger.getLevel());
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         assertTrue(appender instanceof RollingFileAppender);
-        String expectedPath = Paths.get(System.getProperty(LogConstants.SLING_HOME), "logs/testAddOrUpdateAppender.log").toAbsolutePath().toString();
-        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>)appender).getFile());
+        String expectedPath = Paths.get(System.getProperty(LogConstants.SLING_HOME), "logs/testAddOrUpdateAppender.log")
+                .toAbsolutePath()
+                .toString();
+        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>) appender).getFile());
     }
 
     @Test
@@ -1247,15 +1282,17 @@ class LogConfigManagerTest {
 
         BundleContext bundleContext = context.bundleContext();
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
-        bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName, "invalid" }
-                )));
+        bundleContext.registerService(
+                Filter.class,
+                filter,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName, "invalid"})));
 
         manager.start();
         testAddOrUpdateAppenderFromConfiguration();
 
         // verify the filter was attached to the logger
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppender");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppender");
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter));
     }
@@ -1268,7 +1305,8 @@ class LogConfigManagerTest {
         manager.addOrUpdateAppender(AppenderOrigin.CONFIGSERVICE, appenderName, appender, loggers);
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppender");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppender");
         assertSame(appender, logger.getAppender(appenderName));
     }
 
@@ -1283,15 +1321,17 @@ class LogConfigManagerTest {
 
         BundleContext bundleContext = context.bundleContext();
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
-        bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName, "invalid" }
-                )));
+        bundleContext.registerService(
+                Filter.class,
+                filter,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName, "invalid"})));
 
         manager.start();
         testAddOrUpdateAppender();
 
         // verify the filter was attached to the logger
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppender");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppender");
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         assertTrue(appender.getCopyOfAttachedFiltersList().contains(filter));
     }
@@ -1300,18 +1340,21 @@ class LogConfigManagerTest {
     void testAddOrUpdateAppenderFromConfig() {
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
         Hashtable<String, Object> appenderConfig = new Hashtable<>(Map.of(
-                    LogConstants.LOG_FILE, "logs/testAddOrUpdateAppenderFromConfig.log",
-                    LogConstants.LOG_LOGGERS, List.of("log.testAddOrUpdateAppenderFromConfig")
-                ));
+                LogConstants.LOG_FILE,
+                "logs/testAddOrUpdateAppenderFromConfig.log",
+                LogConstants.LOG_LOGGERS,
+                List.of("log.testAddOrUpdateAppenderFromConfig")));
         manager.addOrUpdateAppender(AppenderOrigin.CONFIGSERVICE, appenderName, appenderConfig);
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppenderFromConfig");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppenderFromConfig");
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         assertTrue(appender instanceof RollingFileAppender);
-        String expectedPath = new File(System.getProperty(LogConstants.SLING_HOME),
-                "logs/testAddOrUpdateAppenderFromConfig.log").getAbsolutePath();
-        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>)appender).getFile());
+        String expectedPath = new File(
+                        System.getProperty(LogConstants.SLING_HOME), "logs/testAddOrUpdateAppenderFromConfig.log")
+                .getAbsolutePath();
+        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>) appender).getFile());
     }
 
     @ParameterizedTest
@@ -1319,16 +1362,16 @@ class LogConfigManagerTest {
     @ValueSource(strings = {LogConstants.FILE_NAME_CONSOLE})
     void testAddOrUpdateAppenderFromConfigForConsole(String file) {
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
-        Hashtable<String, Object> appenderConfig = new Hashtable<>(Map.of(
-                    LogConstants.LOG_LOGGERS, List.of("log.testAddOrUpdateAppenderFromConfigForConsole")
-                ));
+        Hashtable<String, Object> appenderConfig = new Hashtable<>(
+                Map.of(LogConstants.LOG_LOGGERS, List.of("log.testAddOrUpdateAppenderFromConfigForConsole")));
         if (file != null) {
             appenderConfig.put(LogConstants.LOG_FILE, file);
         }
         manager.addOrUpdateAppender(AppenderOrigin.CONFIGSERVICE, appenderName, appenderConfig);
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppenderFromConfigForConsole");
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)
+                LoggerFactory.getLogger("log.testAddOrUpdateAppenderFromConfigForConsole");
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         assertTrue(appender instanceof ConsoleAppender);
     }
@@ -1339,7 +1382,7 @@ class LogConfigManagerTest {
     @Test
     void testMaybeDetachAppender() {
         String appenderName = "myappender1";
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("testing");
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("testing");
         Appender<ILoggingEvent> appender = new ListAppender<>();
         appender.setName(appenderName);
         logger.addAppender(appender);
@@ -1361,14 +1404,16 @@ class LogConfigManagerTest {
 
         BundleContext bundleContext = context.bundleContext();
         String appenderName = LogConstants.FACTORY_PID_CONFIGS + "~myappender1";
-        bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { appenderName, "invalid" }
-                )));
+        bundleContext.registerService(
+                Filter.class,
+                filter,
+                new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {appenderName, "invalid"})));
 
         manager.start();
         testAddOrUpdateAppender();
 
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testAddOrUpdateAppender");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testAddOrUpdateAppender");
         Appender<ILoggingEvent> appender = logger.getAppender(appenderName);
         manager.maybeDetachAppender(AppenderOrigin.CONFIGSERVICE, appenderName, logger);
 
@@ -1387,12 +1432,9 @@ class LogConfigManagerTest {
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender2";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testUpdateLoggerConfiguration"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testUpdateLoggerConfiguration"},
                 LogConstants.LOG_LEVEL, "warn",
-                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfiguration.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfiguration.log"));
 
         doWaitForAsyncResetAfterWork(() -> {
             manager.updateLoggerConfiguration(pid, config, true);
@@ -1402,13 +1444,17 @@ class LogConfigManagerTest {
         assertTrue(manager.hasConfigByName("log.testUpdateLoggerConfiguration"));
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testUpdateLoggerConfiguration");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testUpdateLoggerConfiguration");
         assertEquals(Level.WARN, logger.getLevel());
         Appender<ILoggingEvent> appender = logger.getAppender("/logs/testUpdateLoggerConfiguration.log");
         assertTrue(appender instanceof SlingRollingFileAppender);
-        String expectedPath = Paths.get("target/logs/testUpdateLoggerConfiguration.log").toAbsolutePath().toString();
-        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>)appender).getFile());
+        String expectedPath = Paths.get("target/logs/testUpdateLoggerConfiguration.log")
+                .toAbsolutePath()
+                .toString();
+        assertEquals(expectedPath, ((RollingFileAppender<ILoggingEvent>) appender).getFile());
     }
+
     @Test
     void testUpdateLoggerConfigurationWithNullFile() throws Exception {
         manager.start();
@@ -1416,11 +1462,8 @@ class LogConfigManagerTest {
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender2";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testUpdateLoggerConfigurationWithNullFile"
-                },
-                LogConstants.LOG_LEVEL, "warn"
-                ));
+                LogConstants.LOG_LOGGERS, new String[] {"log.testUpdateLoggerConfigurationWithNullFile"},
+                LogConstants.LOG_LEVEL, "warn"));
 
         doWaitForAsyncResetAfterWork(() -> {
             manager.updateLoggerConfiguration(pid, config, true);
@@ -1430,11 +1473,13 @@ class LogConfigManagerTest {
         assertTrue(manager.hasConfigByName("log.testUpdateLoggerConfigurationWithNullFile"));
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testUpdateLoggerConfigurationWithNullFile");
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)
+                LoggerFactory.getLogger("log.testUpdateLoggerConfigurationWithNullFile");
         assertEquals(Level.WARN, logger.getLevel());
         Appender<ILoggingEvent> appender = logger.getAppender(LogConstants.FILE_NAME_CONSOLE);
         assertNull(appender);
     }
+
     @Test
     void testUpdateLoggerConfigurationWithEmptyFile() throws Exception {
         manager.start();
@@ -1442,12 +1487,9 @@ class LogConfigManagerTest {
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender2";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testUpdateLoggerConfigurationWithNullFile"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testUpdateLoggerConfigurationWithNullFile"},
                 LogConstants.LOG_LEVEL, "warn",
-                LogConstants.LOG_FILE, " "
-                ));
+                LogConstants.LOG_FILE, " "));
 
         doWaitForAsyncResetAfterWork(() -> {
             manager.updateLoggerConfiguration(pid, config, true);
@@ -1457,27 +1499,31 @@ class LogConfigManagerTest {
         assertTrue(manager.hasConfigByName("log.testUpdateLoggerConfigurationWithNullFile"));
 
         // verify the updated changes were applied
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testUpdateLoggerConfigurationWithNullFile");
+        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)
+                LoggerFactory.getLogger("log.testUpdateLoggerConfigurationWithNullFile");
         assertEquals(Level.WARN, logger.getLevel());
         Appender<ILoggingEvent> appender = logger.getAppender(LogConstants.FILE_NAME_CONSOLE);
         assertNotNull(appender);
     }
+
     @Test
     void testUpdateLoggerConfigurationWithLevelResetToDefault() throws Exception {
         manager.start();
 
-        ch.qos.logback.classic.Logger logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testUpdateLoggerConfiguration");
+        ch.qos.logback.classic.Logger logger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testUpdateLoggerConfiguration");
         logger.setLevel(Level.WARN);
 
         String pid = LogConstants.FACTORY_PID_CONFIGS + "~myappender2";
         Dictionary<String, ?> config = new Hashtable<>(Map.of(
-                LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testUpdateLoggerConfiguration"
-                },
-                LogConstants.LOG_LEVEL, LogConstants.LOG_LEVEL_RESET_TO_DEFAULT,
-                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfigurationWithLevelResetToDefault.log"
-                ));
+                LogConstants.LOG_PATTERN,
+                "%msg%n",
+                LogConstants.LOG_LOGGERS,
+                new String[] {"log.testUpdateLoggerConfiguration"},
+                LogConstants.LOG_LEVEL,
+                LogConstants.LOG_LEVEL_RESET_TO_DEFAULT,
+                LogConstants.LOG_FILE,
+                "logs/testUpdateLoggerConfigurationWithLevelResetToDefault.log"));
 
         doWaitForAsyncResetAfterWork(() -> {
             manager.updateLoggerConfiguration(pid, config, true);
@@ -1487,9 +1533,10 @@ class LogConfigManagerTest {
         assertTrue(manager.hasConfigByName("log.testUpdateLoggerConfiguration"));
 
         // verify the updated changes were applied
-        logger = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.testUpdateLoggerConfiguration");
+        logger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.testUpdateLoggerConfiguration");
         assertNull(logger.getLevel());
     }
+
     @Test
     void testUpdateLoggerConfigurationWithNullConfiguration() throws Exception {
         testUpdateLoggerConfiguration();
@@ -1502,7 +1549,7 @@ class LogConfigManagerTest {
         assertFalse(manager.hasConfigByPid(pid));
         assertFalse(manager.hasConfigByName("log.testUpdateLoggerConfiguration"));
 
-        // one more time for code coverage (does nothing 
+        // one more time for code coverage (does nothing
         manager.updateLoggerConfiguration(pid, null, false);
         assertFalse(manager.hasConfigByPid(pid));
         assertFalse(manager.hasConfigByName("log.testUpdateLoggerConfiguration"));
@@ -1516,19 +1563,18 @@ class LogConfigManagerTest {
         String pid1 = LogConstants.FACTORY_PID_CONFIGS + "~myappender2";
         Dictionary<String, ?> config1 = new Hashtable<>(Map.of(
                 LogConstants.LOG_PATTERN, "%msg%n",
-                LogConstants.LOG_LOGGERS, new String[] {
-                    "log.testUpdateLoggerConfiguration"
-                },
+                LogConstants.LOG_LOGGERS, new String[] {"log.testUpdateLoggerConfiguration"},
                 LogConstants.LOG_LEVEL, "warn",
-                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfiguration.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testUpdateLoggerConfiguration.log"));
         manager.updateLoggerConfiguration(pid1, config1, false);
 
         // create and register the second config should report the exception
         String pid2 = LogConstants.FACTORY_PID_CONFIGS + "~myappender3";
-        ConfigurationException ex = assertThrows(ConfigurationException.class, () -> manager.updateLoggerConfiguration(pid2, config1, false));
+        ConfigurationException ex = assertThrows(
+                ConfigurationException.class, () -> manager.updateLoggerConfiguration(pid2, config1, false));
         assertEquals(LogConstants.LOG_LOGGERS, ex.getProperty());
-        assertEquals("Category log.testUpdateLoggerConfiguration already defined by configuration org.apache.sling.commons.log.LogManager.factory.config~myappender2",
+        assertEquals(
+                "Category log.testUpdateLoggerConfiguration already defined by configuration org.apache.sling.commons.log.LogManager.factory.config~myappender2",
                 ex.getReason());
     }
 
@@ -1563,7 +1609,7 @@ class LogConfigManagerTest {
 
     @Test
     void testFirstAppenderFromLoggersForFoundAppender() {
-        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("log.logger1");
+        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("log.logger1");
         Appender<ILoggingEvent> appender1 = new ListAppender<>();
         appender1.setName("knownappender1");
         try {
@@ -1573,11 +1619,11 @@ class LogConfigManagerTest {
             logger1.detachAppender(appender1);
         }
     }
+
     @Test
     void testFirstAppenderFromLoggersForNotFoundAppender() {
         assertNull(manager.firstAppenderFromLoggers("knownappender1", List.of("log.logger1")));
     }
-
 
     /**
      * Test method for {@link org.apache.sling.commons.log.logback.internal.LogConfigManager#addedAppenderRef(java.lang.String, java.lang.String)}.
@@ -1586,7 +1632,7 @@ class LogConfigManagerTest {
     void testAddedAppenderRef() {
         Appender<ILoggingEvent> appender1 = new ListAppender<>();
         appender1.setName("appender1");
-        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("logger1");
+        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("logger1");
         logger1.addAppender(appender1);
 
         // does not exist before
@@ -1597,6 +1643,7 @@ class LogConfigManagerTest {
         // exists after
         assertEquals(appender1, manager.getKnownAppenders(AppenderOrigin.JORAN).get("appender1"));
     }
+
     @Test
     void testAddedAppenderRefWithFilterTracker() {
         Filter<ILoggingEvent> filter = new Filter<ILoggingEvent>() {
@@ -1607,15 +1654,14 @@ class LogConfigManagerTest {
         };
 
         BundleContext bundleContext = context.bundleContext();
-        bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { "appender1" }
-                )));
+        bundleContext.registerService(
+                Filter.class, filter, new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {"appender1"})));
 
         manager.start();
 
         Appender<ILoggingEvent> appender1 = new ListAppender<>();
         appender1.setName("appender1");
-        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("logger1");
+        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("logger1");
         logger1.addAppender(appender1);
 
         // does not exist before
@@ -1640,9 +1686,8 @@ class LogConfigManagerTest {
         };
 
         BundleContext bundleContext = context.bundleContext();
-        bundleContext.registerService(Filter.class, filter, new Hashtable<>(Map.of(
-                    FilterTracker.PROP_APPENDER, new String[] { "appender1" }
-                )));
+        bundleContext.registerService(
+                Filter.class, filter, new Hashtable<>(Map.of(FilterTracker.PROP_APPENDER, new String[] {"appender1"})));
 
         manager.start();
 
@@ -1662,7 +1707,7 @@ class LogConfigManagerTest {
     void testAddedOsgiAppenderRef() {
         Appender<ILoggingEvent> appender1 = new ListAppender<>();
         appender1.setName("appender1");
-        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger)LoggerFactory.getLogger("logger1");
+        ch.qos.logback.classic.Logger logger1 = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("logger1");
         logger1.addAppender(appender1);
 
         // does not exist before
@@ -1671,7 +1716,8 @@ class LogConfigManagerTest {
         manager.addedAppenderRef(AppenderOrigin.JORAN_OSGI, "appender1", "logger1");
 
         // exists after
-        assertEquals(appender1, manager.getKnownAppenders(AppenderOrigin.JORAN_OSGI).get("appender1"));
+        assertEquals(
+                appender1, manager.getKnownAppenders(AppenderOrigin.JORAN_OSGI).get("appender1"));
     }
 
     /**
@@ -1685,25 +1731,30 @@ class LogConfigManagerTest {
             manager.stop();
             manager = new LogConfigManager(context.bundleContext());
 
-            LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+            LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
             ModelInterpretationContext mic = new ModelInterpretationContext(loggerContext);
             manager.addSubsitutionProperties(mic);
-            assertEquals(Paths.get(System.getProperty(systemPropName), "logs/testing.log").toAbsolutePath().toString(),
+            assertEquals(
+                    Paths.get(System.getProperty(systemPropName), "logs/testing.log")
+                            .toAbsolutePath()
+                            .toString(),
                     Paths.get(mic.subst("${sling.home}/logs/testing.log")).toString());
         } finally {
             System.clearProperty(systemPropName);
         }
     }
+
     @Test
     void testAddSubsitutionPropertiesWithoutDefinedRootDir() {
         System.clearProperty(LogConstants.SLING_HOME);
         manager.stop();
         manager = new LogConfigManager(context.bundleContext());
 
-        LoggerContext loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
         ModelInterpretationContext mic = new ModelInterpretationContext(loggerContext);
         manager.addSubsitutionProperties(mic);
-        assertEquals(Paths.get("logs/testing.log").toAbsolutePath().toString(),
+        assertEquals(
+                Paths.get("logs/testing.log").toAbsolutePath().toString(),
                 Paths.get(mic.subst("${sling.home}/logs/testing.log")).toString());
     }
 
@@ -1737,6 +1788,7 @@ class LogConfigManagerTest {
         // throws exception when getDefaultWriter returns null
         assertThrows(IllegalStateException.class, () -> manager.getLogWriter(filename1));
     }
+
     @Test
     void testGetLogWriterThatDoesNotExistYet() {
         manager.start();
@@ -1747,22 +1799,20 @@ class LogConfigManagerTest {
         assertEquals(filename1, logWriter.getFileName());
         assertEquals("/logs/logwriter1.log", logWriter.getAppenderName());
     }
+
     @Test
     void testGetLogWriterThatExists() throws ConfigurationException {
         manager.start();
 
         String pid = String.format("%s~logwriter1", LogConstants.FACTORY_PID_CONFIGS);
         String filename1 = manager.getAbsoluteFilePath("logs/logwriter1.log");
-        manager.updateLogWriter(pid, new Hashtable<>(Map.of(
-                    LogConstants.LOG_FILE, filename1
-                )), false);
+        manager.updateLogWriter(pid, new Hashtable<>(Map.of(LogConstants.LOG_FILE, filename1)), false);
 
         LogWriter logWriter = manager.getLogWriter(filename1);
         assertNotNull(logWriter);
         assertEquals(filename1, logWriter.getFileName());
         assertEquals("/logs/logwriter1.log", logWriter.getAppenderName());
     }
-
 
     @SuppressWarnings("java:S2699")
     @Test
@@ -1780,7 +1830,6 @@ class LogConfigManagerTest {
             return null;
         });
     }
-
 
     /**
      * Test method for {@link org.apache.sling.commons.log.logback.internal.LogConfigManager#getRootDir()}.
@@ -1882,8 +1931,7 @@ class LogConfigManagerTest {
         // define main log file instead of console
         Dictionary<String, String> config = new Hashtable<>(Map.of(
                 LogConstants.LOG_LEVEL, "info",
-                LogConstants.LOG_FILE, "logs/testDetermineLoggerState.log"
-                ));
+                LogConstants.LOG_FILE, "logs/testDetermineLoggerState.log"));
         TestUtils.doWaitForAsyncResetAfterWork(loggerContext, () -> {
             manager.updateGlobalConfiguration(config);
             return null;
@@ -1894,12 +1942,13 @@ class LogConfigManagerTest {
         assertNotNull(loggerState);
         assertFalse(loggerState.nonOSgiConfiguredLoggers.contains(rootLogger));
     }
+
     @Test
     void testDetermineLoggerStateWithAppenderDefinedElsewhere() {
         manager.start();
 
         // with some other logger/appender defined outside of LogConfigManager
-        Logger logger = (Logger)LoggerFactory.getLogger(getClass());
+        Logger logger = (Logger) LoggerFactory.getLogger(getClass());
         logger.setLevel(Level.WARN);
         // appender with null name
         logger.addAppender(new ListAppender<>());
@@ -1921,5 +1970,4 @@ class LogConfigManagerTest {
         assertFalse(manager.isClassNameVisible("not.exsting"));
         assertTrue(manager.isClassNameVisible(LogWriter.class.getName()));
     }
-
 }

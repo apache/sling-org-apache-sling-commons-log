@@ -1,22 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static ch.qos.logback.core.spi.ConfigurationEvent.newConfigurationEndedSuccessfullyEvent;
 
 import java.io.File;
 import java.net.URL;
@@ -37,31 +37,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.sling.commons.log.logback.internal.AppenderTracker.AppenderInfo;
-import org.apache.sling.commons.log.logback.internal.config.ConfigAdminSupport;
-import org.apache.sling.commons.log.logback.internal.config.ConfigurationException;
-import org.apache.sling.commons.log.logback.internal.joran.JoranConfiguratorWrapper;
-import org.apache.sling.commons.log.logback.internal.stacktrace.OSGiAwareExceptionHandling;
-import org.apache.sling.commons.log.logback.internal.stacktrace.PackageInfoCollector;
-import org.apache.sling.commons.log.logback.internal.util.LoggerSpecificEncoder;
-import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
-import org.apache.sling.commons.log.logback.internal.util.SlingStatusPrinter;
-import org.apache.sling.commons.log.logback.spi.DefaultConfigurator;
-import org.apache.sling.commons.log.logback.webconsole.LogPanel;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.Constants;
-import org.osgi.framework.InvalidSyntaxException;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.hooks.weaving.WeavingHook;
-import org.osgi.util.converter.Converter;
-import org.osgi.util.converter.Converters;
-import org.osgi.util.tracker.ServiceTracker;
-import org.slf4j.LoggerFactory;
-import org.slf4j.bridge.SLF4JBridgeHandler;
 
 import ch.qos.logback.classic.ClassicConstants;
 import ch.qos.logback.classic.Level;
@@ -88,11 +63,38 @@ import ch.qos.logback.core.status.OnConsoleStatusListener;
 import ch.qos.logback.core.status.StatusListener;
 import ch.qos.logback.core.status.StatusListenerAsList;
 import ch.qos.logback.core.status.StatusUtil;
+import org.apache.sling.commons.log.logback.internal.AppenderTracker.AppenderInfo;
+import org.apache.sling.commons.log.logback.internal.config.ConfigAdminSupport;
+import org.apache.sling.commons.log.logback.internal.config.ConfigurationException;
+import org.apache.sling.commons.log.logback.internal.joran.JoranConfiguratorWrapper;
+import org.apache.sling.commons.log.logback.internal.stacktrace.OSGiAwareExceptionHandling;
+import org.apache.sling.commons.log.logback.internal.stacktrace.PackageInfoCollector;
+import org.apache.sling.commons.log.logback.internal.util.LoggerSpecificEncoder;
+import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
+import org.apache.sling.commons.log.logback.internal.util.SlingStatusPrinter;
+import org.apache.sling.commons.log.logback.spi.DefaultConfigurator;
+import org.apache.sling.commons.log.logback.webconsole.LogPanel;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.Constants;
+import org.osgi.framework.InvalidSyntaxException;
+import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.hooks.weaving.WeavingHook;
+import org.osgi.util.converter.Converter;
+import org.osgi.util.converter.Converters;
+import org.osgi.util.tracker.ServiceTracker;
+import org.slf4j.LoggerFactory;
+import org.slf4j.bridge.SLF4JBridgeHandler;
+
+import static ch.qos.logback.core.spi.ConfigurationEvent.newConfigurationEndedSuccessfullyEvent;
 
 /**
  * Logging configuration customization manager
  */
-public class LogConfigManager extends LoggerContextAwareBase implements LogbackResetListener, LogConfig.LogWriterProvider {
+public class LogConfigManager extends LoggerContextAwareBase
+        implements LogbackResetListener, LogConfig.LogWriterProvider {
 
     /**
      * The name for the logger context
@@ -356,7 +358,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         serviceTrackers.add(turboFilterTracker);
         resetListeners.add(turboFilterTracker);
 
-        resetListeners.add(new RootLoggerListener()); //Should be invoked at last
+        resetListeners.add(new RootLoggerListener()); // Should be invoked at last
 
         loggerContext.addListener(osgiIntegrationListener);
         registerWebConsoleSupport();
@@ -370,7 +372,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         // now open the gate for regular configuration
         started = true;
 
-        //Now check once if any other config was added while we were starting
+        // Now check once if any other config was added while we were starting
         checkForNewConfigsWhileStarting(loggerContext);
     }
 
@@ -386,7 +388,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
 
         configAdminSupport.stop();
 
-        for (ServiceTracker<?, ?> tracker : serviceTrackers){
+        for (ServiceTracker<?, ?> tracker : serviceTrackers) {
             tracker.close();
         }
         serviceTrackers.clear();
@@ -414,7 +416,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         configByPid.clear();
         configByCategory.clear();
 
-        // Reset and reload the default configuration to attach 
+        // Reset and reload the default configuration to attach
         //   a console appender to handle logging until we configure one.
         loggerContext.reset();
         DefaultConfigurator defaultConfigurator = new DefaultConfigurator();
@@ -447,7 +449,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
 
     /**
      * Clear any appenders that we know were added
-     *  
+     *
      * @param origin the place where the appender was declared
      * @param map the map of appender names to logger names
      */
@@ -456,15 +458,15 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         for (Entry<String, Set<String>> entry : tempMap.entrySet()) {
             String appenderName = entry.getKey();
             // make a copy to avoid ConcurrentModificationException
-            String [] copyOfValue = entry.getValue().toArray(String[]::new);
+            String[] copyOfValue = entry.getValue().toArray(String[]::new);
             for (String loggerName : copyOfValue) {
-                maybeDetachAppender(origin, appenderName, (Logger)LoggerFactory.getLogger(loggerName));
+                maybeDetachAppender(origin, appenderName, (Logger) LoggerFactory.getLogger(loggerName));
             }
         }
         map.clear();
     }
 
-    //~-------------------------------------------------- Slf4j Bridge Handler Support
+    // ~-------------------------------------------------- Slf4j Bridge Handler Support
 
     /**
      * Installs the Slf4j BridgeHandler to route the JUL logs through Slf4j if the
@@ -472,9 +474,10 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      *
      * @return true only if the BridgeHandler is installed.
      */
-    private boolean maybeInstallSlf4jBridgeHandler(@NotNull BundleContext bundleContext){
+    private boolean maybeInstallSlf4jBridgeHandler(@NotNull BundleContext bundleContext) {
         // SLING-2373
-        boolean julSupport = converter.convert(bundleContext.getProperty(LogConstants.JUL_SUPPORT))
+        boolean julSupport = converter
+                .convert(bundleContext.getProperty(LogConstants.JUL_SUPPORT))
                 .defaultValue(false)
                 .to(Boolean.TYPE);
         if (julSupport) {
@@ -489,13 +492,15 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                     java.util.logging.LogManager.getLogManager().reset();
                     logger.debug("The JUL logging configuration was reset to empty");
                 } else {
-                    logger.debug("The JUL logging configuration was not reset to empty as JUL config system properties were set");
+                    logger.debug(
+                            "The JUL logging configuration was not reset to empty as JUL config system properties were set");
                 }
 
                 // enable the JUL handling
                 SLF4JBridgeHandler.removeHandlersForRootLogger();
                 SLF4JBridgeHandler.install();
-                java.util.logging.Logger.getLogger("").setLevel(java.util.logging.Level.FINEST); // Root logger, for example.
+                java.util.logging.Logger.getLogger("")
+                        .setLevel(java.util.logging.Level.FINEST); // Root logger, for example.
             } else {
                 logger.debug("Failed to re-confiugre JUL as the SLF4JBridgeHandle was already installed elsewhere");
             }
@@ -541,7 +546,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      */
     @Override
     public void onResetComplete(@NotNull LoggerContext context) {
-        //The OSGi config based appenders are attached on reset complete as by that time Logback config
+        // The OSGi config based appenders are attached on reset complete as by that time Logback config
         // would have been parsed and various appenders and logger configured. Now we use the OSGi config
         // 1. If an appender with same name as one defined by OSGi config is found then it takes precedence
         // 2. If no existing appender is found then we create one
@@ -566,8 +571,10 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
 
                 if (appender == null) {
                     appender = configuredAppenders.get(appenderName);
-                    if (appender != null){
-                        addInfo(String.format("Found overriding configuration for appender %s in Logback config. OSGi config would be ignored", appenderName));
+                    if (appender != null) {
+                        addInfo(String.format(
+                                "Found overriding configuration for appender %s in Logback config. OSGi config would be ignored",
+                                appenderName));
                     }
                 }
 
@@ -587,14 +594,15 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                 ch.qos.logback.classic.Logger targetLogger = loggerContext.getLogger(category);
                 if (config.isResetToDefault()) {
                     targetLogger.setLevel(null);
-                    targetLogger.setAdditive(true); //Reset additivity
+                    targetLogger.setAdditive(true); // Reset additivity
                 } else {
                     targetLogger.setLevel(config.getLogLevel());
                     if (appender != null) {
                         targetLogger.setAdditive(config.isAdditive());
                         targetLogger.addAppender(appender);
-                        addInfo(String.format("Registering appender %s(%s) with logger %s", appender.getName(),
-                                appender.getClass(), targetLogger.getName()));
+                        addInfo(String.format(
+                                "Registering appender %s(%s) with logger %s",
+                                appender.getName(), appender.getClass(), targetLogger.getName()));
                     }
                 }
             }
@@ -604,7 +612,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
             }
         }
 
-        //Record the config pids which have been picked up in this reset cycle
+        // Record the config pids which have been picked up in this reset cycle
         context.putObject(LogConstants.CONFIG_PID_SET, configPids);
     }
 
@@ -634,9 +642,9 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         Dictionary<String, String> config = new Hashtable<>(); // NOSONAR
 
         final String[] props = {
-                LogConstants.LOG_LEVEL, LogConstants.LOG_FILE, LogConstants.LOG_FILE_NUMBER,
-                LogConstants.LOG_FILE_SIZE, LogConstants.LOG_PATTERN, LogConstants.LOGBACK_FILE,
-                LogConstants.LOG_PACKAGING_DATA
+            LogConstants.LOG_LEVEL, LogConstants.LOG_FILE, LogConstants.LOG_FILE_NUMBER,
+            LogConstants.LOG_FILE_SIZE, LogConstants.LOG_PATTERN, LogConstants.LOGBACK_FILE,
+            LogConstants.LOG_PACKAGING_DATA
         };
         for (String prop : props) {
             String value = bundleContext.getProperty(prop);
@@ -696,7 +704,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
     }
 
     private void processGlobalConfig(@NotNull Dictionary<String, String> configuration) {
-        String fileName = converter.convert(configuration.get(LogConstants.LOGBACK_FILE))
+        String fileName = converter
+                .convert(configuration.get(LogConstants.LOGBACK_FILE))
                 .defaultValue("")
                 .to(String.class);
         if (!fileName.isEmpty()) {
@@ -707,18 +716,22 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
             }
         }
 
-        //Process packaging data
-        this.packagingDataEnabled = converter.convert(configuration.get(LogConstants.LOG_PACKAGING_DATA))
+        // Process packaging data
+        this.packagingDataEnabled = converter
+                .convert(configuration.get(LogConstants.LOG_PACKAGING_DATA))
                 .defaultValue(false) // Defaults to false i.e. disabled in OSGi env
                 .to(Boolean.TYPE);
 
-        maxCallerDataDepth = converter.convert(configuration.get(LogConstants.LOG_MAX_CALLER_DEPTH))
-            .defaultValue(ClassicConstants.DEFAULT_MAX_CALLEDER_DATA_DEPTH)
-            .to(Integer.TYPE);
-        maxOldFileCount = converter.convert(configuration.get(LogConstants.PRINTER_MAX_INCLUDED_FILES))
+        maxCallerDataDepth = converter
+                .convert(configuration.get(LogConstants.LOG_MAX_CALLER_DEPTH))
+                .defaultValue(ClassicConstants.DEFAULT_MAX_CALLEDER_DATA_DEPTH)
+                .to(Integer.TYPE);
+        maxOldFileCount = converter
+                .convert(configuration.get(LogConstants.PRINTER_MAX_INCLUDED_FILES))
                 .defaultValue(LogConstants.PRINTER_MAX_INCLUDED_FILES_DEFAULT)
                 .to(Integer.TYPE);
-        numOfLines = converter.convert(configuration.get(LogConstants.PRINTER_NUM_OF_LINES))
+        numOfLines = converter
+                .convert(configuration.get(LogConstants.PRINTER_NUM_OF_LINES))
                 .defaultValue(LogConstants.PRINTER_NUM_OF_LINES_DEFAULT)
                 .to(Integer.TYPE);
     }
@@ -788,8 +801,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      *             the same file as configured for the given log writer or if
      *             configuring the log writer fails.
      */
-    public void updateLogWriter(@NotNull String pid, @Nullable Dictionary<?, ?> configuration,
-            boolean performRefresh) throws ConfigurationException {
+    public void updateLogWriter(@NotNull String pid, @Nullable Dictionary<?, ?> configuration, boolean performRefresh)
+            throws ConfigurationException {
 
         if (configuration != null) {
             LogWriter oldWriter = writerByPid.get(pid);
@@ -816,8 +829,10 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                         && !existingWriterByFileName.getConfigurationPID().equals(pid)) {
 
                     // this file is already configured by another LOG_PID
-                    throw new ConfigurationException(LogConstants.LOG_FILE, "LogFile " + logFileName
-                        + " already configured by configuration " + existingWriterByFileName.getConfigurationPID());
+                    throw new ConfigurationException(
+                            LogConstants.LOG_FILE,
+                            "LogFile " + logFileName + " already configured by configuration "
+                                    + existingWriterByFileName.getConfigurationPID());
                 }
             }
 
@@ -841,12 +856,13 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                 fileSize = fileSizeProp.toString();
             }
 
-            boolean bufferedLogging = converter.convert(configuration.get(LogConstants.LOG_FILE_BUFFERED))
+            boolean bufferedLogging = converter
+                    .convert(configuration.get(LogConstants.LOG_FILE_BUFFERED))
                     .defaultValue(false)
                     .to(Boolean.TYPE);
 
-            LogWriter newWriter = new LogWriter(pid, getAppenderName(logFileName), fileNum,
-                    fileSize, logFileName, bufferedLogging);
+            LogWriter newWriter =
+                    new LogWriter(pid, getAppenderName(logFileName), fileNum, fileSize, logFileName, bufferedLogging);
             if (oldWriter != null) {
                 writerByFileName.remove(oldWriter.getFileName());
             }
@@ -905,19 +921,22 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @throws ConfigurationException If the log level and logger names
      *             properties are not configured for the given configuration.
      */
-    public void updateLoggerConfiguration(@NotNull final String pid, @Nullable final Dictionary<?, ?> configuration,
-            final boolean performRefresh) throws ConfigurationException {
+    public void updateLoggerConfiguration(
+            @NotNull final String pid, @Nullable final Dictionary<?, ?> configuration, final boolean performRefresh)
+            throws ConfigurationException {
 
         if (configuration != null) {
-            String pattern = converter.convert(configuration.get(LogConstants.LOG_PATTERN))
+            String pattern = converter
+                    .convert(configuration.get(LogConstants.LOG_PATTERN))
                     .defaultValue(LogConstants.LOG_PATTERN_DEFAULT)
                     .to(String.class);
-            String level = converter.convert(configuration.get(LogConstants.LOG_LEVEL))
+            String level = converter
+                    .convert(configuration.get(LogConstants.LOG_LEVEL))
                     .defaultValue(LogConstants.LOG_LEVEL_DEFAULT)
                     .to(String.class);
             final Level logLevel;
             final boolean resetToDefault;
-            if (LogConstants.LOG_LEVEL_RESET_TO_DEFAULT.equalsIgnoreCase(level)){
+            if (LogConstants.LOG_LEVEL_RESET_TO_DEFAULT.equalsIgnoreCase(level)) {
                 resetToDefault = true;
                 logLevel = null;
             } else {
@@ -928,7 +947,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                 resetToDefault = false;
             }
 
-            String fileName = converter.convert(configuration.get(LogConstants.LOG_FILE))
+            String fileName = converter
+                    .convert(configuration.get(LogConstants.LOG_FILE))
                     .defaultValue(null)
                     .to(String.class);
             // Map empty fileName to console logger
@@ -944,32 +964,35 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
             }
 
             @SuppressWarnings("unchecked")
-            Set<String> categories = converter.convert(configuration.get(LogConstants.LOG_LOGGERS))
+            Set<String> categories = converter
+                    .convert(configuration.get(LogConstants.LOG_LOGGERS))
                     .to(Set.class);
             // verify categories
             if (categories.isEmpty()) {
-                throw new ConfigurationException(LogConstants.LOG_LOGGERS, "Missing categories in configuration "
-                    + pid);
+                throw new ConfigurationException(
+                        LogConstants.LOG_LOGGERS, "Missing categories in configuration " + pid);
             }
 
-            boolean additiv = converter.convert(configuration.get(LogConstants.LOG_ADDITIV))
+            boolean additiv = converter
+                    .convert(configuration.get(LogConstants.LOG_ADDITIV))
                     // If an appender is explicitly defined then set additive to false
                     // to be compatible with earlier Sling Logging behavior
-                   .defaultValue(false)
-                   .to(Boolean.TYPE);
+                    .defaultValue(false)
+                    .to(Boolean.TYPE);
 
             // verify no other configuration has any of the categories
             for (final String cat : categories) {
                 final LogConfig cfg = configByCategory.get(cat);
                 if (cfg != null && !pid.equals(cfg.getConfigPid())) {
-                    throw new ConfigurationException(LogConstants.LOG_LOGGERS,
+                    throw new ConfigurationException(
+                            LogConstants.LOG_LOGGERS,
                             String.format("Category %s already defined by configuration %s", cat, cfg.getConfigPid()));
                 }
             }
 
             // create or modify existing configuration object
-            final LogConfig newConfig = new LogConfig(this, pattern, categories, logLevel, fileName, additiv,
-                    pid, resetToDefault);
+            final LogConfig newConfig =
+                    new LogConfig(this, pattern, categories, logLevel, fileName, additiv, pid, resetToDefault);
             if (packagingDataEnabled) {
                 newConfig.setPostProcessor(new OSGiAwareExceptionHandling(getPackageInfoCollector()));
             }
@@ -1001,7 +1024,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         }
     }
 
-    public void checkForNewConfigsWhileStarting(@NotNull LoggerContext context){
+    public void checkForNewConfigsWhileStarting(@NotNull LoggerContext context) {
         @SuppressWarnings("unchecked")
         Set<String> configPids = (Set<String>) context.getObject(LogConstants.CONFIG_PID_SET);
         if (configPids == null) {
@@ -1059,13 +1082,18 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @param appender the appender to add or update
      * @param loggers collection of logger names to apply the appender to
      */
-    protected void addOrUpdateAppender(@NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Appender<ILoggingEvent> appender,
+    protected void addOrUpdateAppender(
+            @NotNull AppenderOrigin origin,
+            @NotNull String appenderName,
+            @NotNull Appender<ILoggingEvent> appender,
             @NotNull Collection<String> loggers) {
         // detach any values from a previous call so we don't get duplicates
-        Map<String, Set<String>> appenderNameToLoggerNamesMap = appendersByOrigin.getOrDefault(origin, Collections.emptyMap());
-        Set<String> loggerNamesSet = new HashSet<>(appenderNameToLoggerNamesMap.getOrDefault(appenderName, Collections.emptySet()));
+        Map<String, Set<String>> appenderNameToLoggerNamesMap =
+                appendersByOrigin.getOrDefault(origin, Collections.emptyMap());
+        Set<String> loggerNamesSet =
+                new HashSet<>(appenderNameToLoggerNamesMap.getOrDefault(appenderName, Collections.emptySet()));
         for (String loggerName : loggerNamesSet) {
-            Logger targetLogger = (Logger)LoggerFactory.getLogger(loggerName);
+            Logger targetLogger = (Logger) LoggerFactory.getLogger(loggerName);
             maybeDetachAppender(origin, appenderName, targetLogger);
         }
 
@@ -1092,16 +1120,20 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @param appenderName the name of the appender to configure
      * @param config the configuration options to apply
      */
-    protected void addOrUpdateAppender(@NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Dictionary<String, ?> config) {
+    protected void addOrUpdateAppender(
+            @NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Dictionary<String, ?> config) {
         // detach any values from a previous call so we don't get duplicates
-        Map<String, Set<String>> appenderNameToLoggerNamesMap = appendersByOrigin.getOrDefault(origin, Collections.emptyMap());
-        Set<String> loggerNamesSet = new HashSet<>(appenderNameToLoggerNamesMap.getOrDefault(appenderName, Collections.emptySet()));
+        Map<String, Set<String>> appenderNameToLoggerNamesMap =
+                appendersByOrigin.getOrDefault(origin, Collections.emptyMap());
+        Set<String> loggerNamesSet =
+                new HashSet<>(appenderNameToLoggerNamesMap.getOrDefault(appenderName, Collections.emptySet()));
         for (String loggerName : loggerNamesSet) {
-            Logger targetLogger = (Logger)LoggerFactory.getLogger(loggerName);
+            Logger targetLogger = (Logger) LoggerFactory.getLogger(loggerName);
             maybeDetachAppender(origin, appenderName, targetLogger);
         }
 
-        String pattern = converter.convert(config.get(LogConstants.LOG_PATTERN))
+        String pattern = converter
+                .convert(config.get(LogConstants.LOG_PATTERN))
                 .defaultValue(LogConstants.LOG_PATTERN_DEFAULT)
                 .to(String.class);
         PatternLayoutEncoder ple = new PatternLayoutEncoder();
@@ -1109,7 +1141,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         ple.setContext(loggerContext);
         ple.start();
 
-        String file = converter.convert(config.get(LogConstants.LOG_FILE))
+        String file = converter
+                .convert(config.get(LogConstants.LOG_FILE))
                 .defaultValue("")
                 .to(String.class);
         OutputStreamAppender<ILoggingEvent> appender;
@@ -1122,10 +1155,12 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
             fileAppender.setFile(file);
             fileAppender.setAppend(true);
 
-            String fileNamePattern = LogWriter.createFileNamePattern(file, 
-                    converter.convert(config.get(LogConstants.LOG_FILE_SIZE))
-                        .defaultValue(LogConstants.LOG_FILE_SIZE_DEFAULT)
-                        .to(String.class));
+            String fileNamePattern = LogWriter.createFileNamePattern(
+                    file,
+                    converter
+                            .convert(config.get(LogConstants.LOG_FILE_SIZE))
+                            .defaultValue(LogConstants.LOG_FILE_SIZE_DEFAULT)
+                            .to(String.class));
 
             // resolve the path relative to the sling home folder
             fileNamePattern = getAbsoluteFilePath(fileNamePattern);
@@ -1134,7 +1169,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
             rollingPolicy.setContext(loggerContext);
             rollingPolicy.setParent(fileAppender);
             rollingPolicy.setFileNamePattern(fileNamePattern);
-            int fileNumber = converter.convert(config.get(LogConstants.LOG_FILE_NUMBER))
+            int fileNumber = converter
+                    .convert(config.get(LogConstants.LOG_FILE_NUMBER))
                     .defaultValue(5)
                     .to(Integer.TYPE);
             rollingPolicy.setMaxHistory(fileNumber);
@@ -1149,19 +1185,22 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         appender.setContext(loggerContext);
         appender.start();
 
-        Level level = Level.valueOf(converter.convert(config.get(LogConstants.LOG_LEVEL))
+        Level level = Level.valueOf(converter
+                .convert(config.get(LogConstants.LOG_LEVEL))
                 .defaultValue(LogConstants.LOG_LEVEL_DEFAULT)
                 .to(String.class));
-        boolean additive = converter.convert(config.get(LogConstants.LOG_ADDITIV))
-                 // If an appender is explicitly defined then set additive to false
-                 // to be compatible with earlier Sling Logging behavior
+        boolean additive = converter
+                .convert(config.get(LogConstants.LOG_ADDITIV))
+                // If an appender is explicitly defined then set additive to false
+                // to be compatible with earlier Sling Logging behavior
                 .defaultValue(false)
                 .to(Boolean.TYPE);
-        String [] loggers = converter.convert(config.get(LogConstants.LOG_LOGGERS))
+        String[] loggers = converter
+                .convert(config.get(LogConstants.LOG_LOGGERS))
                 .defaultValue(org.slf4j.Logger.ROOT_LOGGER_NAME)
                 .to(String[].class);
         for (String loggerName : loggers) {
-            Logger targetLogger = (Logger)LoggerFactory.getLogger(loggerName);
+            Logger targetLogger = (Logger) LoggerFactory.getLogger(loggerName);
 
             addInfo(String.format("attaching appender %s for %s", appenderName, targetLogger.getName()));
 
@@ -1181,7 +1220,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @param appenderName the name of the appender to detach
      * @param targetLogger logger to detach the appender from
      */
-    protected void maybeDetachAppender(@NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Logger targetLogger) {
+    protected void maybeDetachAppender(
+            @NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Logger targetLogger) {
         Appender<ILoggingEvent> appender = targetLogger.getAppender(appenderName);
         if (appender != null) {
             String loggerName = targetLogger.getName();
@@ -1210,10 +1250,11 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
 
     /**
      * Return a map of all the appenders that were attached by this manager
-     * 
+     *
      * @return map of known appenders where the key is the appender name and the value is the appender
      */
-    @NotNull Map<String, Appender<ILoggingEvent>> getAllKnownAppenders() {
+    @NotNull
+    Map<String, Appender<ILoggingEvent>> getAllKnownAppenders() {
         Map<String, Appender<ILoggingEvent>> all = new HashMap<>();
         for (AppenderOrigin origin : appendersByOrigin.keySet()) {
             all.putAll(getKnownAppenders(origin));
@@ -1223,17 +1264,18 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
 
     /**
      * Return a map of the appenders that were attached by this manager with the specified origin
-     * 
+     *
      * @param origin the place where the appender was declared
      * @return map of known appenders where the key is the appender name and the value is the appender
      */
-    @NotNull Map<String, Appender<ILoggingEvent>> getKnownAppenders(@NotNull AppenderOrigin origin) {
+    @NotNull
+    Map<String, Appender<ILoggingEvent>> getKnownAppenders(@NotNull AppenderOrigin origin) {
         Map<String, Appender<ILoggingEvent>> appendersMap = new HashMap<>();
 
         Map<String, Set<String>> map = appendersByOrigin.getOrDefault(origin, Collections.emptyMap());
         for (Entry<String, Set<String>> entry : map.entrySet()) {
             String pid = entry.getKey();
-            appendersMap.computeIfAbsent(pid, k-> firstAppenderFromLoggers(pid, entry.getValue()));
+            appendersMap.computeIfAbsent(pid, k -> firstAppenderFromLoggers(pid, entry.getValue()));
         }
 
         return Collections.unmodifiableMap(appendersMap);
@@ -1246,7 +1288,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @param appenderName the appender name to lookup
      * @return the set of logger names for the appender or an empty set if none
      */
-    public @NotNull Set<String> getLoggerNamesForKnownAppender(@NotNull AppenderOrigin origin, @NotNull String appenderName) {
+    public @NotNull Set<String> getLoggerNamesForKnownAppender(
+            @NotNull AppenderOrigin origin, @NotNull String appenderName) {
         Map<String, Set<String>> map = appendersByOrigin.getOrDefault(origin, Collections.emptyMap());
         return map.getOrDefault(appenderName, Collections.emptySet());
     }
@@ -1258,13 +1301,14 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @param loggerNames the names of the loggers to inspect
      * @return the found appender or null if not found
      */
-    @Nullable Appender<ILoggingEvent> firstAppenderFromLoggers(@NotNull String name, @NotNull Collection<String> loggerNames) {
+    @Nullable
+    Appender<ILoggingEvent> firstAppenderFromLoggers(@NotNull String name, @NotNull Collection<String> loggerNames) {
         Appender<ILoggingEvent> appender = null;
         for (String loggerName : loggerNames) {
-            Logger targetLogger = (Logger)LoggerFactory.getLogger(loggerName);
+            Logger targetLogger = (Logger) LoggerFactory.getLogger(loggerName);
             appender = targetLogger.getAppender(name);
             if (appender != null) {
-                 // found one so stop looking
+                // found one so stop looking
                 break;
             }
         }
@@ -1279,12 +1323,16 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * @param appenderName the appender name
      * @param loggerName the logger name
      */
-    public void addedAppenderRef(@NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull String loggerName) {
+    public void addedAppenderRef(
+            @NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull String loggerName) {
         addedAppenderRef(origin, appenderName, List.of(loggerName));
     }
-    public void addedAppenderRef(@NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Collection<String> loggerNames) {
+
+    public void addedAppenderRef(
+            @NotNull AppenderOrigin origin, @NotNull String appenderName, @NotNull Collection<String> loggerNames) {
         synchronized (appendersByOrigin) {
-            Map<String, Set<String>> appenderNameToLoggerNamesMap = appendersByOrigin.computeIfAbsent(origin, k -> new HashMap<>());
+            Map<String, Set<String>> appenderNameToLoggerNamesMap =
+                    appendersByOrigin.computeIfAbsent(origin, k -> new HashMap<>());
             Set<String> set = appenderNameToLoggerNamesMap.computeIfAbsent(appenderName, k -> new HashSet<>());
             set.addAll(loggerNames);
         }
@@ -1307,8 +1355,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         propContainer.addSubstitutionProperty(LogConstants.SLING_HOME, rootDir.getAbsolutePath());
     }
 
-
-    //-------------------------------------- Config reset handling ----------
+    // -------------------------------------- Config reset handling ----------
 
     public void configChanged() {
         if (!started) {
@@ -1356,17 +1403,17 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
     protected boolean rescheduleIfConfigChanged() {
         boolean rescheduled = false;
         synchronized (configChangedFlagLock) {
-            //If config changed then only acquire a lock
-            //and proceed to reload
+            // If config changed then only acquire a lock
+            // and proceed to reload
             if (configChanged && resetLock.tryAcquire()) {
                 configChanged = false;
                 scheduleConfigReload();
                 rescheduled = true;
 
-                //else some other thread acquired the resetlock
-                //and reset is in progress. That job would
-                //eventually call rescheduleIfConfigChanged again
-                //and configChanged request would be taken care of
+                // else some other thread acquired the resetlock
+                // and reset is in progress. That job would
+                // eventually call rescheduleIfConfigChanged again
+                // and configChanged request would be taken care of
             }
         }
         return rescheduled;
@@ -1385,7 +1432,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         });
     }
 
-    protected void failSafeConfigure(){
+    protected void failSafeConfigure() {
         try {
             addInfo("Performing configuration");
 
@@ -1433,8 +1480,8 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                     success = true;
                 }
             } catch (Throwable t) { // NOSONAR
-                //Need to catch any error as Logback must work in all scenarios
-                //The error would be dumped to sysout in later call to Status printer
+                // Need to catch any error as Logback must work in all scenarios
+                // The error would be dumped to sysout in later call to Status printer
                 addError("Error occurred while configuring Logback", t);
             } finally {
                 if (!success) {
@@ -1505,7 +1552,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
     /**
      * Invokes the reset start callbacks for each reset complete listener
      */
-    public void fireResetStartListeners(){
+    public void fireResetStartListeners() {
         for (LogbackResetListener listener : resetListeners) {
             addInfo("Firing reset listener - onResetStart " + listener.getClass());
             listener.onResetStart(loggerContext);
@@ -1515,7 +1562,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
     /**
      * Invokes the reset complete callbacks for each reset complete listener
      */
-    public void fireResetCompleteListeners(){
+    public void fireResetCompleteListeners() {
         for (LogbackResetListener listener : resetListeners) {
             addInfo("Firing reset listener - onResetComplete " + listener.getClass());
             listener.onResetComplete(loggerContext);
@@ -1532,9 +1579,9 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         String rootDirPath = rootDir.getAbsolutePath();
 
         if (filePathAbsolute.startsWith(rootDirPath)) {
-            //Make the fileName relative to the absolute dir
-            //Normalize the name to use '/'
-            return filePathAbsolute.substring(rootDirPath.length()).replace('\\','/');
+            // Make the fileName relative to the absolute dir
+            // Normalize the name to use '/'
+            return filePathAbsolute.substring(rootDirPath.length()).replace('\\', '/');
         }
         return filePathAbsolute;
     }
@@ -1544,8 +1591,11 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         if (defaultWriter == null) {
             throw new IllegalStateException("Default logger configuration must have been configured by now");
         }
-        return new LogWriter(getAppenderName(logWriterName),logWriterName,
-                defaultWriter.getLogNumber(), defaultWriter.getLogRotation());
+        return new LogWriter(
+                getAppenderName(logWriterName),
+                logWriterName,
+                defaultWriter.getLogNumber(),
+                defaultWriter.getLogRotation());
     }
 
     public @Nullable LogWriter getDefaultWriter() {
@@ -1617,9 +1667,9 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         final List<Logger> loggers = loggerContext.getLoggerList();
         final LoggerStateContext ctx = new LoggerStateContext(loggers, packageInfoCollector);
 
-        //Distinguish between Logger configured via
-        //1. OSGi Config - The ones configured via ConfigAdmin
-        //2. Other means - Configured via Logback config or any other means
+        // Distinguish between Logger configured via
+        // 1. OSGi Config - The ones configured via ConfigAdmin
+        // 2. Other means - Configured via Logback config or any other means
         for (LogConfig lc : getLogConfigs()) {
             for (String category : lc.getCategories()) {
                 ctx.osgiConfiguredLoggers.put(category, lc);
@@ -1644,8 +1694,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
                 continue;
             }
 
-            boolean configuredViaOSGiConfig =
-                    ctx.osgiConfiguredLoggers.containsKey(targetLogger.getName());
+            boolean configuredViaOSGiConfig = ctx.osgiConfiguredLoggers.containsKey(targetLogger.getName());
             if (!configuredViaOSGiConfig || !hasOnlySlingRollingAppenders) {
                 ctx.nonOSgiConfiguredLoggers.add(targetLogger);
             }
@@ -1662,14 +1711,13 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
          */
         final List<Logger> nonOSgiConfiguredLoggers = new ArrayList<>();
 
-        final Map<String,LogConfig> osgiConfiguredLoggers = new HashMap<>();
+        final Map<String, LogConfig> osgiConfiguredLoggers = new HashMap<>();
 
         final Map<String, Appender<ILoggingEvent>> appenders = new HashMap<>();
 
-        final Map<Appender<ILoggingEvent>, AppenderInfo> dynamicAppenders =
-                new HashMap<>();
+        final Map<Appender<ILoggingEvent>, AppenderInfo> dynamicAppenders = new HashMap<>();
 
-        final Map<ServiceReference<TurboFilter>,TurboFilter> turboFilters;
+        final Map<ServiceReference<TurboFilter>, TurboFilter> turboFilters;
 
         final PackageInfoCollector packageInfoCollector;
 
@@ -1701,7 +1749,7 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         }
 
         ServiceReference<TurboFilter> getTurboFilterRef(TurboFilter tf) {
-            for (Map.Entry<ServiceReference<TurboFilter>,TurboFilter> e : turboFilters.entrySet()) {
+            for (Map.Entry<ServiceReference<TurboFilter>, TurboFilter> e : turboFilters.entrySet()) {
                 if (e.getValue().equals(tf)) {
                     return e.getKey();
                 }
@@ -1713,19 +1761,19 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
             return appenders.values();
         }
 
-        Map<String,Appender<ILoggingEvent>> getAppenderMap() {
+        Map<String, Appender<ILoggingEvent>> getAppenderMap() {
             return Collections.unmodifiableMap(appenders);
         }
     }
 
     private void registerWebConsoleSupport() {
-        Dictionary<String,Object> panelProps = new Hashtable<>(); // NOSONAR
+        Dictionary<String, Object> panelProps = new Hashtable<>(); // NOSONAR
         panelProps.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
         panelProps.put(Constants.SERVICE_DESCRIPTION, "Sling Log Panel Support");
-        registrations.add(bundleContext.registerService(LogPanel.class.getName(),
-                new SlingLogPanel(this, bundleContext), panelProps));
+        registrations.add(bundleContext.registerService(
+                LogPanel.class.getName(), new SlingLogPanel(this, bundleContext), panelProps));
 
-        Dictionary<String,Object> printerProps = new Hashtable<>(); // NOSONAR
+        Dictionary<String, Object> printerProps = new Hashtable<>(); // NOSONAR
         printerProps.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
         printerProps.put(Constants.SERVICE_DESCRIPTION, "Sling Log Configuration Printer");
         printerProps.put("felix.webconsole.label", LogConstants.PRINTER_URL);
@@ -1733,31 +1781,29 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
         printerProps.put("felix.webconsole.configprinter.modes", "always");
 
         // TODO need to see to add support for Inventory Feature
-        registrations.add(bundleContext.registerService(SlingConfigurationPrinter.class,
-            new SlingConfigurationPrinter(this), printerProps));
+        registrations.add(bundleContext.registerService(
+                SlingConfigurationPrinter.class, new SlingConfigurationPrinter(this), printerProps));
     }
 
     private void registerEventHandler() {
         String className = "org.osgi.service.event.EventHandler";
         if (isClassNameVisible(className)) {
-            Dictionary<String,Object> props = new Hashtable<>(); // NOSONAR
+            Dictionary<String, Object> props = new Hashtable<>(); // NOSONAR
             props.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
             props.put(Constants.SERVICE_DESCRIPTION, "Sling Log Reset Event Handler");
-            props.put("event.topics", new String[] {
-                    LogConstants.RESET_EVENT_TOPIC
-            });
+            props.put("event.topics", new String[] {LogConstants.RESET_EVENT_TOPIC});
 
-            registrations.add(bundleContext.registerService(className,
-                    new ConfigResetRequestHandler(this), props));
+            registrations.add(bundleContext.registerService(className, new ConfigResetRequestHandler(this), props));
         } else {
-            logger.warn("Failed to register the config reset event handler since the event handler class was not found. "
-                    + "Check if the eventadmin bundle is deployed.");
+            logger.warn(
+                    "Failed to register the config reset event handler since the event handler class was not found. "
+                            + "Check if the eventadmin bundle is deployed.");
         }
     }
 
     /**
      * Checks if an optional class name is visible to the bundle classloader
-     * 
+     *
      * @param className the class name to check
      * @return true if the class is visible, false otherwise
      */
@@ -1777,14 +1823,13 @@ public class LogConfigManager extends LoggerContextAwareBase implements LogbackR
      * Register the PackageInfoCollector as an OSGi service
      */
     void registerPackageInfoCollector() {
-        //Weaving hook once registered would not be removed upon config changed
+        // Weaving hook once registered would not be removed upon config changed
         if (packagingDataEnabled) {
-            Dictionary<String,Object> props = new Hashtable<>(); // NOSONAR
+            Dictionary<String, Object> props = new Hashtable<>(); // NOSONAR
             props.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
             props.put(Constants.SERVICE_DESCRIPTION, LogConstants.PACKAGE_INFO_COLLECTOR_DESC);
 
-            registrations.add(bundleContext.registerService(WeavingHook.class.getName(),
-                    packageInfoCollector, props));
+            registrations.add(bundleContext.registerService(WeavingHook.class.getName(), packageInfoCollector, props));
         }
     }
 }

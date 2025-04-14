@@ -16,21 +16,15 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.integration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.ops4j.pax.exam.CoreOptions.composite;
-import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
+import javax.inject.Inject;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
 
-import javax.inject.Inject;
-
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import org.apache.sling.commons.log.logback.internal.LogConstants;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,8 +37,12 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.LoggerContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.ops4j.pax.exam.CoreOptions.composite;
+import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
@@ -68,9 +66,7 @@ public class ITConfigAdminSupport extends LogTestBase {
         // Set log level to debug for foo1.bar
         Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LogConstants.LOG_LOGGERS, new String[] {
-            "foo1.bar"
-        });
+        p.put(LogConstants.LOG_LOGGERS, new String[] {"foo1.bar"});
         p.put(LogConstants.LOG_LEVEL, "DEBUG");
         config.update(p);
 
@@ -84,8 +80,7 @@ public class ITConfigAdminSupport extends LogTestBase {
 
     @Test
     public void testResetToDefault() throws Exception {
-        ch.qos.logback.classic.Logger lgLog =
-                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("foo2.bar");
+        ch.qos.logback.classic.Logger lgLog = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger("foo2.bar");
 
         lgLog.setLevel(Level.TRACE);
         assertEquals(Level.TRACE, lgLog.getLevel());
@@ -93,9 +88,7 @@ public class ITConfigAdminSupport extends LogTestBase {
         // Set log level to debug for foo2.bar
         Configuration config = ca.createFactoryConfiguration(LogConstants.FACTORY_PID_CONFIGS, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
-        p.put(LogConstants.LOG_LOGGERS, new String[]{
-                "foo2.bar"
-        });
+        p.put(LogConstants.LOG_LOGGERS, new String[] {"foo2.bar"});
         p.put(LogConstants.LOG_LEVEL, "DEFAULT");
         config.update(p);
 
@@ -142,7 +135,7 @@ public class ITConfigAdminSupport extends LogTestBase {
 
         delay();
 
-        assertFalse(((LoggerContext)LoggerFactory.getILoggerFactory()).isPackagingDataEnabled());
+        assertFalse(((LoggerContext) LoggerFactory.getILoggerFactory()).isPackagingDataEnabled());
     }
 
     @Test
@@ -150,12 +143,13 @@ public class ITConfigAdminSupport extends LogTestBase {
         Configuration config = ca.getConfiguration(LogConstants.PID, null);
         Dictionary<String, Object> p = new Hashtable<String, Object>();
         p.put(LogConstants.LOG_LEVEL, "DEBUG");
-        p.put(LogConstants.LOGBACK_FILE,absolutePath("test1-external-config.xml"));
+        p.put(LogConstants.LOGBACK_FILE, absolutePath("test1-external-config.xml"));
         config.update(p);
 
         delay();
 
-        ch.qos.logback.classic.Logger rootLogger = (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+        ch.qos.logback.classic.Logger rootLogger =
+                (ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
         assertNotNull(rootLogger.getAppender("FILE"));
     }
 }

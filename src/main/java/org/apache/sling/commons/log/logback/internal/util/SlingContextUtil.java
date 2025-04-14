@@ -16,13 +16,11 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 package org.apache.sling.commons.log.logback.internal.util;
-
-import org.jetbrains.annotations.NotNull;
 
 import ch.qos.logback.core.Context;
 import ch.qos.logback.core.spi.ContextAwareBase;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Custom util such that origin can be customized
@@ -53,5 +51,4 @@ public class SlingContextUtil extends ContextAwareBase {
     protected @NotNull Object getDeclaredOrigin() {
         return origin;
     }
-
 }

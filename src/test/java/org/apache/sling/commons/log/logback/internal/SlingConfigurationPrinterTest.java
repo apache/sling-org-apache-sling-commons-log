@@ -1,27 +1,22 @@
 /*
- * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
- * this work for additional information regarding copyright ownership.
- * The ASF licenses this file to You under the Apache License, Version 2.0
- * (the "License"); you may not use this file except in compliance with
- * the License.  You may obtain a copy of the License at
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
+ *   http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package org.apache.sling.commons.log.logback.internal;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -47,6 +42,15 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
+import ch.qos.logback.core.rolling.RollingFileAppender;
+import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
+import ch.qos.logback.core.status.ErrorStatus;
+import ch.qos.logback.core.status.InfoStatus;
+import ch.qos.logback.core.status.Status;
+import ch.qos.logback.core.status.WarnStatus;
 import org.apache.sling.commons.log.logback.internal.util.TestUtils;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContext;
 import org.apache.sling.testing.mock.osgi.junit5.OsgiContextBuilder;
@@ -63,15 +67,12 @@ import org.mockito.Mockito;
 import org.osgi.framework.BundleContext;
 import org.slf4j.LoggerFactory;
 
-import ch.qos.logback.classic.LoggerContext;
-import ch.qos.logback.classic.spi.ILoggingEvent;
-import ch.qos.logback.core.FileAppender;
-import ch.qos.logback.core.rolling.RollingFileAppender;
-import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
-import ch.qos.logback.core.status.ErrorStatus;
-import ch.qos.logback.core.status.InfoStatus;
-import ch.qos.logback.core.status.Status;
-import ch.qos.logback.core.status.WarnStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  *
@@ -88,7 +89,7 @@ class SlingConfigurationPrinterTest {
     @BeforeEach
     protected void beforeEach() {
         bundleContext = context.bundleContext();
-        loggerContext = (LoggerContext)LoggerFactory.getILoggerFactory();
+        loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
 
         try {
             System.setProperty(LogConstants.SLING_HOME, new File("target").getAbsolutePath());
@@ -125,6 +126,7 @@ class SlingConfigurationPrinterTest {
             assertTrue(output.contains("1. hello.log"));
         }
     }
+
     @Test
     void testPrintConfigurationWithGzipMode() throws IOException {
         try (StringWriter strWriter = new StringWriter();
@@ -137,6 +139,7 @@ class SlingConfigurationPrinterTest {
             assertFalse(output.contains(String.format("Log file %s", logFilePath)));
         }
     }
+
     @Test
     void testPrintConfigurationWithConsoleAppender() throws Exception {
         Hashtable<String, String> config = new Hashtable<>();
@@ -144,7 +147,7 @@ class SlingConfigurationPrinterTest {
         // clone the current bundle config
         Dictionary<String, String> bundleConfiguration = logConfigManager.getBundleConfiguration(bundleContext);
         config.putAll(Collections.list(bundleConfiguration.keys()).stream()
-            .collect(Collectors.toMap(Function.identity(), bundleConfiguration::get)));
+                .collect(Collectors.toMap(Function.identity(), bundleConfiguration::get)));
 
         // add custom config
         config.put(LogConstants.LOG_FILE, LogConstants.FILE_NAME_CONSOLE);
@@ -174,7 +177,7 @@ class SlingConfigurationPrinterTest {
         // clone the current bundle config
         Dictionary<String, String> bundleConfiguration = logConfigManager.getBundleConfiguration(bundleContext);
         config.putAll(Collections.list(bundleConfiguration.keys()).stream()
-            .collect(Collectors.toMap(Function.identity(), bundleConfiguration::get)));
+                .collect(Collectors.toMap(Function.identity(), bundleConfiguration::get)));
 
         // add custom config
         config.put(LogConstants.LOG_FILE, tempFile.toString());
@@ -213,6 +216,7 @@ class SlingConfigurationPrinterTest {
             assertFalse(output.contains(String.format("Log file %s", logFilePath)));
         }
     }
+
     @DisabledOnOs(value = OS.WINDOWS, disabledReason = "log file readable state can't be set")
     @Test
     void testPrintConfigurationWithCaughtIOExceptionWhileTailing() throws IOException {
@@ -242,7 +246,7 @@ class SlingConfigurationPrinterTest {
         // clone the current bundle config
         Dictionary<String, String> bundleConfiguration = logConfigManager.getBundleConfiguration(bundleContext);
         config.putAll(Collections.list(bundleConfiguration.keys()).stream()
-            .collect(Collectors.toMap(Function.identity(), bundleConfiguration::get)));
+                .collect(Collectors.toMap(Function.identity(), bundleConfiguration::get)));
 
         // add the numOfLines config
         config.put(LogConstants.PRINTER_NUM_OF_LINES, Integer.toString(numOfLines));
@@ -290,6 +294,7 @@ class SlingConfigurationPrinterTest {
             Files.delete(tempFile);
         }
     }
+
     @Test
     void testIncludeWholeFileThatDoesNotExist() throws IOException {
         try (StringWriter strWriter = new StringWriter();
@@ -311,12 +316,12 @@ class SlingConfigurationPrinterTest {
         URL[] attachments = slingConfigPrinter.getAttachments("zip");
         assertNotNull(attachments);
     }
+
     @Test
     void testGetAttachmentsWithNoFileAppenders() throws Exception {
-        TestUtils.doWaitForAsyncResetAfterWork((LoggerContext)LoggerFactory.getILoggerFactory(), () -> {
-            logConfigManager.updateGlobalConfiguration(new Hashtable<>(Map.of(
-                    LogConstants.LOG_FILE, LogConstants.FILE_NAME_CONSOLE
-                    )));
+        TestUtils.doWaitForAsyncResetAfterWork((LoggerContext) LoggerFactory.getILoggerFactory(), () -> {
+            logConfigManager.updateGlobalConfiguration(
+                    new Hashtable<>(Map.of(LogConstants.LOG_FILE, LogConstants.FILE_NAME_CONSOLE)));
             return null;
         });
 
@@ -330,8 +335,7 @@ class SlingConfigurationPrinterTest {
         File[] rotatedFiles = slingConfigPrinter.getRotatedFiles(appender, -1);
         assertNotNull(rotatedFiles);
         assertEquals(1, rotatedFiles.length);
-        assertEquals(Paths.get("target/logs/testGetRotatedFiles.log").toString(),
-                rotatedFiles[0].getPath());
+        assertEquals(Paths.get("target/logs/testGetRotatedFiles.log").toString(), rotatedFiles[0].getPath());
     }
 
     @ParameterizedTest
@@ -341,12 +345,15 @@ class SlingConfigurationPrinterTest {
         try {
             Path logFile = Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log"));
 
-            Path logFile1 = Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log.2023-11-01"));
+            Path logFile1 =
+                    Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log.2023-11-01"));
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
             logFile1.toFile().setLastModified(dateFormat.parse("2023-11-01").getTime());
-            Path logFile2 = Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log.2023-11-03"));
+            Path logFile2 =
+                    Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log.2023-11-03"));
             logFile2.toFile().setLastModified(dateFormat.parse("2023-11-03").getTime());
-            Path logFile3 = Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log.2023-11-02"));
+            Path logFile3 =
+                    Files.createFile(tempDir.resolve("testGetRotatedFilesForRollingFileAppender.log.2023-11-02"));
             logFile3.toFile().setLastModified(dateFormat.parse("2023-11-02").getTime());
 
             RollingFileAppender<ILoggingEvent> rollingAppender = new RollingFileAppender<>();
@@ -376,9 +383,9 @@ class SlingConfigurationPrinterTest {
         } finally {
             // clean up the temp files
             Files.walk(tempDir)
-                .sorted(Comparator.reverseOrder())
-                .map(Path::toFile)
-                .forEach(File::delete);
+                    .sorted(Comparator.reverseOrder())
+                    .map(Path::toFile)
+                    .forEach(File::delete);
         }
     }
 
@@ -396,14 +403,17 @@ class SlingConfigurationPrinterTest {
      * Test method for {@link org.apache.sling.commons.log.logback.internal.SlingConfigurationPrinter#abbreviatedOrigin(ch.qos.logback.core.status.Status)}.
      */
     @Test
-    void testAbbreviatedOrigin() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException, ClassNotFoundException {
+    void testAbbreviatedOrigin()
+            throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException,
+                    NoSuchMethodException, SecurityException, ClassNotFoundException {
         Status s = new WarnStatus("msg", null);
         assertNull(SlingConfigurationPrinter.abbreviatedOrigin(s));
 
         s = new WarnStatus("msg", context);
         assertEquals("OsgiContext", SlingConfigurationPrinter.abbreviatedOrigin(s));
 
-        s = new WarnStatus("msg", Class.forName("SimpleOrigin").getDeclaredConstructor().newInstance());
+        s = new WarnStatus(
+                "msg", Class.forName("SimpleOrigin").getDeclaredConstructor().newInstance());
         assertEquals("SimpleOrigin", SlingConfigurationPrinter.abbreviatedOrigin(s));
     }
 

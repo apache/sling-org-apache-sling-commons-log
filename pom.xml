@@ -315,6 +315,11 @@ Provide-Capability: osgi.serviceloader;osgi.serviceloader="ch.qos.logback.classi
                             <goal>bnd-process</goal>
                         </goals>
                         <configuration>
+                            <!--
+  NOTE: If you update the dependencies embedded belowe (logback core and classic and slf4j-api),
+  please also update the version ranges in the package imports and make sure to correctly list
+  all optional imports. These might change in between versions.
+-->
                             <bnd><![CDATA[
 Bundle-Name: ${project.name} (Including dependencies)
 Bundle-SymbolicName: ${project.artifactId}.all

@@ -286,6 +286,102 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>biz.aQute.bnd</groupId>
+                <artifactId>bnd-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>bnd-process</id>
+                        <configuration>
+                            <bnd><![CDATA[
+Bundle-Name: ${project.name}
+Bundle-SymbolicName: ${project.artifactId}
+Bundle-DocURL: http://sling.apache.org/site/logging.html
+Import-Package: org.osgi.service.cm;version="[1.2,2)";resolution:=dynamic, \
+    org.osgi.service.event;version="[1.2,2)";resolution:=dynamic, \
+    javax.xml.transform.*;resolution:=dynamic, \
+    org.slf4j.bridge;resolution:=optional, \
+    *
+
+Require-Capability: osgi.extender;filter:="(&(osgi.extender=osgi.serviceloader.registrar)(version>=1.0.0)(!(version>=2.0.0)))"
+Provide-Capability: osgi.serviceloader;osgi.serviceloader="ch.qos.logback.classic.spi.Configurator"
+]]></bnd>
+                            <manifestPath>${project.build.directory}/nodeps-classes/META-INF/MANIFEST.MF</manifestPath>
+                            <outputDir>${project.build.directory}/nodeps-classes</outputDir>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>bnd-process-deps</id>
+                        <goals>
+                            <goal>bnd-process</goal>
+                        </goals>
+                        <configuration>
+                            <!--
+  NOTE: If you update the dependencies embedded belowe (logback core and classic and slf4j-api),
+  please also update the version ranges in the package imports and make sure to correctly list
+  all optional imports. These might change in between versions.
+-->
+                            <bnd><![CDATA[
+Bundle-Name: ${project.name} (Including dependencies)
+Bundle-SymbolicName: ${project.artifactId}.all
+Bundle-DocURL: http://sling.apache.org/site/logging.html
+-includeresource:@logback-core-[0-9.]*(-SNAPSHOT)?.jar, \
+    @logback-classic-[0-9.]*(-SNAPSHOT)?.jar, \
+    @slf4j-api-[0-9.]*(-SNAPSHOT)?.jar
+Import-Package: org.osgi.service.cm;version="[1.2,2)";resolution:=dynamic, \
+    org.osgi.service.event;version="[1.2,2)";resolution:=dynamic, \
+    javax.xml.transform.*;resolution:=dynamic, \
+    org.slf4j.bridge;resolution:=optional, \
+    jakarta.mail;resolution:=optional, \
+    jakarta.mail.internet;resolution:=optional, \
+    jakarta.servlet;resolution:=optional, \
+    jakarta.servlet.http;resolution:=optional, \
+    org.codehaus.commons.compiler;resolution:=optional;version="[3.1,4)", \
+    org.codehaus.janino;resolution:=optional;version="[3.1,4)", \
+    org.fusesource.jansi;resolution:=optional;version="[2.4,3)", \
+    org.apache.commons.lang3;resolution:=optional;version="[3.0,4)", \
+    *
+Export-Package: ch.qos.logback.classic.*, \
+    ch.qos.logback.core.*, \
+    org.slf4j.*, \
+    org.slf4j;version="1.7.36", \
+    org.slf4j.helpers;version="1.7.36", \
+    ${removeall;${packages;VERSIONED};${packages;CONDITIONAL}}
+]]></bnd>
+                            <manifestPath>${project.build.directory}/deps-classes/META-INF/MANIFEST.MF</manifestPath>
+                            <outputDir>${project.build.directory}/deps-classes</outputDir>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <configuration>
+                            <classesDirectory>${project.build.directory}/nodeps-classes</classesDirectory>
+                            <archive>
+                                <manifestFile>${project.build.directory}/nodeps-classes/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>jar-deps</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>all</classifier>
+                            <classesDirectory>${project.build.directory}/deps-classes</classesDirectory>
+                            <archive>
+                                <manifestFile>${project.build.directory}/deps-classes/META-INF/MANIFEST.MF</manifestFile>
+                            </archive>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>

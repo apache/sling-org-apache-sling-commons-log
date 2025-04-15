@@ -45,7 +45,7 @@ public class MockSLF4JServiceProvider implements SLF4JServiceProvider {
 
     @Override
     public MDCAdapter getMDCAdapter() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override

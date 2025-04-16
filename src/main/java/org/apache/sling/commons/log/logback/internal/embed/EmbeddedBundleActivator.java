@@ -16,39 +16,29 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.apache.sling.commons.log.logback.internal;
+package org.apache.sling.commons.log.logback.internal.embed;
 
+import java.util.ServiceLoader;
+
+import ch.qos.logback.classic.spi.Configurator;
+import org.apache.sling.commons.log.logback.internal.Activator;
 import org.jetbrains.annotations.NotNull;
-import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
 import org.slf4j.spi.SLF4JServiceProvider;
 
-/**
- * Activator for initializing the LogConfigManager after the (Logback) SLF4J LoggerFactory arrives
- */
-public class Activator implements BundleActivator {
+public class EmbeddedBundleActivator extends Activator {
 
-    private ServiceTracker<SLF4JServiceProvider, SLF4JServiceProvider> slf4jServiceProviderTracker;
-
-    /**
-     * Initializes custom logback configuration when this bundle is started
-     */
     @Override
     public void start(@NotNull BundleContext context) throws Exception {
-        // listen for the arrival of new SLF4JServiceProvider components
-        slf4jServiceProviderTracker = new SLF4JServiceProviderTracker(context);
-        slf4jServiceProviderTracker.open(true);
-    }
-
-    /**
-     * Shutdown and undo our custom logback configuration
-     */
-    @Override
-    public void stop(@NotNull BundleContext context) throws Exception {
-        if (slf4jServiceProviderTracker != null) {
-            slf4jServiceProviderTracker.close();
-            slf4jServiceProviderTracker = null;
-        }
+        ServiceLoader.load(SLF4JServiceProvider.class, this.getClass().getClassLoader())
+                .forEach(serviceProvider -> {
+                    // Register the service provider with the OSGi context
+                    context.registerService(SLF4JServiceProvider.class, serviceProvider, null);
+                });
+        ServiceLoader.load(Configurator.class, this.getClass().getClassLoader()).forEach(serviceProvider -> {
+            // Register the configurator with the OSGi context
+            context.registerService(Configurator.class, serviceProvider, null);
+        });
+        super.start(context);
     }
 }

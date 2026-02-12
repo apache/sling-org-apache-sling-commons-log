@@ -41,7 +41,7 @@
     </scm>
 
     <properties>
-        <logback.version>1.5.26</logback.version>
+        <logback.version>1.5.29</logback.version>
         <!-- Higher versions of pax exam cause class loading errors -->
         <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
         <project.build.outputTimestamp>1763081338</project.build.outputTimestamp>

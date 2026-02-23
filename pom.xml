@@ -28,7 +28,7 @@
     </parent>
 
     <artifactId>org.apache.sling.commons.log</artifactId>
-    <version>6.0.4</version>
+    <version>6.0.5-SNAPSHOT</version>
 
     <name>Apache Sling Commons Log</name>
     <description>This bundle provides a logging implementation based on Logback.</description>
@@ -36,7 +36,7 @@
     <scm>
         <connection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-commons-log.git</connection>
         <developerConnection>scm:git:https://gitbox.apache.org/repos/asf/sling-org-apache-sling-commons-log.git</developerConnection>
-        <tag>org.apache.sling.commons.log-6.0.4</tag>
+        <tag>HEAD</tag>
         <url>https://github.com/apache/sling-org-apache-sling-commons-log.git</url>
     </scm>
 
@@ -44,7 +44,7 @@
         <logback.version>1.5.32</logback.version>
         <!-- Higher versions of pax exam cause class loading errors -->
         <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
-        <project.build.outputTimestamp>1771883977</project.build.outputTimestamp>
+        <project.build.outputTimestamp>1771884052</project.build.outputTimestamp>
         <sling.java.version>11</sling.java.version>
     </properties>
     <dependencies>

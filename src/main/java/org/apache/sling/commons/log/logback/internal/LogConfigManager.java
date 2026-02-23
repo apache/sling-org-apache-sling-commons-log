@@ -52,7 +52,6 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.Layout;
 import ch.qos.logback.core.OutputStreamAppender;
-import ch.qos.logback.core.joran.spi.ConfigurationWatchList;
 import ch.qos.logback.core.joran.util.ConfigurationWatchListUtil;
 import ch.qos.logback.core.model.Model;
 import ch.qos.logback.core.model.ModelUtil;
@@ -1459,6 +1458,7 @@ public class LogConfigManager extends LoggerContextAwareBase
             JoranConfigurator configurator = new JoranConfiguratorWrapper(this);
             configurator.setContext(loggerContext);
             final Model failsafeTop = configurator.recallSafeConfiguration();
+            URL topURL = ConfigurationWatchListUtil.getMainWatchURL(loggerContext);
 
             loggerContext.reset();
 
@@ -1485,7 +1485,7 @@ public class LogConfigManager extends LoggerContextAwareBase
                 addError("Error occurred while configuring Logback", t);
             } finally {
                 if (!success) {
-                    fallbackConfiguration(loggerContext, failsafeTop);
+                    fallbackConfiguration(loggerContext, failsafeTop, topURL);
                 }
                 getStatusManager().remove(statusListener);
                 SlingStatusPrinter.printInCaseOfErrorsOrWarnings(loggerContext, resetStartTime, startTime, success);
@@ -1501,11 +1501,10 @@ public class LogConfigManager extends LoggerContextAwareBase
     /**
      * Logic based on ch.qos.logback.classic.joran.ReconfigureOnChangeTask
      */
-    private void fallbackConfiguration(LoggerContext lc, Model failsafeTop) {
+    private void fallbackConfiguration(LoggerContext lc, Model failsafeTop, URL topUrl) {
         JoranConfigurator joranConfigurator = new JoranConfiguratorWrapper(this);
         joranConfigurator.setContext(context);
-        ConfigurationWatchList oldCWL = ConfigurationWatchListUtil.getConfigurationWatchList(context);
-        ConfigurationWatchList newCWL = oldCWL.buildClone();
+        joranConfigurator.setTopURL(topUrl);
 
         if (failsafeTop == null) {
             addWarn("No previous configuration to fall back on.");
@@ -1514,7 +1513,6 @@ public class LogConfigManager extends LoggerContextAwareBase
             addInfo("Safe model " + failsafeTop);
             try {
                 lc.reset();
-                ConfigurationWatchListUtil.registerConfigurationWatchList(context, newCWL);
                 ModelUtil.resetForReuse(failsafeTop);
                 joranConfigurator.processModel(failsafeTop);
                 addInfo("Re-registering previous fallback configuration once more as a fallback configuration point");

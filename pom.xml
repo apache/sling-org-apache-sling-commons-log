@@ -45,7 +45,7 @@
         <!-- Higher versions of pax exam cause class loading errors -->
         <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
         <project.build.outputTimestamp>1771884052</project.build.outputTimestamp>
-        <sling.java.version>11</sling.java.version>
+        <sling.java.version>17</sling.java.version>
     </properties>
     <dependencies>
         <dependency>

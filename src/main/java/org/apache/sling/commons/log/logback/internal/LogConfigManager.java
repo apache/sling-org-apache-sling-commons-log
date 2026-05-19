@@ -68,6 +68,7 @@ import org.apache.sling.commons.log.logback.internal.config.ConfigurationExcepti
 import org.apache.sling.commons.log.logback.internal.joran.JoranConfiguratorWrapper;
 import org.apache.sling.commons.log.logback.internal.stacktrace.OSGiAwareExceptionHandling;
 import org.apache.sling.commons.log.logback.internal.stacktrace.PackageInfoCollector;
+import org.apache.sling.commons.log.logback.internal.store.LogStoreRegistrar;
 import org.apache.sling.commons.log.logback.internal.util.LoggerSpecificEncoder;
 import org.apache.sling.commons.log.logback.internal.util.SlingRollingFileAppender;
 import org.apache.sling.commons.log.logback.internal.util.SlingStatusPrinter;
@@ -144,6 +145,8 @@ public class LogConfigManager extends LoggerContextAwareBase
      * Helper to register the configadmin related services
      */
     private final ConfigAdminSupport configAdminSupport;
+
+    private final LogStoreRegistrar logStoreRegistrar;
 
     /**
      * The logger for this class
@@ -306,6 +309,7 @@ public class LogConfigManager extends LoggerContextAwareBase
 
         this.osgiIntegrationListener = new OsgiIntegrationListener(this);
         this.configAdminSupport = new ConfigAdminSupport();
+        this.logStoreRegistrar = new LogStoreRegistrar();
     }
 
     /**
@@ -319,6 +323,7 @@ public class LogConfigManager extends LoggerContextAwareBase
         bridgeHandlerInstalled = maybeInstallSlf4jBridgeHandler(bundleContext);
 
         configAdminSupport.start(bundleContext, this);
+        logStoreRegistrar.start(bundleContext);
 
         // enable the LevelChangePropagator during any reset
         // http://logback.qos.ch/manual/configuration.html#LevelChangePropagator
@@ -386,6 +391,7 @@ public class LogConfigManager extends LoggerContextAwareBase
         loggerContext.removeListener(osgiIntegrationListener);
 
         configAdminSupport.stop();
+        logStoreRegistrar.stop();
 
         for (ServiceTracker<?, ?> tracker : serviceTrackers) {
             tracker.close();

@@ -18,12 +18,10 @@
  */
 
 /**
- * Provides an in-memory log store for logging events.
+ * Provides programatic access to logging events
  *
  * <p>The API is intentionally decoupled from slf4j and logback to prevent binding to those APIs
  * directly, which hinders evolution and is problematic when upgrading dependency versions.</p>
- *
- * @version 1.0
  */
 @Version("1.0.0")
 package org.apache.sling.commons.log.logback.store;

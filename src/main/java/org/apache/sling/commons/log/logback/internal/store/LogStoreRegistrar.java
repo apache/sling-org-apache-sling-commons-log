@@ -29,6 +29,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ManagedService;
+import org.osgi.util.converter.Converters;
 
 public class LogStoreRegistrar {
 
@@ -68,19 +69,24 @@ public class LogStoreRegistrar {
             return;
         }
 
-        if (store == null) {
-            activate();
-        }
+        int maxEntries = Converters.standardConverter()
+                .convert(properties.get(PROP_MAX_ENTRIES))
+                .defaultValue(LogStoreImpl.DEFAULT_MAX_ENTRIES)
+                .to(Integer.class);
 
-        store.setMaxEntries(getMaxEntries(properties));
+        if (store == null) {
+            activate(maxEntries);
+        } else {
+            store.setMaxEntries(maxEntries);
+        }
     }
 
-    private void activate() {
+    private void activate(int maxEntries) {
         if (bundleContext == null || store != null) {
             return;
         }
 
-        store = new LogStoreImpl();
+        store = new LogStoreImpl(maxEntries);
         appender = new LogStoreAppender(store);
 
         Dictionary<String, Object> serviceProps = new Hashtable<>();
@@ -107,20 +113,5 @@ public class LogStoreRegistrar {
 
         appender = null;
         store = null;
-    }
-
-    private int getMaxEntries(Dictionary<String, ?> properties) {
-        Object value = properties.get(PROP_MAX_ENTRIES);
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        if (value instanceof String) {
-            try {
-                return Integer.parseInt((String) value);
-            } catch (NumberFormatException e) {
-                return LogStoreImpl.DEFAULT_MAX_ENTRIES;
-            }
-        }
-        return LogStoreImpl.DEFAULT_MAX_ENTRIES;
     }
 }

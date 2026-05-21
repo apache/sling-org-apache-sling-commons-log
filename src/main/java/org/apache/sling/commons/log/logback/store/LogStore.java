@@ -29,5 +29,14 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface LogStore {
 
+    /**
+     * Returns a list of <tt>LogEntrie</tt>s matching the specified parameters
+     *
+     * @param pattern the pattern to match against all the text-based fields of the log entry. Ignored if <tt>null</tt>.
+     * @param minLevel the minimum level of the log entries. Defaults to {@link LogLevel#TRACE} if <tt>null</tt>.
+     * @param maxEntries the maximum entries to return. Clamped to 1 if needed.
+     *
+     * @return a list of entries matching the parameters. May be empty but not <tt>null</tt>
+     */
     List<LogEntry> getRecent(Pattern pattern, LogLevel minLevel, int maxEntries);
 }

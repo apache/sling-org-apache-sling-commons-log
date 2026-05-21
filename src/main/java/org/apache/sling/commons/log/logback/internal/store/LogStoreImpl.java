@@ -38,10 +38,6 @@ public class LogStoreImpl implements LogStore {
     private final Deque<LogEntry> entries = new ArrayDeque<>();
     private int maxEntriesKept;
 
-    public LogStoreImpl() {
-        this(DEFAULT_MAX_ENTRIES);
-    }
-
     public LogStoreImpl(int maxEntriesKept) {
         this.maxEntriesKept = Math.max(1, maxEntriesKept);
     }

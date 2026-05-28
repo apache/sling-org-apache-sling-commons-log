@@ -20,8 +20,11 @@ package org.apache.sling.commons.log.logback.integration;
 
 import javax.inject.Inject;
 
+import java.util.Arrays;
 import java.util.Dictionary;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.Set;
 
 import ch.qos.logback.core.Appender;
 import org.apache.sling.commons.log.logback.store.LogStore;
@@ -31,10 +34,13 @@ import org.ops4j.pax.exam.Option;
 import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
+import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.util.converter.Converters;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
@@ -44,6 +50,7 @@ public class ITLogStoreRegistrarLifecycle extends LogTestBase {
 
     private static final String LOG_STORE_PID = "org.apache.sling.commons.log.LogStore";
     private static final String MAX_ENTRIES = "maxEntries";
+    private static final String LOGGERS = "loggers";
 
     @Inject
     private ConfigurationAdmin ca;
@@ -87,5 +94,37 @@ public class ITLogStoreRegistrarLifecycle extends LogTestBase {
 
         assertEquals(0, bundleContext.getServiceReferences(LogStore.class, null).size());
         assertEquals(0, bundleContext.getServiceReferences(Appender.class, null).size());
+    }
+
+    @Test
+    public void testLoggersConfiguration() throws Exception {
+        Configuration config = ca.getConfiguration(LOG_STORE_PID, null);
+        try {
+            Dictionary<String, Object> properties = new Hashtable<>();
+            properties.put(MAX_ENTRIES, 5);
+            properties.put(LOGGERS, new String[] {"ROOT", "test.other"});
+            config.update(properties);
+            delay();
+
+            assertEquals(Set.of("ROOT", "test.other"), readLoggersProperty());
+
+            properties.put(LOGGERS, new String[] {"ROOT"});
+            config.update(properties);
+            delay();
+
+            assertEquals(Set.of("ROOT"), readLoggersProperty());
+        } finally {
+            config.delete();
+            delay();
+        }
+    }
+
+    private Set<String> readLoggersProperty() throws Exception {
+        ServiceReference<?>[] refs = bundleContext.getServiceReferences(Appender.class.getName(), null);
+        assertNotNull("expected an Appender registration", refs);
+        assertEquals(1, refs.length);
+        Object property = refs[0].getProperty(LOGGERS);
+        return new HashSet<>(
+                Arrays.asList(Converters.standardConverter().convert(property).to(String[].class)));
     }
 }

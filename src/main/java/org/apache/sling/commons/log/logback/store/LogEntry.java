@@ -27,6 +27,14 @@ import java.util.Map;
  *
  * <p>Stores only the lightweight, stable parts of a log event so the log store
  * does not retain full logging event object graphs.</p>
+ *
+ * <p>The throwable that accompanies the event, if any, is decomposed into
+ * three optional fields. {@link #throwableClassName()} and {@link #throwableMessage()}
+ * are the binary name and detail message of the leaf {@code Throwable} for
+ * structured consumption (alerting, attribute mapping). {@link #throwableText()}
+ * is the formatted representation of the full throwable chain including any
+ * {@code cause} and suppressed throwables; it is suitable for verbatim display
+ * such as stack traces in log viewers.</p>
  */
 public record LogEntry(
         long timeMillis,
@@ -34,6 +42,8 @@ public record LogEntry(
         String loggerName,
         String threadName,
         String formattedMessage,
+        String throwableClassName,
+        String throwableMessage,
         String throwableText,
         Map<String, String> mdc) {
 

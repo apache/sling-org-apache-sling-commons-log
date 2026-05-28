@@ -21,16 +21,22 @@ package org.apache.sling.commons.log.logback.internal.store;
 import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import ch.qos.logback.core.Appender;
 import org.apache.sling.commons.log.logback.internal.LogConstants;
+import org.apache.sling.commons.log.logback.store.LogEntryListener;
 import org.apache.sling.commons.log.logback.store.LogStore;
 import org.jetbrains.annotations.Nullable;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Constants;
+import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.ManagedService;
 import org.osgi.util.converter.Converters;
+import org.osgi.util.tracker.ServiceTracker;
+import org.osgi.util.tracker.ServiceTrackerCustomizer;
 
 public class LogStoreRegistrar {
 
@@ -42,6 +48,8 @@ public class LogStoreRegistrar {
     private ServiceRegistration<LogStore> storeRegistration;
     private ServiceRegistration<Appender> appenderRegistration;
     private ServiceRegistration<ManagedService> configRegistration;
+    private ServiceTracker<LogEntryListener, LogEntryListener> listenerTracker;
+    private final Set<LogEntryListener> knownListeners = new CopyOnWriteArraySet<>();
     private BundleContext bundleContext;
     private LogStoreImpl store;
     private LogStoreAppender appender;
@@ -49,6 +57,9 @@ public class LogStoreRegistrar {
 
     public void start(BundleContext context) {
         this.bundleContext = context;
+
+        listenerTracker = new ServiceTracker<>(context, LogEntryListener.class, new ListenerTrackerCustomizer());
+        listenerTracker.open();
 
         Dictionary<String, Object> configProps = new Hashtable<>();
         configProps.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
@@ -64,6 +75,11 @@ public class LogStoreRegistrar {
             configRegistration.unregister();
             configRegistration = null;
         }
+        if (listenerTracker != null) {
+            listenerTracker.close();
+            listenerTracker = null;
+        }
+        knownListeners.clear();
         bundleContext = null;
     }
 
@@ -100,6 +116,9 @@ public class LogStoreRegistrar {
         }
 
         store = new LogStoreImpl(maxEntries);
+        for (LogEntryListener listener : knownListeners) {
+            store.addListener(listener);
+        }
         appender = new LogStoreAppender(store);
 
         Dictionary<String, Object> serviceProps = new Hashtable<>();
@@ -140,5 +159,34 @@ public class LogStoreRegistrar {
         appender = null;
         store = null;
         activeLoggers = null;
+    }
+
+    private class ListenerTrackerCustomizer implements ServiceTrackerCustomizer<LogEntryListener, LogEntryListener> {
+
+        @Override
+        public LogEntryListener addingService(ServiceReference<LogEntryListener> reference) {
+            LogEntryListener listener = bundleContext.getService(reference);
+            if (listener != null) {
+                knownListeners.add(listener);
+                if (store != null) {
+                    store.addListener(listener);
+                }
+            }
+            return listener;
+        }
+
+        @Override
+        public void modifiedService(ServiceReference<LogEntryListener> reference, LogEntryListener service) {
+            // service properties changed; no internal state depends on them
+        }
+
+        @Override
+        public void removedService(ServiceReference<LogEntryListener> reference, LogEntryListener service) {
+            knownListeners.remove(service);
+            if (store != null) {
+                store.removeListener(service);
+            }
+            bundleContext.ungetService(reference);
+        }
     }
 }

@@ -47,13 +47,16 @@ public class LogStoreAppender extends AppenderBase<ILoggingEvent> {
             return;
         }
 
+        IThrowableProxy throwableProxy = eventObject.getThrowableProxy();
         store.append(new LogEntry(
                 eventObject.getTimeStamp(),
                 logLevel,
                 eventObject.getLoggerName(),
                 eventObject.getThreadName(),
                 eventObject.getFormattedMessage(),
-                getThrowableText(eventObject),
+                throwableProxy != null ? throwableProxy.getClassName() : null,
+                throwableProxy != null ? throwableProxy.getMessage() : null,
+                throwableProxy != null ? formatThrowable(throwableProxy) : null,
                 eventObject.getMDCPropertyMap()));
     }
 
@@ -74,12 +77,7 @@ public class LogStoreAppender extends AppenderBase<ILoggingEvent> {
         }
     }
 
-    private String getThrowableText(ILoggingEvent eventObject) {
-        IThrowableProxy throwableProxy = eventObject.getThrowableProxy();
-        if (throwableProxy == null) {
-            return null;
-        }
-
+    private String formatThrowable(IThrowableProxy throwableProxy) {
         StringBuilder text = new StringBuilder();
         appendThrowable(text, throwableProxy, null);
         return text.toString();

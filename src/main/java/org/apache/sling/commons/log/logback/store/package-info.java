@@ -23,7 +23,7 @@
  * <p>The API is intentionally decoupled from slf4j and logback to prevent binding to those APIs
  * directly, which hinders evolution and is problematic when upgrading dependency versions.</p>
  */
-@Version("1.0.0")
+@Version("2.0.0")
 package org.apache.sling.commons.log.logback.store;
 
 import org.osgi.annotation.versioning.Version;

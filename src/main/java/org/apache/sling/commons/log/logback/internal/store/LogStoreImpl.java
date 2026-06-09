@@ -24,6 +24,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
@@ -59,15 +60,11 @@ public class LogStoreImpl implements LogStore {
     }
 
     public void addListener(LogEntryListener listener) {
-        if (listener != null) {
-            listeners.add(listener);
-        }
+        listeners.add(Objects.requireNonNull(listener, "listener"));
     }
 
     public void removeListener(LogEntryListener listener) {
-        if (listener != null) {
-            listeners.remove(listener);
-        }
+        listeners.remove(Objects.requireNonNull(listener, "listener"));
     }
 
     @Override

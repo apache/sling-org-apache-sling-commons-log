@@ -50,4 +50,22 @@ public record LogEntry(
     public LogEntry {
         mdc = mdc.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(new HashMap<>(mdc));
     }
+
+    /**
+     * Backwards-compatible constructor without the structured throwable fields.
+     *
+     * <p>Retained so the package stays binary compatible with 1.0.0; delegates to
+     * the canonical constructor with no {@link #throwableClassName()} or
+     * {@link #throwableMessage()}.</p>
+     */
+    public LogEntry(
+            long timeMillis,
+            LogLevel level,
+            String loggerName,
+            String threadName,
+            String formattedMessage,
+            String throwableText,
+            Map<String, String> mdc) {
+        this(timeMillis, level, loggerName, threadName, formattedMessage, null, null, throwableText, mdc);
+    }
 }

@@ -21,24 +21,24 @@ package org.apache.sling.commons.log.logback.store;
 import org.osgi.annotation.versioning.ConsumerType;
 
 /**
- * Whiteboard-style callback for entries appended to the {@link LogStore}.
+ * Whiteboard-style callback for newly recorded {@link LogEntry log entries}.
  *
  * <p>Listeners are notified synchronously on the logging thread after the
- * entry has been stored, so implementations must not block or perform expensive
- * work. They must also be careful not to log at levels the store captures, to
+ * entry has been recorded, so implementations must not block or perform expensive
+ * work. They must also be careful not to log at levels that are captured, to
  * avoid re-entrant notification.</p>
  *
- * <p>Listeners registered before the {@code LogStore} is configured begin
- * receiving callbacks as soon as the store activates. Listeners that
- * unregister stop receiving callbacks before the next entry is appended.</p>
+ * <p>Listeners registered before log entries start being recorded begin
+ * receiving callbacks as soon as recording is active. Listeners that
+ * unregister stop receiving callbacks before the next entry is recorded.</p>
  */
 @ConsumerType
 public interface LogEntryListener {
 
     /**
-     * Notification that a new {@link LogEntry} was appended to the store.
+     * Notification that a new {@link LogEntry} was recorded.
      *
-     * @param entry the entry that was just appended; never {@code null}
+     * @param entry the entry that was just recorded; never {@code null}
      */
     void onEntry(LogEntry entry);
 }

@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LogStoreImplTest {
@@ -121,6 +122,13 @@ class LogStoreImplTest {
 
         assertEquals(1, received.size());
         assertEquals("before", received.get(0).formattedMessage());
+    }
+
+    @Test
+    void rejectsNullListener() {
+        LogStoreImpl store = new LogStoreImpl(10);
+        assertThrows(NullPointerException.class, () -> store.addListener(null));
+        assertThrows(NullPointerException.class, () -> store.removeListener(null));
     }
 
     @Test

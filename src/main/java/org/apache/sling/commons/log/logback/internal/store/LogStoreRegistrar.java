@@ -18,6 +18,7 @@
  */
 package org.apache.sling.commons.log.logback.internal.store;
 
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -81,7 +82,7 @@ public class LogStoreRegistrar {
                 .convert(properties.get(PROP_LOGGERS))
                 .defaultValue(DEFAULT_LOGGERS)
                 .to(String[].class);
-        if (loggers == null || loggers.length == 0) {
+        if (loggers.length == 0) {
             loggers = DEFAULT_LOGGERS;
         }
 
@@ -115,7 +116,7 @@ public class LogStoreRegistrar {
     }
 
     private void applyLoggerConfig(String[] loggers) {
-        if (appenderRegistration == null || equalLoggers(activeLoggers, loggers)) {
+        if (appenderRegistration == null || Arrays.equals(activeLoggers, loggers)) {
             return;
         }
         Dictionary<String, Object> appenderProps = new Hashtable<>();
@@ -124,18 +125,6 @@ public class LogStoreRegistrar {
         appenderProps.put(PROP_LOGGERS, loggers);
         appenderRegistration.setProperties(appenderProps);
         activeLoggers = loggers;
-    }
-
-    private boolean equalLoggers(String[] a, String[] b) {
-        if (a == null || b == null || a.length != b.length) {
-            return false;
-        }
-        for (int i = 0; i < a.length; i++) {
-            if (!a[i].equals(b[i])) {
-                return false;
-            }
-        }
-        return true;
     }
 
     private void deactivate() {

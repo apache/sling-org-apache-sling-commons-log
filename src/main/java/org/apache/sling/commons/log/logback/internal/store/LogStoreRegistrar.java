@@ -18,6 +18,7 @@
  */
 package org.apache.sling.commons.log.logback.internal.store;
 
+import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.Hashtable;
 
@@ -35,6 +36,8 @@ public class LogStoreRegistrar {
 
     static final String PID = "org.apache.sling.commons.log.LogStore";
     static final String PROP_MAX_ENTRIES = "maxEntries";
+    static final String PROP_LOGGERS = "loggers";
+    static final String[] DEFAULT_LOGGERS = {"ROOT"};
 
     private ServiceRegistration<LogStore> storeRegistration;
     private ServiceRegistration<Appender> appenderRegistration;
@@ -42,6 +45,7 @@ public class LogStoreRegistrar {
     private BundleContext bundleContext;
     private LogStoreImpl store;
     private LogStoreAppender appender;
+    private String[] activeLoggers;
 
     public void start(BundleContext context) {
         this.bundleContext = context;
@@ -74,14 +78,23 @@ public class LogStoreRegistrar {
                 .defaultValue(LogStoreImpl.DEFAULT_MAX_ENTRIES)
                 .to(Integer.class);
 
+        String[] loggers = Converters.standardConverter()
+                .convert(properties.get(PROP_LOGGERS))
+                .defaultValue(DEFAULT_LOGGERS)
+                .to(String[].class);
+        if (loggers.length == 0) {
+            loggers = DEFAULT_LOGGERS;
+        }
+
         if (store == null) {
-            activate(maxEntries);
+            activate(maxEntries, loggers);
         } else {
             store.setMaxEntries(maxEntries);
+            applyLoggerConfig(loggers);
         }
     }
 
-    private void activate(int maxEntries) {
+    private void activate(int maxEntries, String[] loggers) {
         if (bundleContext == null || store != null) {
             return;
         }
@@ -97,8 +110,21 @@ public class LogStoreRegistrar {
         Dictionary<String, Object> appenderProps = new Hashtable<>();
         appenderProps.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
         appenderProps.put(Constants.SERVICE_DESCRIPTION, "Log Store Appender");
-        appenderProps.put("loggers", "ROOT");
+        appenderProps.put(PROP_LOGGERS, loggers);
         appenderRegistration = bundleContext.registerService(Appender.class, appender, appenderProps);
+        activeLoggers = loggers;
+    }
+
+    private void applyLoggerConfig(String[] loggers) {
+        if (appenderRegistration == null || Arrays.equals(activeLoggers, loggers)) {
+            return;
+        }
+        Dictionary<String, Object> appenderProps = new Hashtable<>();
+        appenderProps.put(Constants.SERVICE_VENDOR, LogConstants.ASF_SERVICE_VENDOR);
+        appenderProps.put(Constants.SERVICE_DESCRIPTION, "Log Store Appender");
+        appenderProps.put(PROP_LOGGERS, loggers);
+        appenderRegistration.setProperties(appenderProps);
+        activeLoggers = loggers;
     }
 
     private void deactivate() {
@@ -113,5 +139,6 @@ public class LogStoreRegistrar {
 
         appender = null;
         store = null;
+        activeLoggers = null;
     }
 }

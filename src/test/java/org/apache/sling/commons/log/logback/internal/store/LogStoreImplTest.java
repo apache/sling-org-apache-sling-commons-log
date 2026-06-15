@@ -18,16 +18,21 @@
  */
 package org.apache.sling.commons.log.logback.internal.store;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.sling.commons.log.logback.store.LogEntry;
+import org.apache.sling.commons.log.logback.store.LogEntryListener;
 import org.apache.sling.commons.log.logback.store.LogLevel;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class LogStoreImplTest {
 
@@ -87,7 +92,63 @@ class LogStoreImplTest {
                 logs.stream().map(LogEntry::formattedMessage).collect(Collectors.toList()));
     }
 
+    @Test
+    void notifiesListenersInRegistrationOrder() {
+        LogStoreImpl store = new LogStoreImpl(10);
+        List<LogEntry> received = new ArrayList<>();
+        LogEntryListener listener = received::add;
+
+        store.addListener(listener);
+        LogEntry entry1 = logEntry(1L, LogLevel.INFO, "first");
+        LogEntry entry2 = logEntry(2L, LogLevel.INFO, "second");
+        store.append(entry1);
+        store.append(entry2);
+
+        assertEquals(2, received.size());
+        assertSame(entry1, received.get(0));
+        assertSame(entry2, received.get(1));
+    }
+
+    @Test
+    void stopsNotifyingAfterRemoveListener() {
+        LogStoreImpl store = new LogStoreImpl(10);
+        List<LogEntry> received = new ArrayList<>();
+        LogEntryListener listener = received::add;
+
+        store.addListener(listener);
+        store.append(logEntry(1L, LogLevel.INFO, "before"));
+        store.removeListener(listener);
+        store.append(logEntry(2L, LogLevel.INFO, "after"));
+
+        assertEquals(1, received.size());
+        assertEquals("before", received.get(0).formattedMessage());
+    }
+
+    @Test
+    void rejectsNullListener() {
+        LogStoreImpl store = new LogStoreImpl(10);
+        assertThrows(NullPointerException.class, () -> store.addListener(null));
+        assertThrows(NullPointerException.class, () -> store.removeListener(null));
+    }
+
+    @Test
+    void listenerExceptionDoesNotPreventStorage() {
+        LogStoreImpl store = new LogStoreImpl(10);
+        store.addListener(entry -> {
+            throw new RuntimeException("listener boom");
+        });
+
+        try {
+            store.append(logEntry(1L, LogLevel.INFO, "stored"));
+        } catch (RuntimeException expected) {
+            // listener propagated; storage already happened before the throw
+        }
+        List<LogEntry> stored = store.getRecent(null, LogLevel.TRACE, 10);
+        assertEquals(1, stored.size());
+        assertTrue("stored".equals(stored.get(0).formattedMessage()));
+    }
+
     private LogEntry logEntry(long timeMillis, LogLevel level, String message) {
-        return new LogEntry(timeMillis, level, "logger", "thread", message, null, Map.of());
+        return new LogEntry(timeMillis, level, "logger", "thread", message, null, null, null, Map.of());
     }
 }

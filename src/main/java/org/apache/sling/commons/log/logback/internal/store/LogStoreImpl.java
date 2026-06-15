@@ -24,9 +24,13 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.regex.Pattern;
 
 import org.apache.sling.commons.log.logback.store.LogEntry;
+import org.apache.sling.commons.log.logback.store.LogEntryListener;
 import org.apache.sling.commons.log.logback.store.LogLevel;
 import org.apache.sling.commons.log.logback.store.LogStore;
 
@@ -36,6 +40,7 @@ public class LogStoreImpl implements LogStore {
 
     private final Object lock = new Object();
     private final Deque<LogEntry> entries = new ArrayDeque<>();
+    private final Set<LogEntryListener> listeners = new CopyOnWriteArraySet<>();
     private int maxEntriesKept;
 
     public LogStoreImpl(int maxEntriesKept) {
@@ -47,6 +52,19 @@ public class LogStoreImpl implements LogStore {
             entries.addLast(snapshot);
             trimToSize();
         }
+        // Notify listeners outside the lock so a slow or re-entrant listener does
+        // not stall other producers waiting to append.
+        for (LogEntryListener listener : listeners) {
+            listener.onEntry(snapshot);
+        }
+    }
+
+    public void addListener(LogEntryListener listener) {
+        listeners.add(Objects.requireNonNull(listener, "listener"));
+    }
+
+    public void removeListener(LogEntryListener listener) {
+        listeners.remove(Objects.requireNonNull(listener, "listener"));
     }
 
     @Override

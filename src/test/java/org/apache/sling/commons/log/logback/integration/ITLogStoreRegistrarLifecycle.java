@@ -24,9 +24,13 @@ import java.util.Arrays;
 import java.util.Dictionary;
 import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import ch.qos.logback.core.Appender;
+import org.apache.sling.commons.log.logback.store.LogEntry;
+import org.apache.sling.commons.log.logback.store.LogEntryListener;
 import org.apache.sling.commons.log.logback.store.LogStore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,12 +39,16 @@ import org.ops4j.pax.exam.junit.PaxExam;
 import org.ops4j.pax.exam.spi.reactors.ExamReactorStrategy;
 import org.ops4j.pax.exam.spi.reactors.PerClass;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.converter.Converters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.mavenBundle;
 
@@ -94,6 +102,39 @@ public class ITLogStoreRegistrarLifecycle extends LogTestBase {
 
         assertEquals(0, bundleContext.getServiceReferences(LogStore.class, null).size());
         assertEquals(0, bundleContext.getServiceReferences(Appender.class, null).size());
+    }
+
+    @Test
+    public void testListenerReceivesAppendedEntry() throws Exception {
+        Configuration config = ca.getConfiguration(LOG_STORE_PID, null);
+        List<LogEntry> received = new CopyOnWriteArrayList<>();
+        ServiceRegistration<LogEntryListener> listenerRegistration =
+                bundleContext.registerService(LogEntryListener.class, received::add, null);
+
+        try {
+            Dictionary<String, Object> properties = new Hashtable<>();
+            properties.put(MAX_ENTRIES, 5);
+            config.update(properties);
+            delay();
+
+            Logger logger = LoggerFactory.getLogger("test.listener.logger");
+            logger.error("integration-marker");
+
+            // Allow the appender thread to fan the entry out to the listener.
+            for (int i = 0;
+                    i < 20 && received.stream().noneMatch(e -> "integration-marker".equals(e.formattedMessage()));
+                    i++) {
+                Thread.sleep(50);
+            }
+
+            assertTrue(
+                    "Listener did not receive log entry: " + received,
+                    received.stream().anyMatch(e -> "integration-marker".equals(e.formattedMessage())));
+        } finally {
+            listenerRegistration.unregister();
+            config.delete();
+            delay();
+        }
     }
 
     @Test

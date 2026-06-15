@@ -31,6 +31,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class LogStoreAppenderTest {
 
@@ -60,7 +61,30 @@ class LogStoreAppenderTest {
         assertEquals("worker-1", logs.get(0).threadName());
         assertEquals(LogLevel.ERROR, logs.get(0).level());
         assertEquals(Map.of("requestId", "123"), logs.get(0).mdc());
+        assertEquals("java.lang.RuntimeException", logs.get(0).throwableClassName());
+        assertEquals("error", logs.get(0).throwableMessage());
         assertNotNull(logs.get(0).throwableText());
+    }
+
+    @Test
+    void appenderLeavesThrowableFieldsNullWhenNoException() {
+        LogStoreImpl store = new LogStoreImpl(5);
+        LogStoreAppender appender = new LogStoreAppender(store);
+
+        LoggerContext context = new LoggerContext();
+        appender.setContext(context);
+        Logger logger = context.getLogger("test.logger");
+        LoggingEvent event = new LoggingEvent(getClass().getName(), logger, Level.INFO, "no-exception", null, null);
+        event.setMDCPropertyMap(Map.of());
+        event.setThreadName("worker-2");
+
+        appender.append(event);
+
+        List<LogEntry> logs = store.getRecent(null, LogLevel.TRACE, 10);
+        assertEquals(1, logs.size());
+        assertNull(logs.get(0).throwableClassName());
+        assertNull(logs.get(0).throwableMessage());
+        assertNull(logs.get(0).throwableText());
     }
 
     @Test

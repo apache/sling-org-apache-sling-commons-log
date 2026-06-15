@@ -27,6 +27,14 @@ import java.util.Map;
  *
  * <p>Stores only the lightweight, stable parts of a log event so the log store
  * does not retain full logging event object graphs.</p>
+ *
+ * <p>The throwable that accompanies the event, if any, is decomposed into
+ * three optional fields. {@link #throwableClassName()} and {@link #throwableMessage()}
+ * are the binary name and detail message of the leaf {@code Throwable} for
+ * structured consumption (alerting, attribute mapping). {@link #throwableText()}
+ * is the formatted representation of the full throwable chain including any
+ * {@code cause} and suppressed throwables; it is suitable for verbatim display
+ * such as stack traces in log viewers.</p>
  */
 public record LogEntry(
         long timeMillis,
@@ -34,10 +42,30 @@ public record LogEntry(
         String loggerName,
         String threadName,
         String formattedMessage,
+        String throwableClassName,
+        String throwableMessage,
         String throwableText,
         Map<String, String> mdc) {
 
     public LogEntry {
         mdc = mdc.isEmpty() ? Collections.emptyMap() : Collections.unmodifiableMap(new HashMap<>(mdc));
+    }
+
+    /**
+     * Backwards-compatible constructor without the structured throwable fields.
+     *
+     * <p>Retained so the package stays binary compatible with 1.0.0; delegates to
+     * the canonical constructor with no {@link #throwableClassName()} or
+     * {@link #throwableMessage()}.</p>
+     */
+    public LogEntry(
+            long timeMillis,
+            LogLevel level,
+            String loggerName,
+            String threadName,
+            String formattedMessage,
+            String throwableText,
+            Map<String, String> mdc) {
+        this(timeMillis, level, loggerName, threadName, formattedMessage, null, null, throwableText, mdc);
     }
 }

@@ -80,9 +80,11 @@ class SlingStatusPrinterTest {
     @ValueSource(booleans = {true, false})
     void testPrintInCaseOfErrorsOrWarningsWithApplicableStatus(boolean initSuccess) throws Exception {
         LoggerContext context = (LoggerContext) LoggerFactory.getILoggerFactory();
-        context.getStatusManager().add(new WarnStatus("Something went wrong", context));
         long threshold = Long.MIN_VALUE;
+        // Sample msgSince before adding the status so the status timestamp is always >= msgSince.
+        // Sampling it afterwards lets a millisecond tick between the two calls filter the status out (flaky).
         long msgSince = System.currentTimeMillis();
+        context.getStatusManager().add(new WarnStatus("Something went wrong", context));
         try (LogCapture capture = new LogCapture(SlingStatusPrinter.class.getName(), true)) {
             TestUtils.doWorkWithCapturedStdOut(
                     () -> SlingStatusPrinter.printInCaseOfErrorsOrWarnings(context, threshold, msgSince, initSuccess));

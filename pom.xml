@@ -41,7 +41,7 @@
     </scm>
 
     <properties>
-        <logback.version>1.5.32</logback.version>
+        <logback.version>1.6.3</logback.version>
         <!-- Higher versions of pax exam cause class loading errors -->
         <org.ops4j.pax.exam.version>4.13.3</org.ops4j.pax.exam.version>
         <project.build.outputTimestamp>1781554180</project.build.outputTimestamp>
@@ -328,6 +328,7 @@ Import-Package: org.osgi.service.cm;version="[1.2,2)";resolution:=dynamic, \
     org.codehaus.commons.compiler;resolution:=optional;version="[3.1,4)", \
     org.codehaus.janino;resolution:=optional;version="[3.1,4)", \
     org.fusesource.jansi;resolution:=optional;version="[2.4,3)", \
+    org.jline.jansi;resolution:=optional;version="[4.3,5)", \
     org.tukaani.xz;resolution:=optional, \
     *
 Export-Package: ch.qos.logback.classic.*, \

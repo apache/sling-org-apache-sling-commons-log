@@ -131,12 +131,6 @@ public abstract class AbstractPatternLayoutWrapper extends PatternLayout {
         return wrapped.isStarted();
     }
 
-    @Deprecated
-    @Override
-    public Map<String, String> getDefaultConverterMap() {
-        return wrapped.getDefaultConverterMap();
-    }
-
     @SuppressWarnings("rawtypes")
     @Override
     public Map<String, Supplier<DynamicConverter>> getEffectiveConverterMap() {

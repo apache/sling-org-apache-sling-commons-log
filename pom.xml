@@ -314,6 +314,9 @@ Bundle-SymbolicName: ${project.artifactId}.all
 Bundle-Description: §{project.description} It embeds logback core, classic and slf4j-api.
 Bundle-DocURL: http://sling.apache.org/site/logging.html
 Bundle-Activator: org.apache.sling.commons.log.logback.internal.embed.EmbeddedBundleActivator
+# SLING-13402 - Appends INDEX.LIST and module-info.class to the default donotcopy regex
+# to fix warnings logged about duplicate files in the two logback-* jar files
+-donotcopy: CVS|\.svn|\.git|\.DS_Store|\.gitignore|INDEX\.LIST|module-info\.class
 -includeresource:@logback-core-[0-9.]*(-SNAPSHOT)?.jar, \
     @logback-classic-[0-9.]*(-SNAPSHOT)?.jar, \
     @slf4j-api-[0-9.]*(-SNAPSHOT)?.jar
